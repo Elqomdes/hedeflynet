@@ -1,13 +1,16 @@
 import mongoose from 'mongoose';
 
 // MongoDB connection string - MUST be provided via environment variable
-const MONGODB_URI = process.env.MONGODB_URI;
+// In development, fall back to provided Atlas URI if not set
+const MONGODB_URI = process.env.MONGODB_URI || (process.env.NODE_ENV !== 'production'
+  ? 'mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/?retryWrites=true&w=majority&appName=hedeflydatas'
+  : undefined);
 // Preferred database name (defaults to 'hedeflydatas' if not provided)
 const MONGODB_DB = process.env.MONGODB_DB || 'hedeflydatas';
 
 // Don't throw error during build time
-if (!MONGODB_URI && process.env.NODE_ENV !== 'production') {
-  console.warn('MONGODB_URI not provided, some features may not work');
+if (!process.env.MONGODB_URI && process.env.NODE_ENV !== 'production') {
+  console.warn('MONGODB_URI not provided, using development fallback URI');
 }
 
 // Global type declaration for mongoose cache

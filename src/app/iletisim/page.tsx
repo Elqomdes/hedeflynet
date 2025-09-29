@@ -50,7 +50,7 @@ export default function ContactPage() {
     }
 
     try {
-      // EmailJS ile email gönder
+      // 1) EmailJS ile email gönder
       const templateParams = {
         from_name: `${formData.firstName} ${formData.lastName}`,
         from_email: formData.email,
@@ -61,14 +61,29 @@ export default function ContactPage() {
         to_name: 'Hedefly Ekibi'
       };
 
-      const result = await emailjs.send(
+      const emailResult = await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
         templateParams,
         EMAILJS_PUBLIC_KEY
       );
 
-      if (result.status === 200) {
+      // 2) Sunucuya kaydet (admin/istekler'de listelenecek)
+      const apiResult = await fetch('/api/teacher-applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          experience: formData.experience,
+          subjects: formData.subjects,
+          message: formData.message
+        })
+      });
+
+      if (emailResult.status === 200 && apiResult.ok) {
         setSubmitStatus('success');
         setFormData({
           firstName: '',
@@ -83,7 +98,7 @@ export default function ContactPage() {
         setSubmitStatus('error');
       }
     } catch (error) {
-      console.error('EmailJS error:', error);
+      console.error('Başvuru gönderme hatası:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

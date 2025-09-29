@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, UserCheck, UserX, Eye, Mail, Phone } from 'lucide-react';
+import { Users, UserCheck, UserX, Mail, Phone, Plus, Pencil, Trash2, X } from 'lucide-react';
 
 interface Teacher {
   _id: string;
@@ -18,6 +18,20 @@ export default function TeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState<null | Teacher>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<null | Teacher>(null);
+
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    password: ''
+  });
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTeachers();
@@ -58,6 +72,102 @@ export default function TeachersPage() {
     }
   };
 
+  const openAddModal = () => {
+    setFormError(null);
+    setFormData({ username: '', email: '', firstName: '', lastName: '', phone: '', password: '' });
+    setShowAddModal(true);
+  };
+
+  const submitAddTeacher = async () => {
+    setFormSubmitting(true);
+    setFormError(null);
+    try {
+      const response = await fetch('/api/admin/create-teacher', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        setFormError(err.error || 'Kayıt başarısız');
+        return;
+      }
+      setShowAddModal(false);
+      await fetchTeachers();
+    } catch (e) {
+      setFormError('Sunucu hatası');
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const openEditModal = (teacher: Teacher) => {
+    setFormError(null);
+    setFormData({
+      username: teacher.username,
+      email: teacher.email,
+      firstName: teacher.firstName,
+      lastName: teacher.lastName,
+      phone: teacher.phone || '',
+      password: ''
+    });
+    setShowEditModal(teacher);
+  };
+
+  const submitEditTeacher = async () => {
+    if (!showEditModal) return;
+    setFormSubmitting(true);
+    setFormError(null);
+    try {
+      const payload: any = {
+        username: formData.username,
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone
+      };
+      if (formData.password && formData.password.length >= 6) {
+        payload.password = formData.password;
+      }
+      const response = await fetch(`/api/admin/teachers/${showEditModal._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        setFormError(err.error || 'Güncelleme başarısız');
+        return;
+      }
+      setShowEditModal(null);
+      await fetchTeachers();
+    } catch (e) {
+      setFormError('Sunucu hatası');
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const confirmDeleteTeacher = async () => {
+    if (!deleteCandidate) return;
+    setActionLoading(deleteCandidate._id);
+    try {
+      const response = await fetch(`/api/admin/teachers/${deleteCandidate._id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) {
+        console.error('Delete failed');
+      } else {
+        await fetchTeachers();
+      }
+    } catch (e) {
+      console.error('Delete teacher error:', e);
+    } finally {
+      setActionLoading(null);
+      setDeleteCandidate(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -76,6 +186,12 @@ export default function TeachersPage() {
       </div>
 
       <div className="card">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-200">
+          <div className="font-semibold text-secondary-900">Öğretmen Listesi</div>
+          <button onClick={openAddModal} className="inline-flex items-center px-3 py-2 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-700">
+            <Plus className="h-4 w-4 mr-2" />Yeni Öğretmen
+          </button>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-secondary-200">
             <thead className="bg-secondary-50">
@@ -95,9 +211,7 @@ export default function TeachersPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
                   Kayıt Tarihi
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                  İşlemler
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">İşlemler</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-secondary-200">
@@ -147,23 +261,40 @@ export default function TeachersPage() {
                     {new Date(teacher.createdAt).toLocaleDateString('tr-TR')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleToggleStatus(teacher._id, teacher.isActive)}
-                      disabled={actionLoading === teacher._id}
-                      className={`mr-3 disabled:opacity-50 ${
-                        teacher.isActive
-                          ? 'text-red-600 hover:text-red-900'
-                          : 'text-green-600 hover:text-green-900'
-                      }`}
-                    >
-                      {actionLoading === teacher._id ? (
-                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      ) : teacher.isActive ? (
-                        <UserX className="h-4 w-4" />
-                      ) : (
-                        <UserCheck className="h-4 w-4" />
-                      )}
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleToggleStatus(teacher._id, teacher.isActive)}
+                        disabled={actionLoading === teacher._id}
+                        className={`disabled:opacity-50 ${
+                          teacher.isActive
+                            ? 'text-red-600 hover:text-red-900'
+                            : 'text-green-600 hover:text-green-900'
+                        }`}
+                        title={teacher.isActive ? 'Pasif Yap' : 'Aktif Yap'}
+                      >
+                        {actionLoading === teacher._id ? (
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : teacher.isActive ? (
+                          <UserX className="h-4 w-4" />
+                        ) : (
+                          <UserCheck className="h-4 w-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => openEditModal(teacher)}
+                        className="text-secondary-600 hover:text-secondary-900"
+                        title="Düzenle"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteCandidate(teacher)}
+                        className="text-red-600 hover:text-red-800"
+                        title="Sil"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -179,6 +310,119 @@ export default function TeachersPage() {
           <p className="mt-1 text-sm text-secondary-500">
             Henüz sistemde kayıtlı öğretmen bulunmuyor.
           </p>
+        </div>
+      )}
+
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Yeni Öğretmen Ekle</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-secondary-500 hover:text-secondary-800"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="px-6 py-4 space-y-4">
+              {formError && <div className="text-sm text-red-600">{formError}</div>}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-secondary-600">Ad</label>
+                  <input className="input" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">Soyad</label>
+                  <input className="input" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">E-posta</label>
+                  <input className="input" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">Telefon</label>
+                  <input className="input" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">Kullanıcı Adı</label>
+                  <input className="input" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">Şifre</label>
+                  <input className="input" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t flex items-center justify-end gap-3">
+              <button onClick={() => setShowAddModal(false)} className="btn-secondary">Vazgeç</button>
+              <button onClick={submitAddTeacher} disabled={formSubmitting} className="btn-primary">
+                {formSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Öğretmen Düzenle</h3>
+              <button onClick={() => setShowEditModal(null)} className="text-secondary-500 hover:text-secondary-800"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="px-6 py-4 space-y-4">
+              {formError && <div className="text-sm text-red-600">{formError}</div>}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-secondary-600">Ad</label>
+                  <input className="input" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">Soyad</label>
+                  <input className="input" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">E-posta</label>
+                  <input className="input" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">Telefon</label>
+                  <input className="input" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">Kullanıcı Adı</label>
+                  <input className="input" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-secondary-600">Şifre (değiştirmek için)</label>
+                  <input className="input" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t flex items-center justify-end gap-3">
+              <button onClick={() => setShowEditModal(null)} className="btn-secondary">Vazgeç</button>
+              <button onClick={submitEditTeacher} disabled={formSubmitting} className="btn-primary">
+                {formSubmitting ? 'Güncelleniyor...' : 'Güncelle'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteCandidate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+            <div className="px-6 py-4 border-b">
+              <h3 className="text-lg font-semibold">Öğretmeni silmek istediğinize emin misiniz?</h3>
+            </div>
+            <div className="px-6 py-4 text-sm text-secondary-700">
+              <p>
+                {deleteCandidate.firstName} {deleteCandidate.lastName} ({deleteCandidate.username}) kalıcı olarak silinecek.
+              </p>
+            </div>
+            <div className="px-6 py-4 border-t flex items-center justify-end gap-3">
+              <button onClick={() => setDeleteCandidate(null)} className="btn-secondary">Vazgeç</button>
+              <button onClick={confirmDeleteTeacher} disabled={actionLoading === deleteCandidate._id} className="btn-danger">
+                {actionLoading === deleteCandidate._id ? 'Siliniyor...' : 'Sil'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
