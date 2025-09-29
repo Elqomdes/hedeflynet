@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, Mail, Phone, MapPin } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -16,6 +17,16 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
+  // EmailJS configuration
+  const EMAILJS_SERVICE_ID = 'service_iqwh4mo';
+  const EMAILJS_TEMPLATE_ID = 'template_contact';
+  const EMAILJS_PUBLIC_KEY = 'your_public_key_here'; // Bu değeri EmailJS dashboard'dan alın
+
+  useEffect(() => {
+    // EmailJS'i initialize et
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
@@ -29,15 +40,25 @@ export default function ContactPage() {
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch('/api/teacher-applications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      // EmailJS ile email gönder
+      const templateParams = {
+        from_name: `${formData.firstName} ${formData.lastName}`,
+        from_email: formData.email,
+        phone: formData.phone,
+        experience: formData.experience,
+        subjects: formData.subjects,
+        message: formData.message,
+        to_name: 'Hedefly Ekibi'
+      };
 
-      if (response.ok) {
+      const result = await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+
+      if (result.status === 200) {
         setSubmitStatus('success');
         setFormData({
           firstName: '',
@@ -52,7 +73,7 @@ export default function ContactPage() {
         setSubmitStatus('error');
       }
     } catch (error) {
-      console.error('Form submission error:', error);
+      console.error('EmailJS error:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -80,13 +101,13 @@ export default function ContactPage() {
             
             {submitStatus === 'success' && (
               <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                Başvurunuz başarıyla gönderildi! En kısa sürede sizinle iletişime geçeceğiz.
+                Başvurunuz başarıyla email olarak gönderildi! En kısa sürede sizinle iletişime geçeceğiz.
               </div>
             )}
 
             {submitStatus === 'error' && (
               <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                Başvuru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.
+                Email gönderilirken bir hata oluştu. Lütfen tekrar deneyin veya doğrudan iletisim@edulyedu.com adresine yazın.
               </div>
             )}
 
