@@ -1,0 +1,132 @@
+import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import { Assignment, Class, User } from '@/lib/models';
+import { getCurrentUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+  try {
+    const authResult = await getCurrentUser(request);
+    if (!authResult || authResult.role !== 'teacher') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    await connectDB();
+
+    const teacherId = authResult._id;
+
+    // Get assignments created by this teacher
+    const assignments = await Assignment.find({ teacherId })
+      .populate('classId', 'name')
+      .populate('studentId', 'firstName lastName')
+      .sort({ dueDate: 1 });
+
+    return NextResponse.json(assignments);
+  } catch (error) {
+    console.error('Teacher assignments error:', error);
+    return NextResponse.json(
+      { error: 'Sunucu hatası' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const authResult = await getCurrentUser(request);
+    if (!authResult || authResult.role !== 'teacher') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { title, description, type, classId, studentId, attachments, dueDate } = await request.json();
+
+    if (!title || !description || !type || !dueDate) {
+      return NextResponse.json(
+        { error: 'Tüm gerekli alanlar doldurulmalıdır' },
+        { status: 400 }
+      );
+    }
+
+    if (type === 'class' && !classId) {
+      return NextResponse.json(
+        { error: 'Sınıf ödevi için sınıf seçilmelidir' },
+        { status: 400 }
+      );
+    }
+
+    if (type === 'individual' && !studentId) {
+      return NextResponse.json(
+        { error: 'Bireysel ödev için öğrenci seçilmelidir' },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
+    if (type === 'class') {
+      // For class assignments, create individual assignments for each student in the class
+      const classData = await Class.findById(classId).populate('students');
+      if (!classData) {
+        return NextResponse.json(
+          { error: 'Sınıf bulunamadı' },
+          { status: 404 }
+        );
+      }
+
+      const assignments = [];
+      for (const student of classData.students) {
+        const assignment = new Assignment({
+          title,
+          description,
+          type: 'individual', // Convert to individual for each student
+          teacherId: authResult._id,
+          classId: classId,
+          studentId: student._id,
+          attachments: attachments || [],
+          dueDate: new Date(dueDate)
+        });
+        await assignment.save();
+        assignments.push(assignment);
+      }
+
+      // Return the first assignment as reference (they're all the same)
+      const populatedAssignment = await Assignment.findById(assignments[0]._id)
+        .populate('classId', 'name')
+        .populate('studentId', 'firstName lastName');
+
+      return NextResponse.json(populatedAssignment, { status: 201 });
+    } else {
+      // For individual assignments
+      const assignment = new Assignment({
+        title,
+        description,
+        type,
+        teacherId: authResult._id,
+        studentId: studentId,
+        attachments: attachments || [],
+        dueDate: new Date(dueDate)
+      });
+
+      await assignment.save();
+
+      // Populate the created assignment
+      const populatedAssignment = await Assignment.findById(assignment._id)
+        .populate('studentId', 'firstName lastName');
+
+      return NextResponse.json(populatedAssignment, { status: 201 });
+    }
+  } catch (error) {
+    console.error('Create assignment error:', error);
+    return NextResponse.json(
+      { error: 'Sunucu hatası' },
+      { status: 500 }
+    );
+  }
+}
