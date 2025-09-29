@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { connectDB } from '@/lib/mongodb';
+import connectDB from '@/lib/mongodb';
 import Assignment from '@/lib/models/Assignment';
 import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
 import Goal from '@/lib/models/Goal';

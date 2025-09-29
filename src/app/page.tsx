@@ -82,7 +82,7 @@ export default function HomePage() {
               Hoş geldin, {user.firstName}! 👋
             </h1>
             <p className="text-xl text-secondary-700 mb-8">
-              Dashboard'unuza erişmek için aşağıdaki butonlardan birini seçin
+              Dashboard&apos;unuza erişmek için aşağıdaki butonlardan birini seçin
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
