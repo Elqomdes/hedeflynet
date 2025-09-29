@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
+import mongoose from 'mongoose';
 
 export async function GET() {
   try {
@@ -18,7 +19,11 @@ export async function GET() {
     }
 
     // MongoDB ping test
-    await db.connection.db.admin().ping();
+    if (mongoose.connection.db) {
+      await mongoose.connection.db.admin().ping();
+    } else {
+      throw new Error('MongoDB database not available');
+    }
     
     return NextResponse.json({
       status: 'success',

@@ -20,12 +20,14 @@ export default function ContactPage() {
   // EmailJS configuration
   const EMAILJS_SERVICE_ID = 'service_iqwh4mo';
   const EMAILJS_TEMPLATE_ID = 'template_contact';
-  const EMAILJS_PUBLIC_KEY = 'your_public_key_here'; // Bu değeri EmailJS dashboard'dan alın
+  const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '';
 
   useEffect(() => {
-    // EmailJS'i initialize et
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-  }, []);
+    // EmailJS'i initialize et - sadece public key varsa
+    if (EMAILJS_PUBLIC_KEY) {
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+    }
+  }, [EMAILJS_PUBLIC_KEY]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -38,6 +40,14 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
+
+    // EmailJS konfigürasyonu kontrolü
+    if (!EMAILJS_PUBLIC_KEY) {
+      console.error('EmailJS Public Key not configured');
+      setSubmitStatus('error');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       // EmailJS ile email gönder
