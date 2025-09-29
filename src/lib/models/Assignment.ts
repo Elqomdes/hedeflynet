@@ -13,6 +13,7 @@ export interface IAssignment extends Document {
     name: string;
   }[];
   dueDate: Date;
+  maxGrade?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -72,6 +73,12 @@ const AssignmentSchema = new Schema<IAssignment>({
   dueDate: {
     type: Date,
     required: true
+  },
+  maxGrade: {
+    type: Number,
+    default: 100,
+    min: 1,
+    max: 100
   }
 }, {
   timestamps: true

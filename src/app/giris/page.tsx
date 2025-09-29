@@ -74,20 +74,8 @@ export default function LoginPage() {
         setFormData({ username: '', password: '' });
         setIsLoading(false);
         
-        // Redirect based on user role
-        switch (data.user.role) {
-          case 'admin':
-            router.push('/admin');
-            break;
-          case 'teacher':
-            router.push('/ogretmen');
-            break;
-          case 'student':
-            router.push('/ogrenci');
-            break;
-          default:
-            router.push('/');
-        }
+        // Always redirect to homepage after successful login
+        router.push('/');
       } else {
         setError(data.error || 'Giriş yapılamadı');
         setIsLoading(false);

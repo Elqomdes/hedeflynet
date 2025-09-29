@@ -39,7 +39,12 @@ export async function GET(request: NextRequest) {
             status: submission.status,
             submittedAt: submission.submittedAt,
             grade: submission.grade,
-            feedback: submission.feedback
+            maxGrade: submission.maxGrade,
+            feedback: submission.feedback,
+            teacherFeedback: submission.teacherFeedback,
+            gradedAt: submission.gradedAt,
+            content: submission.content,
+            attachments: submission.attachments
           } : null
         };
       })

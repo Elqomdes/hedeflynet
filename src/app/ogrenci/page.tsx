@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Target, BookOpen, TrendingUp, CheckCircle, Clock } from 'lucide-react';
+import { FileText, Target, BookOpen, TrendingUp, CheckCircle, Clock, Star, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 export default function StudentDashboard() {
   const [stats, setStats] = useState({
     totalAssignments: 0,
     completedAssignments: 0,
+    submittedAssignments: 0,
+    gradedAssignments: 0,
     totalGoals: 0,
     completedGoals: 0,
     totalPlans: 0,
@@ -45,6 +47,14 @@ export default function StudentDashboard() {
     ? Math.round((stats.completedAssignments / stats.totalAssignments) * 100)
     : 0;
 
+  const submissionRate = stats.totalAssignments > 0 
+    ? Math.round((stats.submittedAssignments / stats.totalAssignments) * 100)
+    : 0;
+
+  const gradingRate = stats.submittedAssignments > 0 
+    ? Math.round((stats.gradedAssignments / stats.submittedAssignments) * 100)
+    : 0;
+
   const goalCompletionRate = stats.totalGoals > 0 
     ? Math.round((stats.completedGoals / stats.totalGoals) * 100)
     : 0;
@@ -53,10 +63,11 @@ export default function StudentDashboard() {
     {
       name: 'Toplam Ödev',
       value: stats.totalAssignments,
-      completed: stats.completedAssignments,
+      completed: stats.submittedAssignments,
       icon: FileText,
       color: 'bg-blue-500',
-      href: '/ogrenci/odevler'
+      href: '/ogrenci/odevler',
+      subtitle: `${stats.gradedAssignments} değerlendirildi`
     },
     {
       name: 'Hedeflerim',
@@ -64,7 +75,8 @@ export default function StudentDashboard() {
       completed: stats.completedGoals,
       icon: Target,
       color: 'bg-green-500',
-      href: '/ogrenci/hedefler'
+      href: '/ogrenci/hedefler',
+      subtitle: `${stats.completedGoals} tamamlandı`
     },
     {
       name: 'Planlarım',
@@ -72,7 +84,8 @@ export default function StudentDashboard() {
       completed: stats.completedPlans,
       icon: BookOpen,
       color: 'bg-purple-500',
-      href: '/ogrenci/planlar'
+      href: '/ogrenci/planlar',
+      subtitle: `${stats.completedPlans} tamamlandı`
     }
   ];
 
@@ -86,29 +99,55 @@ export default function StudentDashboard() {
       </div>
 
       {/* Progress Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Ödev Tamamlama Oranı
+            Ödev Teslim Oranı
           </h3>
           <div className="flex items-center">
             <div className="flex-1">
               <div className="flex justify-between text-sm text-secondary-600 mb-2">
-                <span>Tamamlanan</span>
-                <span>{stats.completedAssignments}/{stats.totalAssignments}</span>
+                <span>Teslim Edilen</span>
+                <span>{stats.submittedAssignments}/{stats.totalAssignments}</span>
               </div>
               <div className="w-full bg-secondary-200 rounded-full h-2">
                 <div 
-                  className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${completionRate}%` }}
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${submissionRate}%` }}
                 ></div>
               </div>
               <p className="text-sm text-secondary-600 mt-2">
-                %{completionRate} tamamlandı
+                %{submissionRate} teslim edildi
               </p>
             </div>
-            <div className="ml-4 text-3xl font-bold text-primary-600">
-              {completionRate}%
+            <div className="ml-4 text-3xl font-bold text-blue-600">
+              {submissionRate}%
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+            Değerlendirme Oranı
+          </h3>
+          <div className="flex items-center">
+            <div className="flex-1">
+              <div className="flex justify-between text-sm text-secondary-600 mb-2">
+                <span>Değerlendirilen</span>
+                <span>{stats.gradedAssignments}/{stats.submittedAssignments}</span>
+              </div>
+              <div className="w-full bg-secondary-200 rounded-full h-2">
+                <div 
+                  className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${gradingRate}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-secondary-600 mt-2">
+                %{gradingRate} değerlendirildi
+              </p>
+            </div>
+            <div className="ml-4 text-3xl font-bold text-green-600">
+              {gradingRate}%
             </div>
           </div>
         </div>
@@ -125,7 +164,7 @@ export default function StudentDashboard() {
               </div>
               <div className="w-full bg-secondary-200 rounded-full h-2">
                 <div 
-                  className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${goalCompletionRate}%` }}
                 ></div>
               </div>
@@ -133,7 +172,7 @@ export default function StudentDashboard() {
                 %{goalCompletionRate} tamamlandı
               </p>
             </div>
-            <div className="ml-4 text-3xl font-bold text-green-600">
+            <div className="ml-4 text-3xl font-bold text-purple-600">
               {goalCompletionRate}%
             </div>
           </div>
@@ -152,7 +191,7 @@ export default function StudentDashboard() {
                 <p className="text-sm font-medium text-secondary-600">{stat.name}</p>
                 <p className="text-2xl font-semibold text-secondary-900">{stat.value}</p>
                 <p className="text-sm text-secondary-500">
-                  {stat.completed} tamamlandı
+                  {stat.subtitle}
                 </p>
               </div>
             </div>

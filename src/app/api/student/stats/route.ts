@@ -19,11 +19,19 @@ export async function GET(request: NextRequest) {
 
     const studentId = authResult._id;
 
-    const [totalAssignments, completedAssignments, totalGoals, completedGoals, totalPlans, completedPlans] = await Promise.all([
+    const [totalAssignments, completedAssignments, submittedAssignments, gradedAssignments, totalGoals, completedGoals, totalPlans, completedPlans] = await Promise.all([
       Assignment.countDocuments({ studentId }),
       AssignmentSubmission.countDocuments({ 
         studentId, 
         status: 'completed' 
+      }),
+      AssignmentSubmission.countDocuments({ 
+        studentId, 
+        status: 'submitted' 
+      }),
+      AssignmentSubmission.countDocuments({ 
+        studentId, 
+        status: 'graded' 
       }),
       Goal.countDocuments({ studentId }),
       Goal.countDocuments({ 
@@ -40,6 +48,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       totalAssignments,
       completedAssignments,
+      submittedAssignments,
+      gradedAssignments,
       totalGoals,
       completedGoals,
       totalPlans,

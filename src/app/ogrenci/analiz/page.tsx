@@ -1,15 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'next/navigation';
-import { BarChart3, FileText, Target, TrendingUp, Download, Star, CheckCircle, Clock, MessageSquare } from 'lucide-react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line } from 'recharts';
-
-interface Student {
-  _id: string;
-  firstName: string;
-  lastName: string;
-}
+import { useState, useEffect } from 'react';
+import { BarChart3, FileText, Target, TrendingUp, Star, CheckCircle, Clock, MessageSquare } from 'lucide-react';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface AnalysisData {
   assignmentCompletion: number;
@@ -17,8 +10,7 @@ interface AnalysisData {
   gradedAssignments: number;
   gradingRate: number;
   averageGrade: number;
-  subjectStats: { [key: string]: number };
-  subjectDetails: { [key: string]: { 
+  subjectStats: { [key: string]: { 
     completion: number; 
     averageGrade: number; 
     totalAssignments: number; 
@@ -35,65 +27,24 @@ interface AnalysisData {
 }
 
 export default function StudentAnalysisPage() {
-  const params = useParams();
-  const studentId = params.id as string;
-  
-  const [student, setStudent] = useState<Student | null>(null);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchAnalysisData = useCallback(async () => {
+  useEffect(() => {
+    fetchAnalysisData();
+  }, []);
+
+  const fetchAnalysisData = async () => {
     try {
-      const [studentResponse, analysisResponse] = await Promise.all([
-        fetch(`/api/teacher/students/${studentId}`),
-        fetch(`/api/teacher/students/${studentId}/analysis`)
-      ]);
-
-      if (studentResponse.ok) {
-        const studentData = await studentResponse.json();
-        setStudent(studentData);
-      }
-
-      if (analysisResponse.ok) {
-        const analysisData = await analysisResponse.json();
-        setAnalysisData(analysisData);
+      const response = await fetch('/api/student/analysis');
+      if (response.ok) {
+        const data = await response.json();
+        setAnalysisData(data);
       }
     } catch (error) {
       console.error('Analysis data fetch error:', error);
     } finally {
       setLoading(false);
-    }
-  }, [studentId]);
-
-  useEffect(() => {
-    if (studentId) {
-      fetchAnalysisData();
-    }
-  }, [studentId, fetchAnalysisData]);
-
-  const generateReport = async () => {
-    try {
-      const response = await fetch(`/api/teacher/students/${studentId}/report`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(analysisData),
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${student?.firstName}_${student?.lastName}_raporu.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }
-    } catch (error) {
-      console.error('Report generation error:', error);
     }
   };
 
@@ -105,49 +56,27 @@ export default function StudentAnalysisPage() {
     );
   }
 
-  if (!student || !analysisData) {
+  if (!analysisData) {
     return (
       <div className="text-center py-12">
         <BarChart3 className="mx-auto h-12 w-12 text-secondary-400" />
         <h3 className="mt-2 text-sm font-medium text-secondary-900">Analiz verisi bulunamadı</h3>
         <p className="mt-1 text-sm text-secondary-500">
-          Bu öğrenci için analiz verisi mevcut değil.
+          Analiz verileriniz yüklenirken bir hata oluştu.
         </p>
       </div>
     );
   }
 
-  const pieData = [
-    { name: 'Tamamlanan', value: analysisData.assignmentCompletion, color: '#3B82F6' },
-    { name: 'Bekleyen', value: 100 - analysisData.assignmentCompletion, color: '#E5E7EB' }
-  ];
-
-  const radarData = Object.entries(analysisData.subjectStats).map(([subject, value]) => ({
-    subject,
-    value,
-    fullMark: 100
-  }));
-
   return (
     <div>
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-secondary-900">
-              {student.firstName} {student.lastName} - Analiz
-            </h1>
-            <p className="mt-2 text-secondary-600">
-              Detaylı performans analizi ve raporlama
-            </p>
-          </div>
-          <button
-            onClick={generateReport}
-            className="btn-primary flex items-center space-x-2"
-          >
-            <Download className="w-4 h-4" />
-            <span>Rapor İndir</span>
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold text-secondary-900">
+          Performans Analizim
+        </h1>
+        <p className="mt-2 text-secondary-600">
+          Ödev performansınızı ve ilerlemenizi detaylı olarak inceleyin
+        </p>
       </div>
 
       {/* Overview Cards */}
@@ -163,7 +92,7 @@ export default function StudentAnalysisPage() {
                 %{analysisData.assignmentCompletion}
               </p>
               <p className="text-xs text-secondary-500">
-                {analysisData.submittedAssignments}/{analysisData.submittedAssignments + (analysisData.submittedAssignments || 0)} teslim edildi
+                {analysisData.submittedAssignments} teslim edildi
               </p>
             </div>
           </div>
@@ -192,7 +121,7 @@ export default function StudentAnalysisPage() {
               <Star className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-secondary-600">Ortalama Not</p>
+              <p className="text-sm font-medium text-secondary-600">Ortalama Notum</p>
               <p className="text-2xl font-semibold text-secondary-900">
                 {analysisData.averageGrade || 0}
               </p>
@@ -226,7 +155,7 @@ export default function StudentAnalysisPage() {
         {/* Assignment Status Distribution */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Ödev Durum Dağılımı
+            Ödev Durum Dağılımım
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -261,11 +190,11 @@ export default function StudentAnalysisPage() {
         {/* Subject Performance with Grades */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Branş Bazlı Not Dağılımı
+            Branş Bazlı Not Dağılımım
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={Object.entries(analysisData.subjectDetails || {}).map(([subject, details]) => ({
+              <BarChart data={Object.entries(analysisData.subjectStats || {}).map(([subject, details]) => ({
                 subject: subject.length > 8 ? subject.substring(0, 8) + '...' : subject,
                 not: details.averageGrade,
                 teslim: details.completion
@@ -289,14 +218,14 @@ export default function StudentAnalysisPage() {
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={analysisData.monthlyProgress}>
+            <LineChart data={analysisData.monthlyProgress}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="assignments" fill="#3B82F6" name="Ödevler" />
-              <Bar dataKey="goals" fill="#10B981" name="Hedefler" />
-            </BarChart>
+              <Line type="monotone" dataKey="assignments" stroke="#3B82F6" name="Ödevler" strokeWidth={2} />
+              <Line type="monotone" dataKey="goals" stroke="#10B981" name="Hedefler" strokeWidth={2} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -304,10 +233,10 @@ export default function StudentAnalysisPage() {
       {/* Subject Details */}
       <div className="card">
         <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-          Branş Detayları
+          Branş Detaylarım
         </h3>
         <div className="space-y-6">
-          {Object.entries(analysisData.subjectDetails || {}).map(([subject, details]) => (
+          {Object.entries(analysisData.subjectStats || {}).map(([subject, details]) => (
             <div key={subject} className="border border-secondary-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-lg font-medium text-secondary-900">{subject}</h4>
@@ -330,7 +259,7 @@ export default function StudentAnalysisPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-secondary-600">Teslim Oranı</span>
+                    <span className="text-sm font-medium text-secondary-600">Teslim Oranım</span>
                     <span className="text-sm text-secondary-900">%{details.completion}</span>
                   </div>
                   <div className="w-full bg-secondary-200 rounded-full h-2">
@@ -343,7 +272,7 @@ export default function StudentAnalysisPage() {
                 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-secondary-600">Ortalama Not</span>
+                    <span className="text-sm font-medium text-secondary-600">Ortalama Notum</span>
                     <span className="text-sm text-secondary-900">{details.averageGrade || 0}/100</span>
                   </div>
                   <div className="w-full bg-secondary-200 rounded-full h-2">

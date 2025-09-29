@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, BookOpen, FileText, Target, TrendingUp, UserPlus } from 'lucide-react';
+import { Users, BookOpen, FileText, Target, TrendingUp, UserPlus, CheckCircle, Star, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TeacherDashboard() {
@@ -9,7 +9,11 @@ export default function TeacherDashboard() {
     totalStudents: 0,
     totalClasses: 0,
     totalAssignments: 0,
-    totalGoals: 0
+    totalGoals: 0,
+    submittedAssignments: 0,
+    gradedAssignments: 0,
+    pendingGrading: 0,
+    gradingRate: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -59,14 +63,16 @@ export default function TeacherDashboard() {
       value: stats.totalAssignments,
       icon: FileText,
       color: 'bg-yellow-500',
-      href: '/ogretmen/odevler'
+      href: '/ogretmen/odevler',
+      subtitle: `${stats.submittedAssignments} teslim edildi`
     },
     {
-      name: 'Aktif Hedefler',
-      value: stats.totalGoals,
-      icon: Target,
+      name: 'Değerlendirme Oranı',
+      value: `%${stats.gradingRate}`,
+      icon: CheckCircle,
       color: 'bg-purple-500',
-      href: '/ogretmen/hedefler'
+      href: '/ogretmen/odevler',
+      subtitle: `${stats.gradedAssignments} değerlendirildi`
     }
   ];
 
@@ -90,10 +96,100 @@ export default function TeacherDashboard() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-secondary-600">{stat.name}</p>
                 <p className="text-2xl font-semibold text-secondary-900">{stat.value}</p>
+                {stat.subtitle && (
+                  <p className="text-xs text-secondary-500">{stat.subtitle}</p>
+                )}
               </div>
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* Assignment Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="card">
+          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+            Ödev Durumu
+          </h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Clock className="h-5 w-5 text-yellow-500 mr-2" />
+                <span className="text-sm text-secondary-600">Bekleyen Değerlendirme</span>
+              </div>
+              <span className="text-lg font-semibold text-secondary-900">{stats.pendingGrading}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                <span className="text-sm text-secondary-600">Değerlendirildi</span>
+              </div>
+              <span className="text-lg font-semibold text-secondary-900">{stats.gradedAssignments}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <FileText className="h-5 w-5 text-blue-500 mr-2" />
+                <span className="text-sm text-secondary-600">Toplam Teslim</span>
+              </div>
+              <span className="text-lg font-semibold text-secondary-900">{stats.submittedAssignments}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+            Değerlendirme İlerlemesi
+          </h3>
+          <div className="flex items-center">
+            <div className="flex-1">
+              <div className="flex justify-between text-sm text-secondary-600 mb-2">
+                <span>Değerlendirilen</span>
+                <span>{stats.gradedAssignments}/{stats.submittedAssignments}</span>
+              </div>
+              <div className="w-full bg-secondary-200 rounded-full h-3">
+                <div 
+                  className="bg-primary-600 h-3 rounded-full transition-all duration-300"
+                  style={{ width: `${stats.gradingRate}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-secondary-600 mt-2">
+                %{stats.gradingRate} tamamlandı
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+            Hızlı Erişim
+          </h3>
+          <div className="space-y-3">
+            <Link
+              href="/ogretmen/odevler"
+              className="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <FileText className="h-5 w-5 text-blue-600 mr-3" />
+              <div>
+                <p className="font-medium text-secondary-900">Ödevleri Yönet</p>
+                <p className="text-sm text-secondary-600">
+                  {stats.totalAssignments} ödev
+                </p>
+              </div>
+            </Link>
+            <Link
+              href="/ogretmen/ogrenciler"
+              className="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+            >
+              <Users className="h-5 w-5 text-green-600 mr-3" />
+              <div>
+                <p className="font-medium text-secondary-900">Öğrenci Analizleri</p>
+                <p className="text-sm text-secondary-600">
+                  {stats.totalStudents} öğrenci
+                </p>
+              </div>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions */}

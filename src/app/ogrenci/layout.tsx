@@ -55,6 +55,7 @@ export default function StudentLayout({
     { name: 'Ödevlerim', href: '/ogrenci/odevler', icon: FileText },
     { name: 'Hedeflerim', href: '/ogrenci/hedefler', icon: Target },
     { name: 'Planlarım', href: '/ogrenci/planlar', icon: BookOpen },
+    { name: 'Analizim', href: '/ogrenci/analiz', icon: BarChart3 },
   ];
 
   return (

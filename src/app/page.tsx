@@ -18,13 +18,9 @@ interface User {
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [countdown, setCountdown] = useState(2);
   const router = useRouter();
 
   useEffect(() => {
-    let countdownInterval: NodeJS.Timeout | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
-    
     const checkAuth = async () => {
       try {
         console.log('Checking auth...');
@@ -43,34 +39,7 @@ export default function HomePage() {
           
           if (data.user) {
             setUser(data.user);
-            console.log('User found, starting countdown...');
-            
-            // Start countdown and auto-redirect
-            countdownInterval = setInterval(() => {
-              setCountdown(prev => {
-                console.log('Countdown:', prev);
-                if (prev <= 1) {
-                  if (countdownInterval) clearInterval(countdownInterval);
-                  console.log('Redirecting to:', data.user.role);
-                  switch (data.user.role) {
-                    case 'admin':
-                      router.push('/admin');
-                      break;
-                    case 'teacher':
-                      router.push('/ogretmen');
-                      break;
-                    case 'student':
-                      router.push('/ogrenci');
-                      break;
-                    default:
-                      console.log('Unknown role, staying on homepage');
-                      break;
-                  }
-                  return 0;
-                }
-                return prev - 1;
-              });
-            }, 1000);
+            console.log('User found, staying on homepage');
           } else {
             console.log('No user data found');
             setUser(null);
@@ -89,24 +58,7 @@ export default function HomePage() {
     };
 
     checkAuth();
-
-    // Fallback timeout - if auth check takes too long, show homepage
-    timeoutId = setTimeout(() => {
-      console.log('Auth check timeout, showing homepage');
-      setLoading(false);
-      setUser(null);
-    }, 5000); // 5 second timeout
-
-    // Cleanup function
-    return () => {
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-      }
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [router]);
+  }, []);
 
 
   // Show loading spinner while checking auth
@@ -115,16 +67,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-secondary-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-secondary-600">Yönlendiriliyor...</p>
-          <button
-            onClick={() => {
-              setLoading(false);
-              setUser(null);
-            }}
-            className="mt-4 text-sm text-primary-600 hover:text-primary-500 underline"
-          >
-            Beklemek istemiyorum
-          </button>
+          <p className="text-secondary-600">Yükleniyor...</p>
         </div>
       </div>
     );
@@ -139,19 +82,10 @@ export default function HomePage() {
               Hoş geldin, {user.firstName}! 👋
             </h1>
             <p className="text-xl text-secondary-700 mb-8">
-              {user.role === 'admin' && 'Yönetici paneline yönlendiriliyorsunuz...'}
-              {user.role === 'teacher' && 'Öğretmen paneline yönlendiriliyorsunuz...'}
-              {user.role === 'student' && 'Öğrenci paneline yönlendiriliyorsunuz...'}
+              Dashboard'unuza erişmek için aşağıdaki butonlardan birini seçin
             </p>
-            <div className="mb-8">
-              <div className="inline-flex items-center px-4 py-2 bg-primary-100 rounded-full">
-                <div className="w-3 h-3 bg-primary-600 rounded-full animate-pulse mr-3"></div>
-                <span className="text-primary-700 font-medium">
-                  {countdown} saniye sonra yönlendirileceksiniz
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <button
                 onClick={() => {
                   switch (user.role) {
@@ -187,6 +121,87 @@ export default function HomePage() {
               >
                 Çıkış Yap
               </button>
+            </div>
+
+            {/* Dashboard quick access cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+              {user.role === 'admin' && (
+                <>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/admin')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Yönetici Paneli</h3>
+                    <p className="text-secondary-600 text-sm">Sistem yönetimi ve genel bakış</p>
+                  </div>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/admin/ogretmenler')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Öğretmenler</h3>
+                    <p className="text-secondary-600 text-sm">Öğretmen yönetimi</p>
+                  </div>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/admin/istekler')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Başvurular</h3>
+                    <p className="text-secondary-600 text-sm">Öğretmen başvuruları</p>
+                  </div>
+                </>
+              )}
+              
+              {user.role === 'teacher' && (
+                <>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/ogretmen')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Öğretmen Paneli</h3>
+                    <p className="text-secondary-600 text-sm">Ana dashboard</p>
+                  </div>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/ogretmen/ogrenciler')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Öğrencilerim</h3>
+                    <p className="text-secondary-600 text-sm">Öğrenci yönetimi</p>
+                  </div>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/ogretmen/odevler')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <BookOpen className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Ödevler</h3>
+                    <p className="text-secondary-600 text-sm">Ödev yönetimi</p>
+                  </div>
+                </>
+              )}
+              
+              {user.role === 'student' && (
+                <>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/ogrenci')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Öğrenci Paneli</h3>
+                    <p className="text-secondary-600 text-sm">Ana dashboard</p>
+                  </div>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/ogrenci/odevler')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <BookOpen className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Ödevlerim</h3>
+                    <p className="text-secondary-600 text-sm">Ödev takibi</p>
+                  </div>
+                  <div className="card text-center hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/ogrenci/hedefler')}>
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Target className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-secondary-900 mb-2">Hedeflerim</h3>
+                    <p className="text-secondary-600 text-sm">Hedef takibi</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

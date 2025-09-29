@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { User, Class, Assignment, Goal } from '@/lib/models';
+import { User, Class, Assignment, Goal, AssignmentSubmission } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     const teacherId = authResult._id;
 
-    const [totalStudents, totalClasses, totalAssignments, totalGoals] = await Promise.all([
+    const [totalStudents, totalClasses, totalAssignments, totalGoals, submittedAssignments, gradedAssignments, pendingGrading] = await Promise.all([
       User.countDocuments({ role: 'student' }),
       Class.countDocuments({ 
         $or: [
@@ -28,14 +28,35 @@ export async function GET(request: NextRequest) {
         ]
       }),
       Assignment.countDocuments({ teacherId }),
-      Goal.countDocuments({ teacherId })
+      Goal.countDocuments({ teacherId }),
+      AssignmentSubmission.countDocuments({ 
+        assignmentId: { $in: await Assignment.find({ teacherId }).distinct('_id') },
+        status: 'submitted'
+      }),
+      AssignmentSubmission.countDocuments({ 
+        assignmentId: { $in: await Assignment.find({ teacherId }).distinct('_id') },
+        status: 'graded'
+      }),
+      AssignmentSubmission.countDocuments({ 
+        assignmentId: { $in: await Assignment.find({ teacherId }).distinct('_id') },
+        status: 'submitted'
+      })
     ]);
+
+    // Calculate grading rate
+    const gradingRate = submittedAssignments > 0 
+      ? Math.round((gradedAssignments / submittedAssignments) * 100)
+      : 0;
 
     return NextResponse.json({
       totalStudents,
       totalClasses,
       totalAssignments,
-      totalGoals
+      totalGoals,
+      submittedAssignments,
+      gradedAssignments,
+      pendingGrading,
+      gradingRate
     });
   } catch (error) {
     console.error('Teacher stats error:', error);

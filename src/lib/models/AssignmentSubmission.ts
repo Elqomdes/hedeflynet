@@ -3,10 +3,19 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IAssignmentSubmission extends Document {
   assignmentId: mongoose.Types.ObjectId;
   studentId: mongoose.Types.ObjectId;
-  status: 'completed' | 'incomplete' | 'not_started';
+  status: 'completed' | 'incomplete' | 'not_started' | 'submitted' | 'graded' | 'late';
   grade?: number;
+  maxGrade?: number;
   feedback?: string;
+  teacherFeedback?: string;
   submittedAt?: Date;
+  gradedAt?: Date;
+  content?: string;
+  attachments?: {
+    type: 'pdf' | 'video' | 'link' | 'image';
+    url: string;
+    name: string;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,7 +33,7 @@ const AssignmentSubmissionSchema = new Schema<IAssignmentSubmission>({
   },
   status: {
     type: String,
-    enum: ['completed', 'incomplete', 'not_started'],
+    enum: ['completed', 'incomplete', 'not_started', 'submitted', 'graded', 'late'],
     default: 'not_started'
   },
   grade: {
@@ -32,13 +41,45 @@ const AssignmentSubmissionSchema = new Schema<IAssignmentSubmission>({
     min: 0,
     max: 100
   },
+  maxGrade: {
+    type: Number,
+    default: 100,
+    min: 1,
+    max: 100
+  },
   feedback: {
     type: String,
     maxlength: 1000
   },
+  teacherFeedback: {
+    type: String,
+    maxlength: 2000
+  },
   submittedAt: {
     type: Date
-  }
+  },
+  gradedAt: {
+    type: Date
+  },
+  content: {
+    type: String,
+    maxlength: 5000
+  },
+  attachments: [{
+    type: {
+      type: String,
+      enum: ['pdf', 'video', 'link', 'image'],
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    },
+    name: {
+      type: String,
+      required: true
+    }
+  }]
 }, {
   timestamps: true
 });

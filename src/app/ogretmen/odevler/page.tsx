@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink } from 'lucide-react';
+import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye } from 'lucide-react';
 
 interface Attachment {
   type: 'pdf' | 'video' | 'link';
@@ -16,6 +16,7 @@ interface Assignment {
   type: 'individual' | 'class';
   dueDate: string;
   attachments: Attachment[];
+  maxGrade?: number;
   classId?: {
     _id: string;
     name: string;
@@ -29,6 +30,28 @@ interface Assignment {
   updatedAt: string;
 }
 
+interface Submission {
+  _id: string;
+  studentId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  status: 'completed' | 'incomplete' | 'not_started' | 'submitted' | 'graded' | 'late';
+  grade?: number;
+  maxGrade?: number;
+  teacherFeedback?: string;
+  submittedAt?: string;
+  gradedAt?: string;
+  content?: string;
+  attachments?: {
+    type: 'pdf' | 'video' | 'link' | 'image';
+    url: string;
+    name: string;
+  }[];
+}
+
 export default function TeacherAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +60,11 @@ export default function TeacherAssignments() {
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [gradingSubmission, setGradingSubmission] = useState<Submission | null>(null);
+  const [grade, setGrade] = useState<number>(0);
+  const [teacherFeedback, setTeacherFeedback] = useState<string>('');
 
   useEffect(() => {
     fetchAssignments();
@@ -101,6 +129,92 @@ export default function TeacherAssignments() {
       }
     } catch (error) {
       console.error('Delete assignment error:', error);
+    }
+  };
+
+  const fetchSubmissions = async (assignmentId: string) => {
+    try {
+      const response = await fetch(`/api/teacher/assignments/${assignmentId}/submissions`);
+      if (response.ok) {
+        const data = await response.json();
+        setSubmissions(data);
+      }
+    } catch (error) {
+      console.error('Fetch submissions error:', error);
+    }
+  };
+
+  const handleViewSubmissions = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
+    fetchSubmissions(assignment._id);
+  };
+
+  const handleGradeSubmission = async () => {
+    if (!gradingSubmission) return;
+
+    try {
+      const response = await fetch(`/api/teacher/assignments/submissions/${gradingSubmission._id}/grade`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          grade: grade,
+          teacherFeedback: teacherFeedback,
+          status: 'graded'
+        })
+      });
+
+      if (response.ok) {
+        // Refresh submissions
+        if (selectedAssignment) {
+          fetchSubmissions(selectedAssignment._id);
+        }
+        setGradingSubmission(null);
+        setGrade(0);
+        setTeacherFeedback('');
+        alert('Ödev başarıyla değerlendirildi');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Değerlendirme yapılamadı');
+      }
+    } catch (error) {
+      console.error('Grade submission error:', error);
+      alert('Değerlendirme yapılamadı');
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'graded':
+        return 'bg-green-100 text-green-800';
+      case 'submitted':
+        return 'bg-blue-100 text-blue-800';
+      case 'late':
+        return 'bg-red-100 text-red-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'incomplete':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'graded':
+        return 'Değerlendirildi';
+      case 'submitted':
+        return 'Teslim Edildi';
+      case 'late':
+        return 'Geç Teslim';
+      case 'completed':
+        return 'Tamamlandı';
+      case 'incomplete':
+        return 'Eksik';
+      default:
+        return 'Bekliyor';
     }
   };
 
@@ -233,14 +347,23 @@ export default function TeacherAssignments() {
                 
                 <div className="ml-4 flex space-x-2">
                   <button
+                    onClick={() => handleViewSubmissions(assignment)}
+                    className="p-2 text-blue-400 hover:text-blue-600"
+                    title="Teslimleri Görüntüle"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => setEditingAssignment(assignment)}
                     className="p-2 text-secondary-400 hover:text-secondary-600"
+                    title="Düzenle"
                   >
                     <Edit3 className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteAssignment(assignment._id)}
                     className="p-2 text-red-400 hover:text-red-600"
+                    title="Sil"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -270,6 +393,7 @@ export default function TeacherAssignments() {
                   classId: formData.get('classId'),
                   studentId: formData.get('studentId'),
                   dueDate: formData.get('dueDate'),
+                  maxGrade: formData.get('maxGrade') ? parseInt(formData.get('maxGrade') as string) : 100,
                   attachments: []
                 };
 
@@ -352,6 +476,20 @@ export default function TeacherAssignments() {
                   
                   <div>
                     <label className="block text-sm font-medium text-secondary-700">
+                      Maksimum Puan
+                    </label>
+                    <input
+                      type="number"
+                      name="maxGrade"
+                      min="1"
+                      max="100"
+                      defaultValue={editingAssignment?.maxGrade || 100}
+                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700">
                       Sınıf (Sınıf Ödevi için)
                     </label>
                     <select
@@ -404,6 +542,175 @@ export default function TeacherAssignments() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Submissions Modal */}
+      {selectedAssignment && (
+        <div className="fixed inset-0 bg-secondary-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-secondary-900">
+                  {selectedAssignment.title} - Teslimler
+                </h3>
+                <button
+                  onClick={() => {
+                    setSelectedAssignment(null);
+                    setSubmissions([]);
+                  }}
+                  className="text-secondary-400 hover:text-secondary-600"
+                >
+                  <span className="sr-only">Kapat</span>
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {submissions.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="mx-auto h-12 w-12 text-secondary-400" />
+                  <h3 className="mt-2 text-sm font-medium text-secondary-900">Henüz teslim yok</h3>
+                  <p className="mt-1 text-sm text-secondary-500">
+                    Bu ödev için henüz teslim edilmiş çalışma bulunmuyor.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {submissions.map((submission) => (
+                    <div key={submission._id} className="bg-white border border-secondary-200 rounded-lg p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h4 className="text-lg font-medium text-secondary-900">
+                              {submission.studentId.firstName} {submission.studentId.lastName}
+                            </h4>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(submission.status)}`}>
+                              {getStatusText(submission.status)}
+                            </span>
+                            {submission.grade !== undefined && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                                <Star className="h-3 w-3 mr-1" />
+                                {submission.grade}/{submission.maxGrade || 100}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <p className="mt-1 text-sm text-secondary-600">
+                            {submission.studentId.email}
+                          </p>
+                          
+                          {submission.submittedAt && (
+                            <p className="mt-1 text-sm text-secondary-500">
+                              Teslim Tarihi: {new Date(submission.submittedAt).toLocaleString('tr-TR')}
+                            </p>
+                          )}
+                          
+                          {submission.content && (
+                            <div className="mt-3">
+                              <h5 className="text-sm font-medium text-secondary-900 mb-2">Ödev İçeriği:</h5>
+                              <div className="bg-secondary-50 p-3 rounded-md">
+                                <p className="text-sm text-secondary-700 whitespace-pre-wrap">{submission.content}</p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {submission.teacherFeedback && (
+                            <div className="mt-3">
+                              <h5 className="text-sm font-medium text-secondary-900 mb-2">Geri Bildirimim:</h5>
+                              <div className="bg-blue-50 p-3 rounded-md">
+                                <p className="text-sm text-secondary-700 whitespace-pre-wrap">{submission.teacherFeedback}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="ml-4 flex space-x-2">
+                          {submission.status === 'submitted' && (
+                            <button
+                              onClick={() => {
+                                setGradingSubmission(submission);
+                                setGrade(submission.grade || 0);
+                                setTeacherFeedback(submission.teacherFeedback || '');
+                              }}
+                              className="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Değerlendir
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Grading Modal */}
+      {gradingSubmission && (
+        <div className="fixed inset-0 bg-secondary-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-secondary-900 mb-4">
+                Ödev Değerlendir - {gradingSubmission.studentId.firstName} {gradingSubmission.studentId.lastName}
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700">
+                    Puan (0-{gradingSubmission.maxGrade || 100})
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={gradingSubmission.maxGrade || 100}
+                    value={grade}
+                    onChange={(e) => setGrade(parseInt(e.target.value) || 0)}
+                    className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700">
+                    Geri Bildirim
+                  </label>
+                  <textarea
+                    value={teacherFeedback}
+                    onChange={(e) => setTeacherFeedback(e.target.value)}
+                    rows={4}
+                    className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Öğrenciye geri bildirim yazın..."
+                  />
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGradingSubmission(null);
+                    setGrade(0);
+                    setTeacherFeedback('');
+                  }}
+                  className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleGradeSubmission}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2 inline" />
+                  Değerlendir
+                </button>
+              </div>
             </div>
           </div>
         </div>

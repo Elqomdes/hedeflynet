@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Clock, CheckCircle, AlertCircle, Download, ExternalLink } from 'lucide-react';
+import { FileText, Clock, CheckCircle, AlertCircle, Download, ExternalLink, Star, MessageSquare } from 'lucide-react';
 
 interface Assignment {
   _id: string;
@@ -9,6 +9,7 @@ interface Assignment {
   description: string;
   type: 'individual' | 'class';
   dueDate: string;
+  maxGrade?: number;
   attachments: {
     type: 'pdf' | 'video' | 'link';
     url: string;
@@ -22,17 +23,26 @@ interface Assignment {
     name: string;
   };
   submission?: {
-    status: 'pending' | 'submitted' | 'completed' | 'late';
+    status: 'pending' | 'submitted' | 'completed' | 'late' | 'graded';
     submittedAt?: string;
     grade?: number;
+    maxGrade?: number;
     feedback?: string;
+    teacherFeedback?: string;
+    gradedAt?: string;
+    content?: string;
+    attachments?: {
+      type: 'pdf' | 'video' | 'link' | 'image';
+      url: string;
+      name: string;
+    }[];
   } | null;
 }
 
 export default function StudentAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'completed' | 'graded'>('all');
   const [submittingAssignment, setSubmittingAssignment] = useState<string | null>(null);
   const [submissionContent, setSubmissionContent] = useState('');
 
@@ -65,6 +75,8 @@ export default function StudentAssignments() {
     }
 
     switch (assignment.submission.status) {
+      case 'graded':
+        return <Star className="h-5 w-5 text-green-500" />;
       case 'completed':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'submitted':
@@ -83,6 +95,8 @@ export default function StudentAssignments() {
     }
 
     switch (assignment.submission.status) {
+      case 'graded':
+        return 'Değerlendirildi';
       case 'completed':
         return 'Tamamlandı';
       case 'submitted':
@@ -101,6 +115,8 @@ export default function StudentAssignments() {
     }
 
     switch (assignment.submission.status) {
+      case 'graded':
+        return 'bg-green-100 text-green-800';
       case 'completed':
         return 'bg-green-100 text-green-800';
       case 'submitted':
@@ -150,6 +166,7 @@ export default function StudentAssignments() {
     if (filter === 'pending') return !assignment.submission;
     if (filter === 'submitted') return assignment.submission?.status === 'submitted';
     if (filter === 'completed') return assignment.submission?.status === 'completed';
+    if (filter === 'graded') return assignment.submission?.status === 'graded';
     return true;
   });
 
@@ -175,6 +192,7 @@ export default function StudentAssignments() {
             <option value="pending">Bekleyen</option>
             <option value="submitted">Teslim Edilen</option>
             <option value="completed">Tamamlanan</option>
+            <option value="graded">Değerlendirilen</option>
           </select>
         </div>
       </div>
@@ -223,9 +241,10 @@ export default function StudentAssignments() {
                         Sınıf: {assignment.classId.name}
                       </div>
                     )}
-                    {assignment.submission?.grade && (
-                      <div className="font-medium text-primary-600">
-                        Not: {assignment.submission.grade}
+                    {assignment.submission?.grade !== undefined && (
+                      <div className="font-medium text-primary-600 flex items-center">
+                        <Star className="h-4 w-4 mr-1" />
+                        Not: {assignment.submission.grade}/{assignment.submission.maxGrade || assignment.maxGrade || 100}
                       </div>
                     )}
                   </div>
@@ -252,10 +271,18 @@ export default function StudentAssignments() {
                     </div>
                   )}
 
-                  {assignment.submission?.feedback && (
-                    <div className="mt-4 p-3 bg-secondary-50 rounded-md">
-                      <h4 className="text-sm font-medium text-secondary-900 mb-1">Geri Bildirim:</h4>
-                      <p className="text-sm text-secondary-700">{assignment.submission.feedback}</p>
+                  {assignment.submission?.teacherFeedback && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded-md">
+                      <h4 className="text-sm font-medium text-secondary-900 mb-1 flex items-center">
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Öğretmen Geri Bildirimi:
+                      </h4>
+                      <p className="text-sm text-secondary-700 whitespace-pre-wrap">{assignment.submission.teacherFeedback}</p>
+                      {assignment.submission.gradedAt && (
+                        <p className="text-xs text-secondary-500 mt-2">
+                          Değerlendirme Tarihi: {new Date(assignment.submission.gradedAt).toLocaleString('tr-TR')}
+                        </p>
+                      )}
                     </div>
                   )}
 

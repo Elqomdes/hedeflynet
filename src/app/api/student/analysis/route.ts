@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import { Assignment, AssignmentSubmission, Goal } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import { connectDB } from '@/lib/mongodb';
+import Assignment from '@/lib/models/Assignment';
+import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
+import Goal from '@/lib/models/Goal';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
     const authResult = await getCurrentUser(request);
-    if (!authResult || authResult.role !== 'teacher') {
+    if (!authResult || authResult.role !== 'student') {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -20,7 +19,7 @@ export async function GET(
 
     await connectDB();
 
-    const studentId = params.id;
+    const studentId = authResult._id;
 
     // Get assignment statistics
     const totalAssignments = await Assignment.countDocuments({ studentId });
@@ -31,10 +30,6 @@ export async function GET(
     const gradedAssignments = await AssignmentSubmission.countDocuments({ 
       studentId, 
       status: 'graded' 
-    });
-    const completedAssignments = await AssignmentSubmission.countDocuments({ 
-      studentId, 
-      status: 'completed' 
     });
     
     const assignmentCompletion = totalAssignments > 0 
@@ -71,11 +66,16 @@ export async function GET(
       ? Math.round((completedGoals / totalGoals) * 100)
       : 0;
 
-    // Get real subject statistics from assignments
-    const subjectStats: { [key: string]: number } = {};
+    // Get subject statistics
     const assignments = await Assignment.find({ studentId }).populate('classId', 'name');
+    const subjectStats: { [key: string]: { 
+      completion: number; 
+      averageGrade: number; 
+      totalAssignments: number; 
+      submittedAssignments: number; 
+      gradedAssignments: number 
+    }} = {};
     
-    // Group assignments by subject (using class name as subject for now)
     const subjectGroups: { [key: string]: any[] } = {};
     assignments.forEach(assignment => {
       const subject = (assignment.classId as any)?.name || 'Genel';
@@ -85,9 +85,6 @@ export async function GET(
       subjectGroups[subject].push(assignment);
     });
 
-    // Calculate average completion rate and grade per subject
-    const subjectDetails: { [key: string]: { completion: number; averageGrade: number; totalAssignments: number; submittedAssignments: number; gradedAssignments: number } } = {};
-    
     for (const [subject, subjectAssignments] of Object.entries(subjectGroups)) {
       const subjectAssignmentIds = subjectAssignments.map(a => a._id);
       const submittedInSubject = await AssignmentSubmission.countDocuments({
@@ -102,7 +99,6 @@ export async function GET(
         status: 'graded'
       });
 
-      // Get average grade for this subject
       const subjectGradedSubmissions = await AssignmentSubmission.find({
         assignmentId: { $in: subjectAssignmentIds },
         studentId,
@@ -123,8 +119,7 @@ export async function GET(
         ? Math.round((submittedInSubject / subjectAssignments.length) * 100)
         : 0;
       
-      subjectStats[subject] = completion;
-      subjectDetails[subject] = {
+      subjectStats[subject] = {
         completion,
         averageGrade: subjectAverageGrade,
         totalAssignments: subjectAssignments.length,
@@ -133,13 +128,8 @@ export async function GET(
       };
     }
 
-    // If no subjects found, use default values
-    if (Object.keys(subjectStats).length === 0) {
-      subjectStats['Genel'] = assignmentCompletion;
-    }
-
     // Calculate overall performance
-    const subjectAverages = Object.values(subjectStats);
+    const subjectAverages = Object.values(subjectStats).map(s => s.completion);
     const averageSubjectPerformance = subjectAverages.length > 0 
       ? subjectAverages.reduce((a, b) => a + b, 0) / subjectAverages.length 
       : 0;
@@ -148,7 +138,7 @@ export async function GET(
       (assignmentCompletion + goalsProgress + averageSubjectPerformance) / 3
     );
 
-    // Generate real monthly progress data
+    // Generate monthly progress data
     const monthlyProgress = [];
     const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
     
@@ -180,7 +170,6 @@ export async function GET(
       gradingRate,
       averageGrade,
       subjectStats,
-      subjectDetails,
       goalsProgress,
       overallPerformance,
       monthlyProgress
@@ -188,7 +177,7 @@ export async function GET(
   } catch (error) {
     console.error('Student analysis error:', error);
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: 'Server error' },
       { status: 500 }
     );
   }
