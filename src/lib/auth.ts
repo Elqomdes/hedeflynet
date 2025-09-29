@@ -3,10 +3,10 @@ import { NextRequest } from 'next/server';
 import connectDB from './mongodb';
 import { User } from './models';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-jwt-secret-for-development-only-change-in-production-32chars';
 
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  JWT_SECRET environment variable is not set. Using fallback secret. This is not secure for production!');
 }
 
 if (JWT_SECRET.length < 32) {
