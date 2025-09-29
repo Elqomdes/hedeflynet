@@ -12,7 +12,7 @@ Aşağıdaki environment variables'ları `.env.local` dosyasında tanımlayın:
 
 ```env
 # MongoDB Connection
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority&appName=appname
+MONGODB_URI=mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/?retryWrites=true&w=majority&appName=hedeflydatas
 
 # JWT Secret (minimum 32 karakter)
 JWT_SECRET=your-super-secret-jwt-key-that-is-at-least-32-characters-long
@@ -74,4 +74,6 @@ npm start
 - MongoDB Atlas monitoring kullanın
 - Vercel Analytics aktif
 - Error logging mevcut
+
+
 

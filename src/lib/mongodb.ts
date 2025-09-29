@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 
 // MongoDB connection string - MUST be provided via environment variable
 const MONGODB_URI = process.env.MONGODB_URI;
+// Preferred database name (defaults to 'hedeflydatas' if not provided)
+const MONGODB_DB = process.env.MONGODB_DB || 'hedeflydatas';
 
 // Don't throw error during build time
 if (!MONGODB_URI && process.env.NODE_ENV !== 'production') {
@@ -46,10 +48,11 @@ async function connectDB() {
       connectTimeoutMS: 10000,
       retryWrites: true,
       w: 'majority' as const,
+      dbName: MONGODB_DB,
     };
 
     cached!.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
-      console.log('MongoDB connected successfully');
+      console.log(`MongoDB connected successfully (db: ${MONGODB_DB})`);
       return mongooseInstance;
     }).catch((error) => {
       console.error('MongoDB connection failed:', error);

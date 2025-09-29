@@ -23,7 +23,7 @@
 
 ```bash
 # MongoDB
-MONGODB_URI=mongodb+srv://hedefly:hedefly123@hedefly.8qj8j.mongodb.net/hedefly?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/?retryWrites=true&w=majority&appName=hedeflydatas
 
 # JWT Secret (32 karakterden uzun olmalı)
 JWT_SECRET=your-super-secure-jwt-secret-key-32-chars-minimum

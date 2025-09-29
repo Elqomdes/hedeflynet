@@ -32,7 +32,7 @@
 
 ### 1. Environment Variables
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
+MONGODB_URI=mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/?retryWrites=true&w=majority&appName=hedeflydatas
 JWT_SECRET=your-super-secret-jwt-key-that-is-at-least-32-characters-long
 NODE_ENV=production
 ```
@@ -88,4 +88,6 @@ Route (app)                                 Size     First Load JS
 **Hedefly platformu production'a hazır!** 
 
 Tüm teknik gereksinimler karşılandı ve güvenlik standartlarına uygun hale getirildi. Platform artık yayınlanabilir durumda.
+
+
 

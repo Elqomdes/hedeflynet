@@ -6,7 +6,7 @@
 Vercel dashboard'unda şu environment variable'ları ayarlayın:
 
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/?retryWrites=true&w=majority&appName=hedeflydatas
 ```
 
 **Önemli:** MongoDB Atlas connection string'inizi `MONGODB_URI` adıyla ekleyin.
@@ -121,3 +121,5 @@ Herhangi bir sorun yaşarsanız:
 2. MongoDB Atlas logs'unu inceleyin
 3. Test endpoint'lerini çalıştırın
 4. Environment variable'ları doğrulayın
+
+

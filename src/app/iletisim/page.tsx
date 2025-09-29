@@ -19,8 +19,8 @@ export default function ContactPage() {
 
   // EmailJS configuration
   const EMAILJS_SERVICE_ID = 'service_iqwh4mo';
-  const EMAILJS_TEMPLATE_ID = 'template_contact';
-  const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '';
+  const EMAILJS_TEMPLATE_ID = 'template_ypcggf8';
+  const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'quNu5gUgfBaEvzkq9';
 
   useEffect(() => {
     // EmailJS'i initialize et - sadece public key varsa
