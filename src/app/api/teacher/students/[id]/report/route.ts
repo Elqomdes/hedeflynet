@@ -34,14 +34,17 @@ export async function POST(
     // Ensure required fields exist with defaults
     const validatedData = {
       assignmentCompletion: analysisData.assignmentCompletion || 0,
-      subjectStats: analysisData.subjectStats || {},
-      goalsProgress: analysisData.goalsProgress || 0,
-      overallPerformance: analysisData.overallPerformance || 0,
+      totalAssignments: analysisData.totalAssignments || 0,
       submittedAssignments: analysisData.submittedAssignments || 0,
       gradedAssignments: analysisData.gradedAssignments || 0,
+      gradingRate: analysisData.gradingRate || 0,
       averageGrade: analysisData.averageGrade || 0,
+      subjectStats: analysisData.subjectStats || {},
       subjectDetails: analysisData.subjectDetails || {},
-      monthlyProgress: analysisData.monthlyProgress || []
+      goalsProgress: analysisData.goalsProgress || 0,
+      overallPerformance: analysisData.overallPerformance || 0,
+      monthlyProgress: analysisData.monthlyProgress || [],
+      assignmentTitleCounts: analysisData.assignmentTitleCounts || []
     };
 
     await connectDB();
@@ -55,6 +58,14 @@ export async function POST(
       return NextResponse.json(
         { error: 'Öğrenci bulunamadı' },
         { status: 404 }
+      );
+    }
+
+    // Validate student data
+    if (!student.firstName || !student.lastName) {
+      return NextResponse.json(
+        { error: 'Öğrenci bilgileri eksik' },
+        { status: 400 }
       );
     }
 
@@ -77,11 +88,21 @@ export async function POST(
 
     // Generate PDF content using jsPDF
     const pdfBuffer = await generatePDFContent(student, validatedData);
+    
+    if (!pdfBuffer || pdfBuffer.length === 0) {
+      throw new Error('PDF oluşturulamadı - boş buffer');
+    }
+
+    // Create safe filename
+    const safeFirstName = student.firstName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
+    const safeLastName = student.lastName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
+    const filename = `${safeFirstName}_${safeLastName}_raporu.pdf`;
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${student.firstName}_${student.lastName}_raporu.pdf"`
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Length': pdfBuffer.length.toString()
       }
     });
   } catch (error) {
@@ -137,6 +158,11 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
     // Check if jsPDF is available
     if (!jsPDF) {
       throw new Error('jsPDF kütüphanesi yüklenemedi');
+    }
+    
+    // Validate student data
+    if (!student || !student.firstName || !student.lastName) {
+      throw new Error('Öğrenci bilgileri eksik');
     }
     
     const doc = new jsPDF();
@@ -274,8 +300,13 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
   }
   
   // Split long text into multiple lines
-  const splitText = doc.splitTextToSize(recommendation, 170);
-  doc.text(splitText, 20, yPos);
+  try {
+    const splitText = doc.splitTextToSize(recommendation, 170);
+    doc.text(splitText, 20, yPos);
+  } catch (textError) {
+    console.warn('Text splitting failed, using original text:', textError);
+    doc.text(recommendation, 20, yPos);
+  }
   
   // Footer
   const pageCount = (doc as any).getNumberOfPages ? (doc as any).getNumberOfPages() : 1;
@@ -287,7 +318,13 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
     doc.text('Hedefly Eğitim Sistemi', 170, 285);
   }
   
-    return Buffer.from(doc.output('arraybuffer'));
+    // Generate PDF buffer
+    const pdfOutput = doc.output('arraybuffer');
+    if (!pdfOutput || pdfOutput.byteLength === 0) {
+      throw new Error('PDF oluşturulamadı - boş çıktı');
+    }
+    
+    return Buffer.from(pdfOutput);
   } catch (error) {
     console.error('PDF generation error:', error);
     throw new Error(`PDF oluşturma hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
