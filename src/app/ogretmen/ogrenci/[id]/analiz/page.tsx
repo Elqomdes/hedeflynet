@@ -86,27 +86,47 @@ export default function StudentAnalysisPage() {
         body: JSON.stringify(analysisData),
       });
 
+      const contentType = response.headers.get('content-type') || '';
+      
       if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${student.firstName}_${student.lastName}_raporu.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
-        // Show success message
-        alert('Rapor başarıyla indirildi!');
+        if (contentType.includes('application/pdf')) {
+          // PDF response
+          const blob = await response.blob();
+          if (blob.size === 0) {
+            throw new Error('PDF dosyası boş geldi');
+          }
+          
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${student.firstName}_${student.lastName}_raporu.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          alert('Rapor başarıyla indirildi!');
+        } else if (contentType.includes('application/json')) {
+          // JSON response (fallback)
+          const data = await response.json();
+          if (data.url) {
+            // Report created, show link
+            alert(`Rapor oluşturuldu! Görüntülemek için: ${window.location.origin}${data.url}`);
+          } else {
+            throw new Error(data.error || 'Bilinmeyen yanıt formatı');
+          }
+        } else {
+          throw new Error('Beklenmeyen yanıt formatı');
+        }
       } else {
-        const contentType = response.headers.get('content-type') || '';
+        // Error response
         let errorMessage = 'Bilinmeyen hata';
         let details: string | undefined = undefined;
+        
         try {
           if (contentType.includes('application/json')) {
             const errorData = await response.json();
-            console.error('Report generation error response (json):', errorData);
+            console.error('Report generation error response:', errorData);
             errorMessage = errorData?.error || errorMessage;
             details = errorData?.details;
           } else {
@@ -116,6 +136,7 @@ export default function StudentAnalysisPage() {
           }
         } catch (parseErr) {
           console.error('Failed to parse error response:', parseErr);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
 
         const finalMessage = details ? `${errorMessage}\n\nDetay: ${details}` : errorMessage;
@@ -123,7 +144,8 @@ export default function StudentAnalysisPage() {
       }
     } catch (error) {
       console.error('Report generation error:', error);
-      alert(`Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.\n\nHata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
+      alert(`Rapor oluşturulurken hata oluştu:\n\n${errorMessage}\n\nLütfen tekrar deneyin.`);
     } finally {
       setGeneratingReport(false);
     }

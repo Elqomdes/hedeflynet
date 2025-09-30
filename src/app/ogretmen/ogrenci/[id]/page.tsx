@@ -103,19 +103,43 @@ export default function StudentDetailPage() {
         credentials: 'include',
         body: JSON.stringify({})
       });
-      if (!res.ok) throw new Error('PDF oluşturma başarısız');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${student?.firstName || 'ogrenci'}_${student?.lastName || 'raporu'}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      
+      const contentType = res.headers.get('content-type') || '';
+      
+      if (res.ok) {
+        if (contentType.includes('application/pdf')) {
+          const blob = await res.blob();
+          if (blob.size === 0) {
+            throw new Error('PDF dosyası boş geldi');
+          }
+          
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${student?.firstName || 'ogrenci'}_${student?.lastName || 'raporu'}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          a.remove();
+          alert('PDF raporu başarıyla indirildi!');
+        } else if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data.url) {
+            alert(`Rapor oluşturuldu! Görüntülemek için: ${window.location.origin}${data.url}`);
+          } else {
+            throw new Error(data.error || 'Bilinmeyen yanıt formatı');
+          }
+        } else {
+          throw new Error('Beklenmeyen yanıt formatı');
+        }
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${res.status}: ${res.statusText}`);
+      }
     } catch (e) {
-      console.error(e);
-      alert(e instanceof Error ? e.message : 'Hata');
+      console.error('PDF download error:', e);
+      const errorMessage = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      alert(`PDF indirme hatası:\n\n${errorMessage}\n\nLütfen tekrar deneyin.`);
     }
   };
 
