@@ -54,7 +54,7 @@ export async function POST(
     // Generate PDF content using jsPDF
     const pdfBuffer = await generatePDFContent(student, analysisData);
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${student.firstName}_${student.lastName}_raporu.pdf"`
