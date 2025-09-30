@@ -144,7 +144,9 @@ export default function TeacherAssignments() {
       });
 
       if (response.ok) {
-        setAssignments(assignments.filter(a => a._id !== assignmentId));
+        // Remove locally and refresh from server to reflect any sibling deletions
+        setAssignments(prev => prev.filter(a => a._id !== assignmentId));
+        await fetchAssignments();
       }
     } catch (error) {
       console.error('Delete assignment error:', error);

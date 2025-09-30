@@ -121,10 +121,35 @@ export async function DELETE(
       );
     }
 
-    await AssignmentSubmission.deleteMany({ assignmentId: assignment._id });
-    await Assignment.findByIdAndDelete(assignment._id);
+    // If this is a class assignment instance, also delete sibling instances for the same class batch
+    let deletedAssignments = 0;
+    let deletedSubmissions = 0;
 
-    return NextResponse.json({ success: true });
+    if (assignment.type === 'class' && assignment.classId) {
+      // Find all similar class assignments created by this teacher for the same class and same title/dueDate
+      const siblings = await Assignment.find({
+        teacherId: assignment.teacherId,
+        type: 'class',
+        classId: assignment.classId,
+        title: assignment.title,
+        dueDate: assignment.dueDate,
+      }).select('_id');
+
+      const ids = siblings.map(s => s._id);
+      if (ids.length > 0) {
+        const subRes = await AssignmentSubmission.deleteMany({ assignmentId: { $in: ids } });
+        deletedSubmissions += subRes.deletedCount || 0;
+        const delRes = await Assignment.deleteMany({ _id: { $in: ids } });
+        deletedAssignments += delRes.deletedCount || 0;
+      }
+    } else {
+      const subRes = await AssignmentSubmission.deleteMany({ assignmentId: assignment._id });
+      deletedSubmissions += subRes.deletedCount || 0;
+      const delRes = await Assignment.findByIdAndDelete(assignment._id);
+      deletedAssignments += delRes ? 1 : 0;
+    }
+
+    return NextResponse.json({ success: true, deletedAssignments, deletedSubmissions });
   } catch (error) {
     console.error('Delete assignment error:', error);
     return NextResponse.json(
