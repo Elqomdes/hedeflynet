@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
-import { connectToDatabase } from '@/lib/mongodb';
+import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
 import bcrypt from 'bcryptjs';
 
@@ -17,7 +17,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ message: 'Ad, soyad ve e-posta gereklidir' }, { status: 400 });
     }
 
-    await connectToDatabase();
+    await connectDB();
 
     // Check if email is already taken by another user
     const existingUser = await User.findOne({ 

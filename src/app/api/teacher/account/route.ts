@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
-import { connectToDatabase } from '@/lib/mongodb';
+import connectDB from '@/lib/mongodb';
 import { User, Assignment, AssignmentSubmission, Goal, Class, Report } from '@/lib/models';
 import bcrypt from 'bcryptjs';
 
@@ -17,7 +17,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ message: 'Şifre gereklidir' }, { status: 400 });
     }
 
-    await connectToDatabase();
+    await connectDB();
 
     // Verify password
     const user = await User.findById(authResult._id);
