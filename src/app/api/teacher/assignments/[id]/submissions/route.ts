@@ -42,11 +42,12 @@ export async function GET(
     let assignmentIds: mongoose.Types.ObjectId[] = [new mongoose.Types.ObjectId(assignmentId)];
 
     if (assignment.classId) {
+      // Match siblings by class, teacher, and title. Avoid strict dueDate equality
+      // to prevent precision mismatches hiding valid submissions.
       const siblingAssignments = await Assignment.find({
         teacherId,
         classId: assignment.classId,
-        title: assignment.title,
-        dueDate: assignment.dueDate
+        title: assignment.title
       }).distinct('_id');
 
       if (Array.isArray(siblingAssignments) && siblingAssignments.length > 0) {
