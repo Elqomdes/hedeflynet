@@ -19,8 +19,27 @@ export async function GET(request: NextRequest) {
 
     const teacherId = authResult._id;
 
+    // Resolve teacher's student IDs from classes (main or co-teacher)
+    const classes = await Class.find({
+      $or: [
+        { teacherId },
+        { coTeachers: teacherId }
+      ]
+    }).select('students').lean();
+
+    const studentIdSet = new Set<string>();
+    for (const cls of classes) {
+      if (Array.isArray((cls as any).students)) {
+        for (const sid of (cls as any).students) {
+          studentIdSet.add(String(sid));
+        }
+      }
+    }
+
+    const teacherStudentIds = Array.from(studentIdSet);
+
     const [totalStudents, totalClasses, totalAssignments, totalGoals, submittedAssignments, gradedAssignments, pendingGrading] = await Promise.all([
-      User.countDocuments({ role: 'student' }),
+      teacherStudentIds.length > 0 ? User.countDocuments({ role: 'student', _id: { $in: teacherStudentIds } }) : Promise.resolve(0),
       Class.countDocuments({ 
         $or: [
           { teacherId },

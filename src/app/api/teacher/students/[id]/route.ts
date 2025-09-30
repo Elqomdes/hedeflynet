@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { User } from '@/lib/models';
+import { User, Class } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -34,6 +34,23 @@ export async function GET(
       return NextResponse.json(
         { error: 'Bu kullanıcı öğrenci değil' },
         { status: 400 }
+      );
+    }
+
+    // Authorization: ensure this student belongs to one of teacher's classes
+    const teacherId = authResult._id;
+    const isInTeachersClasses = await Class.exists({
+      $or: [
+        { teacherId },
+        { coTeachers: teacherId }
+      ],
+      students: student._id
+    });
+
+    if (!isInTeachersClasses) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Student not assigned to this teacher' },
+        { status: 403 }
       );
     }
 
