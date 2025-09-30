@@ -398,8 +398,11 @@ export default function TeacherAssignments() {
                 };
 
                 try {
-                  const response = await fetch('/api/teacher/assignments', {
-                    method: 'POST',
+                  const isEdit = Boolean(editingAssignment);
+                  const url = isEdit ? `/api/teacher/assignments/${editingAssignment!._id}` : '/api/teacher/assignments';
+                  const method = isEdit ? 'PUT' : 'POST';
+                  const response = await fetch(url, {
+                    method,
                     headers: {
                       'Content-Type': 'application/json',
                     },

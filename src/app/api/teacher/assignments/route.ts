@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, type, classId, studentId, attachments, dueDate } = await request.json();
+    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade } = await request.json();
 
     if (!title || !description || !type || !dueDate) {
       return NextResponse.json(
@@ -64,6 +64,13 @@ export async function POST(request: NextRequest) {
     if (type === 'individual' && !studentId) {
       return NextResponse.json(
         { error: 'Bireysel ödev için öğrenci seçilmelidir' },
+        { status: 400 }
+      );
+    }
+
+    if (maxGrade !== undefined && (typeof maxGrade !== 'number' || maxGrade < 1 || maxGrade > 100)) {
+      return NextResponse.json(
+        { error: 'maxGrade 1 ile 100 arasında olmalıdır' },
         { status: 400 }
       );
     }
@@ -90,7 +97,8 @@ export async function POST(request: NextRequest) {
           classId: classId,
           studentId: student._id,
           attachments: attachments || [],
-          dueDate: new Date(dueDate)
+          dueDate: new Date(dueDate),
+          maxGrade: maxGrade ?? 100
         });
         await assignment.save();
         assignments.push(assignment);
@@ -111,7 +119,8 @@ export async function POST(request: NextRequest) {
         teacherId: authResult._id,
         studentId: studentId,
         attachments: attachments || [],
-        dueDate: new Date(dueDate)
+        dueDate: new Date(dueDate),
+        maxGrade: maxGrade ?? 100
       });
 
       await assignment.save();
