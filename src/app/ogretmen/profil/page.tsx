@@ -20,7 +20,8 @@ export default function TeacherProfile() {
     newPassword: '',
     confirmPassword: ''
   });
-  const [errors, setErrors] = useState<any>({});
+  type FormErrors = Partial<Record<keyof typeof formData, string>>;
+  const [errors, setErrors] = useState<FormErrors>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -58,13 +59,14 @@ export default function TeacherProfile() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    const key = name as keyof typeof formData;
+    if (errors[key]) {
+      setErrors(prev => ({ ...prev, [key]: '' }));
     }
   };
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors: FormErrors = {};
     
     if (!formData.firstName.trim()) newErrors.firstName = 'Ad gereklidir';
     if (!formData.lastName.trim()) newErrors.lastName = 'Soyad gereklidir';

@@ -6,10 +6,11 @@ import bcrypt from 'bcryptjs';
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authResult = await requireAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const auth = await requireAuth(['teacher'])(request);
+    if (!('user' in auth)) {
+      return NextResponse.json({ message: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
     }
+    const { user: authUser } = auth as { user: any };
 
     const { password } = await request.json();
 
@@ -20,7 +21,7 @@ export async function DELETE(request: NextRequest) {
     await connectDB();
 
     // Verify password
-    const user = await User.findById(authResult._id);
+    const user = await User.findById(authUser._id);
     if (!user) {
       return NextResponse.json({ message: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
@@ -31,7 +32,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete all teacher-related data
-    const teacherId = authResult._id;
+    const teacherId = authUser._id;
 
     // Delete assignments and their submissions
     const assignments = await Assignment.find({ teacherId });

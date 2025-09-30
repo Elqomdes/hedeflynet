@@ -6,10 +6,11 @@ import bcrypt from 'bcryptjs';
 
 export async function PUT(request: NextRequest) {
   try {
-    const authResult = await requireAuth(request);
-    if (!authResult.success) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const auth = await requireAuth(['teacher'])(request);
+    if (!('user' in auth)) {
+      return NextResponse.json({ message: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
     }
+    const { user: authUser } = auth as { user: any };
 
     const { firstName, lastName, email, phone, address, currentPassword, newPassword } = await request.json();
 
@@ -22,7 +23,7 @@ export async function PUT(request: NextRequest) {
     // Check if email is already taken by another user
     const existingUser = await User.findOne({ 
       email: email.toLowerCase(), 
-      _id: { $ne: authResult._id } 
+      _id: { $ne: authUser._id } 
     });
 
     if (existingUser) {
@@ -43,7 +44,7 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ message: 'Mevcut şifre gereklidir' }, { status: 400 });
       }
 
-      const user = await User.findById(authResult._id);
+      const user = await User.findById(authUser._id);
       if (!user) {
         return NextResponse.json({ message: 'Kullanıcı bulunamadı' }, { status: 404 });
       }
@@ -61,7 +62,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const updatedUser = await User.findByIdAndUpdate(
-      authResult._id,
+      authUser._id,
       updateData,
       { new: true, select: '-password' }
     );
