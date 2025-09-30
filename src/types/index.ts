@@ -50,6 +50,16 @@ export interface Assignment {
     name: string;
   }[];
   dueDate: Date;
+  maxGrade?: number;
+  publishAt?: Date;
+  closeAt?: Date;
+  allowLate?: {
+    policy: 'no' | 'untilClose' | 'always';
+    penaltyPercent?: number;
+  };
+  maxAttempts?: number;
+  tags?: string[];
+  rubricId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,10 +68,26 @@ export interface AssignmentSubmission {
   _id: string;
   assignmentId: string;
   studentId: string;
-  status: 'completed' | 'incomplete' | 'not_started';
+  status: 'completed' | 'incomplete' | 'not_started' | 'submitted' | 'graded' | 'late';
   grade?: number;
+  maxGrade?: number;
   feedback?: string;
+  teacherFeedback?: string;
   submittedAt?: Date;
+  gradedAt?: Date;
+  content?: string;
+  attachments?: {
+    type: 'pdf' | 'video' | 'link' | 'image';
+    url: string;
+    name: string;
+  }[];
+  attempt?: number;
+  versions?: {
+    attempt: number;
+    submittedAt: Date;
+    content?: string;
+    attachments?: { type: 'pdf' | 'video' | 'link' | 'image'; url: string; name: string }[];
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }

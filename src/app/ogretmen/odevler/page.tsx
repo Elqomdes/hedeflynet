@@ -65,6 +65,10 @@ export default function TeacherAssignments() {
   const [gradingSubmission, setGradingSubmission] = useState<Submission | null>(null);
   const [grade, setGrade] = useState<number>(0);
   const [teacherFeedback, setTeacherFeedback] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt'>('dueDate');
+  const [showOnlyOverdue, setShowOnlyOverdue] = useState(false);
+  const [allowLatePolicy, setAllowLatePolicy] = useState<'no' | 'untilClose' | 'always'>('untilClose');
+  const [penaltyPercent, setPenaltyPercent] = useState<number>(0);
 
   useEffect(() => {
     fetchAssignments();
@@ -218,10 +222,13 @@ export default function TeacherAssignments() {
     }
   };
 
-  const filteredAssignments = assignments.filter(assignment => {
+  const filteredAssignments = assignments
+    .filter(assignment => {
     if (filter === 'all') return true;
     return assignment.type === filter;
-  });
+    })
+    .filter(a => (showOnlyOverdue ? isOverdue(a.dueDate) : true))
+    .sort((a, b) => new Date(a[sortBy]).getTime() - new Date(b[sortBy]).getTime());
 
   const isOverdue = (dueDate: string) => {
     return new Date(dueDate) < new Date();
@@ -240,6 +247,18 @@ export default function TeacherAssignments() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-secondary-900">Ödevlerim</h1>
         <div className="mt-4 sm:mt-0 flex space-x-3">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+          >
+            <option value="dueDate">Teslim Tarihi</option>
+            <option value="createdAt">Oluşturulma</option>
+          </select>
+          <label className="inline-flex items-center space-x-2 text-sm text-secondary-700">
+            <input type="checkbox" checked={showOnlyOverdue} onChange={(e) => setShowOnlyOverdue(e.target.checked)} />
+            <span>Sadece süresi geçmiş</span>
+          </label>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as any)}
@@ -394,12 +413,20 @@ export default function TeacherAssignments() {
                   studentId: formData.get('studentId'),
                   dueDate: formData.get('dueDate'),
                   maxGrade: formData.get('maxGrade') ? parseInt(formData.get('maxGrade') as string) : 100,
+                  publishAt: formData.get('publishAt') ? new Date(formData.get('publishAt') as string).toISOString() : undefined,
+                  closeAt: formData.get('closeAt') ? new Date(formData.get('closeAt') as string).toISOString() : undefined,
+                  allowLate: { policy: allowLatePolicy, penaltyPercent },
+                  maxAttempts: formData.get('maxAttempts') ? parseInt(formData.get('maxAttempts') as string) : undefined,
+                  tags: (formData.get('tags') as string || '').split(',').map(t => t.trim()).filter(Boolean),
                   attachments: []
                 };
 
                 try {
-                  const response = await fetch('/api/teacher/assignments', {
-                    method: 'POST',
+                  const isEdit = Boolean(editingAssignment);
+                  const url = isEdit ? `/api/teacher/assignments/${editingAssignment!._id}` : '/api/teacher/assignments';
+                  const method = isEdit ? 'PUT' : 'POST';
+                  const response = await fetch(url, {
+                    method,
                     headers: {
                       'Content-Type': 'application/json',
                     },
@@ -472,6 +499,43 @@ export default function TeacherAssignments() {
                       className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-secondary-700">Yayınlama Tarihi</label>
+                      <input type="datetime-local" name="publishAt" className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-secondary-700">Kapanış Tarihi</label>
+                      <input type="datetime-local" name="closeAt" className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-secondary-700">Geç Teslim Politikası</label>
+                      <select value={allowLatePolicy} onChange={(e) => setAllowLatePolicy(e.target.value as any)} className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="no">Geç teslim yok</option>
+                        <option value="untilClose">Kapanışa kadar</option>
+                        <option value="always">Her zaman</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-secondary-700">Geç Teslim Cezası (%)</label>
+                      <input type="number" min="0" max="100" value={penaltyPercent} onChange={(e) => setPenaltyPercent(parseInt(e.target.value) || 0)} className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-secondary-700">Maksimum Deneme</label>
+                      <input type="number" name="maxAttempts" min="1" className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-secondary-700">Etiketler (virgülle ayırın)</label>
+                      <input type="text" name="tags" placeholder="matematik, geometri" className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
+                    </div>
                   </div>
                   
                   <div>
@@ -628,7 +692,7 @@ export default function TeacherAssignments() {
                           )}
                         </div>
                         
-                        <div className="ml-4 flex space-x-2">
+                <div className="ml-4 flex space-x-2">
                           {submission.status === 'submitted' && (
                             <button
                               onClick={() => {
@@ -640,6 +704,25 @@ export default function TeacherAssignments() {
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
                               Değerlendir
+                            </button>
+                          )}
+                          {submission.status === 'graded' && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch(`/api/teacher/assignments/submissions/${submission._id}/reopen`, {
+                                    method: 'PUT'
+                                  });
+                                  if (response.ok && selectedAssignment) {
+                                    fetchSubmissions(selectedAssignment._id);
+                                  }
+                                } catch (error) {
+                                  console.error('Reopen submission error:', error);
+                                }
+                              }}
+                              className="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-700 bg-secondary-100 hover:bg-secondary-200"
+                            >
+                              Yeniden Aç
                             </button>
                           )}
                         </div>

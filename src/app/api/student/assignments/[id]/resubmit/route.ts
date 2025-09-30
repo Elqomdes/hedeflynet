@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Assignment, AssignmentSubmission } from '@/lib/models';
+import Assignment from '@/lib/models/Assignment';
+import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -37,7 +38,7 @@ export async function POST(
       );
     }
 
-    // Check if assignment exists and belongs to this student
+    // Check assignment ownership
     const assignment = await Assignment.findOne({
       _id: assignmentId,
       studentId
@@ -50,20 +51,23 @@ export async function POST(
       );
     }
 
-    // Check if already submitted
-    const existingSubmission = await AssignmentSubmission.findOne({
-      assignmentId,
-      studentId
-    });
+    // Find existing submission
+    const submission = await AssignmentSubmission.findOne({ assignmentId, studentId });
 
-    if (existingSubmission) {
+    if (!submission) {
       return NextResponse.json(
-        { error: 'Bu ödev zaten teslim edilmiş' },
+        { error: 'Önce bir teslim oluşturulmalıdır' },
         { status: 400 }
       );
     }
 
-    // Determine status (late or submitted) and carry maxGrade from assignment
+    if (submission.status === 'graded') {
+      return NextResponse.json(
+        { error: 'Notlandırılmış teslimler yeniden gönderilemez' },
+        { status: 400 }
+      );
+    }
+
     const now = new Date();
     const isBeforePublish = assignment.publishAt && now < new Date(assignment.publishAt);
     if (isBeforePublish) {
@@ -83,27 +87,32 @@ export async function POST(
 
     const isLate = assignment.dueDate && new Date(assignment.dueDate) < now;
 
-    const submission = new AssignmentSubmission({
-      assignmentId,
-      studentId,
-      content,
-      attachments: attachments || [],
-      status: isLate ? 'late' : 'submitted',
-      submittedAt: now,
-      maxGrade: assignment.maxGrade || 100,
-      attempt: 1,
-      versions: [{ attempt: 1, submittedAt: now, content, attachments: attachments || [] }]
-    });
+    // attempts
+    const nextAttempt = (submission.attempt || 1) + 1;
+    if (assignment.maxAttempts && nextAttempt > assignment.maxAttempts) {
+      return NextResponse.json(
+        { error: 'Maksimum deneme hakkı aşıldı' },
+        { status: 403 }
+      );
+    }
+
+    submission.content = content;
+    submission.attachments = attachments || [];
+    submission.submittedAt = now;
+    submission.status = isLate ? 'late' : 'submitted';
+    submission.attempt = nextAttempt;
+    submission.versions = [...(submission.versions || []), { attempt: nextAttempt, submittedAt: now, content, attachments: attachments || [] }];
 
     await submission.save();
 
-    return NextResponse.json(submission, { status: 201 });
+    return NextResponse.json(submission);
   } catch (error) {
-    console.error('Assignment submission error:', error);
+    console.error('Assignment resubmission error:', error);
     return NextResponse.json(
       { error: 'Sunucu hatası' },
       { status: 500 }
     );
   }
 }
+
 

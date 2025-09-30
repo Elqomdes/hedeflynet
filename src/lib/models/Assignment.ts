@@ -14,6 +14,15 @@ export interface IAssignment extends Document {
   }[];
   dueDate: Date;
   maxGrade?: number;
+  publishAt?: Date;
+  closeAt?: Date;
+  allowLate?: {
+    policy: 'no' | 'untilClose' | 'always';
+    penaltyPercent?: number; // 0-100 deducted from grade
+  };
+  maxAttempts?: number; // undefined means unlimited
+  tags?: string[];
+  rubricId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -79,6 +88,33 @@ const AssignmentSchema = new Schema<IAssignment>({
     default: 100,
     min: 1,
     max: 100
+  },
+  publishAt: {
+    type: Date
+  },
+  closeAt: {
+    type: Date
+  },
+  allowLate: {
+    policy: {
+      type: String,
+      enum: ['no', 'untilClose', 'always'],
+      default: 'untilClose'
+    },
+    penaltyPercent: {
+      type: Number,
+      min: 0,
+      max: 100
+    }
+  } as any,
+  maxAttempts: {
+    type: Number,
+    min: 1
+  },
+  tags: [{ type: String, trim: true }],
+  rubricId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Rubric'
   }
 }, {
   timestamps: true

@@ -10,6 +10,8 @@ interface Assignment {
   type: 'individual' | 'class';
   dueDate: string;
   maxGrade?: number;
+  publishAt?: string;
+  closeAt?: string;
   attachments: {
     type: 'pdf' | 'video' | 'link';
     url: string;
@@ -36,6 +38,7 @@ interface Assignment {
       url: string;
       name: string;
     }[];
+    attempt?: number;
   } | null;
 }
 
@@ -89,6 +92,9 @@ export default function StudentAssignments() {
   };
 
   const getStatusText = (assignment: Assignment) => {
+    const now = new Date();
+    if (assignment.publishAt && now < new Date(assignment.publishAt)) return 'Henüz Yayınlanmadı';
+    if (assignment.closeAt && now > new Date(assignment.closeAt) && !assignment.submission) return 'Kapanış Geçti';
     if (!assignment.submission) {
       const isOverdue = new Date(assignment.dueDate) < new Date();
       return isOverdue ? 'Süresi Geçmiş' : 'Bekliyor';
@@ -109,6 +115,9 @@ export default function StudentAssignments() {
   };
 
   const getStatusColor = (assignment: Assignment) => {
+    const now = new Date();
+    if (assignment.publishAt && now < new Date(assignment.publishAt)) return 'bg-gray-100 text-gray-800';
+    if (assignment.closeAt && now > new Date(assignment.closeAt) && !assignment.submission) return 'bg-red-100 text-red-800';
     if (!assignment.submission) {
       const isOverdue = new Date(assignment.dueDate) < new Date();
       return isOverdue ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800';
@@ -158,6 +167,39 @@ export default function StudentAssignments() {
     } catch (error) {
       console.error('Assignment submission error:', error);
       alert('Ödev teslim edilemedi');
+    }
+  };
+
+  const handleResubmitAssignment = async (assignmentId: string) => {
+    if (!submissionContent.trim()) {
+      alert('Ödev içeriği gereklidir');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/student/assignments/${assignmentId}/resubmit`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: submissionContent,
+          attachments: []
+        })
+      });
+
+      if (response.ok) {
+        setSubmittingAssignment(null);
+        setSubmissionContent('');
+        fetchAssignments(); // Refresh the list
+        alert('Ödev başarıyla yeniden gönderildi');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Ödev yeniden gönderilemedi');
+      }
+    } catch (error) {
+      console.error('Assignment resubmission error:', error);
+      alert('Ödev yeniden gönderilemedi');
     }
   };
 
@@ -233,6 +275,16 @@ export default function StudentAssignments() {
                       <Clock className="h-4 w-4 mr-1" />
                       Teslim: {new Date(assignment.dueDate).toLocaleDateString('tr-TR')}
                     </div>
+                    {assignment.publishAt && (
+                      <div>
+                        Yayın: {new Date(assignment.publishAt).toLocaleString('tr-TR')}
+                      </div>
+                    )}
+                    {assignment.closeAt && (
+                      <div>
+                        Kapanış: {new Date(assignment.closeAt).toLocaleString('tr-TR')}
+                      </div>
+                    )}
                     <div>
                       Öğretmen: {assignment.teacherId.firstName} {assignment.teacherId.lastName}
                     </div>
@@ -297,6 +349,35 @@ export default function StudentAssignments() {
                       </button>
                     </div>
                   )}
+                  {/* Disable when closed and no late allowed */}
+                  {(() => {
+                    const now = new Date();
+                    const isClosed = assignment.closeAt && now > new Date(assignment.closeAt);
+                    if (isClosed && !assignment.submission) {
+                      return (
+                        <div className="mt-2 text-xs text-red-600">Bu ödev kapanmıştır.</div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  {/* Allow resubmission if not graded */}
+                  {assignment.submission && assignment.submission.status !== 'graded' && (
+                    <div className="mt-4 flex items-center gap-3">
+                      <button
+                        onClick={() => setSubmittingAssignment(assignment._id)}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Yeniden Gönder
+                      </button>
+                      {assignment.submission.submittedAt && (
+                        <span className="text-xs text-secondary-500">
+                          Son Gönderim: {new Date(assignment.submission.submittedAt).toLocaleString('tr-TR')}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -345,6 +426,12 @@ export default function StudentAssignments() {
                   className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   Teslim Et
+                </button>
+                <button
+                  onClick={() => handleResubmitAssignment(submittingAssignment!)}
+                  className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  Yeniden Gönder
                 </button>
               </div>
             </div>

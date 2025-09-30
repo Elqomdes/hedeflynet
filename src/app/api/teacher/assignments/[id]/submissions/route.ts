@@ -24,11 +24,11 @@ export async function GET(
     await connectDB();
 
     const assignmentId = params.id;
-    const teacherId = authResult._id;
+    const teacherId = String(authResult._id);
 
     // Check if the assignment belongs to this teacher
     const assignment = await Assignment.findById(assignmentId);
-    if (!assignment || assignment.teacherId.toString() !== teacherId) {
+    if (!assignment || assignment.teacherId.toString() !== String(teacherId)) {
       return NextResponse.json(
         { error: 'Assignment not found or unauthorized' },
         { status: 404 }

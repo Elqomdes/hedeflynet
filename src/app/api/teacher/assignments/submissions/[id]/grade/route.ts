@@ -38,7 +38,7 @@ export async function PUT(
     await connectDB();
 
     const submissionId = params.id;
-    const teacherId = authResult._id;
+    const teacherId = String(authResult._id);
 
     // Find the submission and verify teacher has access
     const submission = await AssignmentSubmission.findById(submissionId)
@@ -53,7 +53,7 @@ export async function PUT(
 
     // Check if the assignment belongs to this teacher
     const assignment = submission.assignmentId as any;
-    if (assignment.teacherId.toString() !== teacherId) {
+    if (assignment.teacherId.toString() !== String(teacherId)) {
       return NextResponse.json(
         { error: 'Unauthorized to grade this submission' },
         { status: 403 }
@@ -66,8 +66,19 @@ export async function PUT(
     };
 
     if (grade !== undefined) {
+      const max = assignment.maxGrade || 100;
+      if (grade > max) {
+        return NextResponse.json(
+          { error: `Grade cannot exceed maxGrade (${max})` },
+          { status: 400 }
+        );
+      }
       updateData.grade = grade;
-      updateData.maxGrade = assignment.maxGrade || 100;
+      updateData.maxGrade = max;
+      // If teacher sets a grade, default status to 'graded' unless explicitly provided
+      if (!status) {
+        updateData.status = 'graded';
+      }
     }
 
     if (teacherFeedback !== undefined) {

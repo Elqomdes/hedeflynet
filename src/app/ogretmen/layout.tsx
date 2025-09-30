@@ -13,7 +13,8 @@ import {
   Menu, 
   X,
   Home,
-  UserPlus
+  UserPlus,
+  Inbox
 } from 'lucide-react';
 import AuthWrapper from '@/components/AuthWrapper';
 
@@ -56,6 +57,7 @@ export default function TeacherLayout({
     { name: 'Öğrenciler', href: '/ogretmen/ogrenciler', icon: Users },
     { name: 'Sınıflar', href: '/ogretmen/siniflar', icon: BookOpen },
     { name: 'Ödevler', href: '/ogretmen/odevler', icon: FileText },
+    { name: 'Teslimler', href: '/ogretmen/teslimler', icon: Inbox },
     { name: 'Hedefler', href: '/ogretmen/hedefler', icon: Target },
     { name: 'Detaylı Analiz', href: '/ogretmen/analiz', icon: BarChart3 },
   ];
