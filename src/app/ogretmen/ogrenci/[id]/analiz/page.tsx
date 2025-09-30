@@ -100,12 +100,26 @@ export default function StudentAnalysisPage() {
         // Show success message
         alert('Rapor başarıyla indirildi!');
       } else {
-        const errorData = await response.json();
-        console.error('Report generation error response:', errorData);
-        const errorMessage = errorData.details ? 
-          `${errorData.error}\n\nDetay: ${errorData.details}` : 
-          errorData.error || 'Bilinmeyen hata';
-        alert(`Rapor oluşturulurken hata oluştu:\n\n${errorMessage}`);
+        const contentType = response.headers.get('content-type') || '';
+        let errorMessage = 'Bilinmeyen hata';
+        let details: string | undefined = undefined;
+        try {
+          if (contentType.includes('application/json')) {
+            const errorData = await response.json();
+            console.error('Report generation error response (json):', errorData);
+            errorMessage = errorData?.error || errorMessage;
+            details = errorData?.details;
+          } else {
+            const text = await response.text();
+            console.error('Report generation error response (text):', text);
+            errorMessage = text || errorMessage;
+          }
+        } catch (parseErr) {
+          console.error('Failed to parse error response:', parseErr);
+        }
+
+        const finalMessage = details ? `${errorMessage}\n\nDetay: ${details}` : errorMessage;
+        alert(`Rapor oluşturulurken hata oluştu:\n\n${finalMessage}`);
       }
     } catch (error) {
       console.error('Report generation error:', error);
