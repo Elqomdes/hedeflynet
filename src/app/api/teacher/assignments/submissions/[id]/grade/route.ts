@@ -38,7 +38,7 @@ export async function PUT(
     await connectDB();
 
     const submissionId = params.id;
-    const teacherId = authResult._id;
+    const teacherId = String(authResult._id);
 
     // Find the submission and verify teacher has access
     const submission = await AssignmentSubmission.findById(submissionId)
@@ -53,7 +53,7 @@ export async function PUT(
 
     // Check if the assignment belongs to this teacher
     const assignment = submission.assignmentId as any;
-    if (assignment.teacherId.toString() !== teacherId) {
+    if (assignment.teacherId.toString() !== String(teacherId)) {
       return NextResponse.json(
         { error: 'Unauthorized to grade this submission' },
         { status: 403 }
