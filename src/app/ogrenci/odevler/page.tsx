@@ -161,6 +161,39 @@ export default function StudentAssignments() {
     }
   };
 
+  const handleResubmitAssignment = async (assignmentId: string) => {
+    if (!submissionContent.trim()) {
+      alert('Ödev içeriği gereklidir');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/student/assignments/${assignmentId}/resubmit`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: submissionContent,
+          attachments: []
+        })
+      });
+
+      if (response.ok) {
+        setSubmittingAssignment(null);
+        setSubmissionContent('');
+        fetchAssignments(); // Refresh the list
+        alert('Ödev başarıyla yeniden gönderildi');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Ödev yeniden gönderilemedi');
+      }
+    } catch (error) {
+      console.error('Assignment resubmission error:', error);
+      alert('Ödev yeniden gönderilemedi');
+    }
+  };
+
   const filteredAssignments = assignments.filter(assignment => {
     if (filter === 'all') return true;
     if (filter === 'pending') return !assignment.submission;
@@ -297,6 +330,24 @@ export default function StudentAssignments() {
                       </button>
                     </div>
                   )}
+
+                  {/* Allow resubmission if not graded */}
+                  {assignment.submission && assignment.submission.status !== 'graded' && (
+                    <div className="mt-4 flex items-center gap-3">
+                      <button
+                        onClick={() => setSubmittingAssignment(assignment._id)}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Yeniden Gönder
+                      </button>
+                      {assignment.submission.submittedAt && (
+                        <span className="text-xs text-secondary-500">
+                          Son Gönderim: {new Date(assignment.submission.submittedAt).toLocaleString('tr-TR')}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -345,6 +396,12 @@ export default function StudentAssignments() {
                   className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   Teslim Et
+                </button>
+                <button
+                  onClick={() => handleResubmitAssignment(submittingAssignment!)}
+                  className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  Yeniden Gönder
                 </button>
               </div>
             </div>

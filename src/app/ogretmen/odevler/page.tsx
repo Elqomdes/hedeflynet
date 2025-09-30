@@ -65,6 +65,8 @@ export default function TeacherAssignments() {
   const [gradingSubmission, setGradingSubmission] = useState<Submission | null>(null);
   const [grade, setGrade] = useState<number>(0);
   const [teacherFeedback, setTeacherFeedback] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt'>('dueDate');
+  const [showOnlyOverdue, setShowOnlyOverdue] = useState(false);
 
   useEffect(() => {
     fetchAssignments();
@@ -218,10 +220,13 @@ export default function TeacherAssignments() {
     }
   };
 
-  const filteredAssignments = assignments.filter(assignment => {
+  const filteredAssignments = assignments
+    .filter(assignment => {
     if (filter === 'all') return true;
     return assignment.type === filter;
-  });
+    })
+    .filter(a => (showOnlyOverdue ? isOverdue(a.dueDate) : true))
+    .sort((a, b) => new Date(a[sortBy]).getTime() - new Date(b[sortBy]).getTime());
 
   const isOverdue = (dueDate: string) => {
     return new Date(dueDate) < new Date();
@@ -240,6 +245,18 @@ export default function TeacherAssignments() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-secondary-900">Ödevlerim</h1>
         <div className="mt-4 sm:mt-0 flex space-x-3">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+          >
+            <option value="dueDate">Teslim Tarihi</option>
+            <option value="createdAt">Oluşturulma</option>
+          </select>
+          <label className="inline-flex items-center space-x-2 text-sm text-secondary-700">
+            <input type="checkbox" checked={showOnlyOverdue} onChange={(e) => setShowOnlyOverdue(e.target.checked)} />
+            <span>Sadece süresi geçmiş</span>
+          </label>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as any)}
@@ -631,7 +648,7 @@ export default function TeacherAssignments() {
                           )}
                         </div>
                         
-                        <div className="ml-4 flex space-x-2">
+                <div className="ml-4 flex space-x-2">
                           {submission.status === 'submitted' && (
                             <button
                               onClick={() => {
@@ -643,6 +660,25 @@ export default function TeacherAssignments() {
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
                               Değerlendir
+                            </button>
+                          )}
+                          {submission.status === 'graded' && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch(`/api/teacher/assignments/submissions/${submission._id}/reopen`, {
+                                    method: 'PUT'
+                                  });
+                                  if (response.ok && selectedAssignment) {
+                                    fetchSubmissions(selectedAssignment._id);
+                                  }
+                                } catch (error) {
+                                  console.error('Reopen submission error:', error);
+                                }
+                              }}
+                              className="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-700 bg-secondary-100 hover:bg-secondary-200"
+                            >
+                              Yeniden Aç
                             </button>
                           )}
                         </div>
