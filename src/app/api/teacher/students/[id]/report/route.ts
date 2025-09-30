@@ -86,8 +86,8 @@ export async function POST(
 
     await report.save();
 
-    // Decide response format
-    const format = request.nextUrl.searchParams.get('format') || 'json';
+    // Decide response format (default to PDF for download flows)
+    const format = request.nextUrl.searchParams.get('format') || 'pdf';
 
     if (format === 'pdf') {
       // Generate PDF content using jsPDF
@@ -208,126 +208,140 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
       throw new Error('Öğrenci bilgileri eksik');
     }
     
-    const doc = new jsPDF();
+    // Use A4 portrait with higher precision
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = 595.28; // A4 width in points
+    const pageHeight = 841.89; // A4 height in points
+    const margin = 40;
+    let yPos = margin + 20;
     
     // Set font and colors
     doc.setFont('helvetica');
   
   // Header
-  doc.setFontSize(20);
+  doc.setFontSize(22);
   doc.setTextColor(40, 40, 40);
-  doc.text(`${student.firstName} ${student.lastName} - Performans Raporu`, 20, 30);
+  doc.text(`${student.firstName} ${student.lastName} - Performans Raporu`, margin, yPos);
+  yPos += 16;
   
   // Date
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setTextColor(100, 100, 100);
-  doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 45);
+  doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, margin, yPos);
+  yPos += 20;
   
   // Line separator
   doc.setDrawColor(200, 200, 200);
-  doc.line(20, 55, 190, 55);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 24;
   
   // General Performance Section
   doc.setFontSize(16);
   doc.setTextColor(40, 40, 40);
-  doc.text('Genel Performans', 20, 75);
+  doc.text('Genel Performans', margin, yPos);
+  yPos += 18;
   
   doc.setFontSize(12);
   doc.setTextColor(60, 60, 60);
-  let yPos = 90;
   
   // Performance metrics
-  doc.text(`Ödev Tamamlama Oranı: %${analysisData.assignmentCompletion || 0}`, 20, yPos);
-  yPos += 15;
-  
-  doc.text(`Hedef İlerlemesi: %${analysisData.goalsProgress || 0}`, 20, yPos);
-  yPos += 15;
-  
-  doc.text(`Genel Performans: %${analysisData.overallPerformance || 0}`, 20, yPos);
-  yPos += 15;
-  
-  doc.text(`Teslim Edilen Ödevler: ${analysisData.submittedAssignments || 0}`, 20, yPos);
-  yPos += 15;
-  
-  doc.text(`Değerlendirilen Ödevler: ${analysisData.gradedAssignments || 0}`, 20, yPos);
-  yPos += 15;
-  
-  doc.text(`Ortalama Not: ${analysisData.averageGrade || 0}/100`, 20, yPos);
-  yPos += 25;
+  const generalRows = [
+    `Ödev Tamamlama Oranı: %${analysisData.assignmentCompletion || 0}`,
+    `Hedef İlerlemesi: %${analysisData.goalsProgress || 0}`,
+    `Genel Performans: %${analysisData.overallPerformance || 0}`,
+    `Teslim Edilen Ödevler: ${analysisData.submittedAssignments || 0}`,
+    `Değerlendirilen Ödevler: ${analysisData.gradedAssignments || 0}`,
+    `Ortalama Not: ${analysisData.averageGrade || 0}/100`
+  ];
+  for (const row of generalRows) {
+    if (yPos > pageHeight - margin - 20) {
+      doc.addPage();
+      yPos = margin;
+    }
+    doc.text(row, margin, yPos);
+    yPos += 16;
+  }
+  yPos += 8;
   
   // Subject Performance Section
   if (analysisData.subjectDetails && Object.keys(analysisData.subjectDetails).length > 0) {
     doc.setFontSize(16);
     doc.setTextColor(40, 40, 40);
-    doc.text('Branş Bazlı Performans', 20, yPos);
-    yPos += 20;
+    doc.text('Branş Bazlı Performans', margin, yPos);
+    yPos += 18;
     
     doc.setFontSize(12);
     doc.setTextColor(60, 60, 60);
     
     Object.entries(analysisData.subjectDetails || {}).forEach(([subject, details]: [string, any]) => {
-      if (yPos > 250) {
+      if (yPos > pageHeight - margin - 120) {
         doc.addPage();
-        yPos = 30;
+        yPos = margin;
       }
       
       doc.setFontSize(14);
       doc.setTextColor(40, 40, 40);
-      doc.text(subject, 20, yPos);
-      yPos += 15;
+      doc.text(subject, margin, yPos);
+      yPos += 14;
       
       doc.setFontSize(10);
       doc.setTextColor(80, 80, 80);
-      doc.text(`  • Toplam Ödev: ${details?.totalAssignments || 0}`, 25, yPos);
-      yPos += 12;
-      doc.text(`  • Teslim Edilen: ${details?.submittedAssignments || 0}`, 25, yPos);
-      yPos += 12;
-      doc.text(`  • Değerlendirilen: ${details?.gradedAssignments || 0}`, 25, yPos);
-      yPos += 12;
-      doc.text(`  • Tamamlama Oranı: %${details?.completion || 0}`, 25, yPos);
-      yPos += 12;
-      doc.text(`  • Ortalama Not: ${details?.averageGrade || 0}/100`, 25, yPos);
-      yPos += 20;
+      const subjectRows = [
+        `• Toplam Ödev: ${details?.totalAssignments || 0}`,
+        `• Teslim Edilen: ${details?.submittedAssignments || 0}`,
+        `• Değerlendirilen: ${details?.gradedAssignments || 0}`,
+        `• Tamamlama Oranı: %${details?.completion || 0}`,
+        `• Ortalama Not: ${details?.averageGrade || 0}/100`
+      ];
+      for (const sRow of subjectRows) {
+        if (yPos > pageHeight - margin - 20) {
+          doc.addPage();
+          yPos = margin;
+        }
+        doc.text(sRow, margin + 10, yPos);
+        yPos += 12;
+      }
+      yPos += 10;
     });
   }
   
   // Monthly Progress Section
   if (analysisData.monthlyProgress && analysisData.monthlyProgress.length > 0) {
-    if (yPos > 200) {
+    if (yPos > pageHeight - margin - 140) {
       doc.addPage();
-      yPos = 30;
+      yPos = margin;
     }
     
     doc.setFontSize(16);
     doc.setTextColor(40, 40, 40);
-    doc.text('Aylık İlerleme', 20, yPos);
-    yPos += 20;
+    doc.text('Aylık İlerleme', margin, yPos);
+    yPos += 18;
     
     doc.setFontSize(10);
     doc.setTextColor(80, 80, 80);
     
     (analysisData.monthlyProgress || []).forEach((month: any) => {
-      if (yPos > 250) {
+      if (yPos > pageHeight - margin - 20) {
         doc.addPage();
-        yPos = 30;
+        yPos = margin;
       }
       
-      doc.text(`${month?.month || 'Bilinmeyen'}: ${month?.assignments || 0} ödev, ${month?.goalsCompleted || 0} hedef`, 20, yPos);
+      doc.text(`${month?.month || 'Bilinmeyen'}: ${month?.assignments || 0} ödev, ${month?.goalsCompleted || 0} hedef`, margin, yPos);
       yPos += 12;
     });
-    yPos += 15;
+    yPos += 12;
   }
   
   // Recommendations Section
-  if (yPos > 200) {
+  if (yPos > pageHeight - margin - 100) {
     doc.addPage();
-    yPos = 30;
+    yPos = margin;
   }
   
   doc.setFontSize(16);
   doc.setTextColor(40, 40, 40);
-  doc.text('Öneriler', 20, yPos);
-  yPos += 20;
+  doc.text('Öneriler', margin, yPos);
+  yPos += 18;
   
   doc.setFontSize(12);
   doc.setTextColor(60, 60, 60);
@@ -344,21 +358,21 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
   
   // Split long text into multiple lines
   try {
-    const splitText = doc.splitTextToSize(recommendation, 170);
-    doc.text(splitText, 20, yPos);
+    const splitText = doc.splitTextToSize(recommendation, pageWidth - margin * 2);
+    doc.text(splitText, margin, yPos);
   } catch (textError) {
     console.warn('Text splitting failed, using original text:', textError);
-    doc.text(recommendation, 20, yPos);
+    doc.text(recommendation, margin, yPos);
   }
   
   // Footer
   const pageCount = (doc as any).getNumberOfPages ? (doc as any).getNumberOfPages() : 1;
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
-    doc.text(`Sayfa ${i} / ${pageCount}`, 20, 285);
-    doc.text('Hedefly Eğitim Sistemi', 170, 285);
+    doc.text(`Hedefly Eğitim Sistemi`, margin, pageHeight - margin / 2);
+    doc.text(`Sayfa ${i} / ${pageCount}`, pageWidth - margin - 80, pageHeight - margin / 2);
   }
   
     // Generate PDF buffer
