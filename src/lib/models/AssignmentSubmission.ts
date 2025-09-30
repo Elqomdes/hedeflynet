@@ -16,6 +16,13 @@ export interface IAssignmentSubmission extends Document {
     url: string;
     name: string;
   }[];
+  attempt?: number; // starts at 1
+  versions?: {
+    attempt: number;
+    submittedAt: Date;
+    content?: string;
+    attachments?: { type: 'pdf' | 'video' | 'link' | 'image'; url: string; name: string }[];
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -79,6 +86,24 @@ const AssignmentSubmissionSchema = new Schema<IAssignmentSubmission>({
       type: String,
       required: true
     }
+  }],
+  attempt: {
+    type: Number,
+    min: 1
+  },
+  versions: [{
+    attempt: { type: Number, min: 1, required: true },
+    submittedAt: { type: Date, required: true },
+    content: { type: String, maxlength: 5000 },
+    attachments: [{
+      type: {
+        type: String,
+        enum: ['pdf', 'video', 'link', 'image'],
+        required: true
+      },
+      url: { type: String, required: true },
+      name: { type: String, required: true }
+    }]
   }]
 }, {
   timestamps: true

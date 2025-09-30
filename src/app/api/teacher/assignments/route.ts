@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade } = await request.json();
+    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, publishAt, closeAt, allowLate, maxAttempts, tags, rubricId } = await request.json();
 
     if (!title || !description || !type || !dueDate) {
       return NextResponse.json(
@@ -75,6 +75,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (maxAttempts !== undefined && (typeof maxAttempts !== 'number' || maxAttempts < 1)) {
+      return NextResponse.json(
+        { error: 'maxAttempts en az 1 olmalıdır' },
+        { status: 400 }
+      );
+    }
+
+    if (allowLate) {
+      if (!['no', 'untilClose', 'always'].includes(allowLate.policy)) {
+        return NextResponse.json(
+          { error: 'Geç teslim politikası geçersiz' },
+          { status: 400 }
+        );
+      }
+      if (allowLate.penaltyPercent !== undefined && (allowLate.penaltyPercent < 0 || allowLate.penaltyPercent > 100)) {
+        return NextResponse.json(
+          { error: 'penaltyPercent 0-100 arasında olmalıdır' },
+          { status: 400 }
+        );
+      }
+    }
+
     await connectDB();
 
     if (type === 'class') {
@@ -98,7 +120,13 @@ export async function POST(request: NextRequest) {
           studentId: student._id,
           attachments: attachments || [],
           dueDate: new Date(dueDate),
-          maxGrade: maxGrade ?? 100
+          maxGrade: maxGrade ?? 100,
+          publishAt: publishAt ? new Date(publishAt) : undefined,
+          closeAt: closeAt ? new Date(closeAt) : undefined,
+          allowLate: allowLate || undefined,
+          maxAttempts: maxAttempts || undefined,
+          tags: Array.isArray(tags) ? tags : undefined,
+          rubricId: rubricId || undefined
         });
         await assignment.save();
         assignments.push(assignment);
@@ -120,7 +148,13 @@ export async function POST(request: NextRequest) {
         studentId: studentId,
         attachments: attachments || [],
         dueDate: new Date(dueDate),
-        maxGrade: maxGrade ?? 100
+        maxGrade: maxGrade ?? 100,
+        publishAt: publishAt ? new Date(publishAt) : undefined,
+        closeAt: closeAt ? new Date(closeAt) : undefined,
+        allowLate: allowLate || undefined,
+        maxAttempts: maxAttempts || undefined,
+        tags: Array.isArray(tags) ? tags : undefined,
+        rubricId: rubricId || undefined
       });
 
       await assignment.save();

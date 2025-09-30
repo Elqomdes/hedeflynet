@@ -65,6 +65,22 @@ export async function POST(
 
     // Determine status (late or submitted) and carry maxGrade from assignment
     const now = new Date();
+    const isBeforePublish = assignment.publishAt && now < new Date(assignment.publishAt);
+    if (isBeforePublish) {
+      return NextResponse.json(
+        { error: 'Ödev henüz yayınlanmadı' },
+        { status: 403 }
+      );
+    }
+
+    const isClosed = assignment.closeAt && now > new Date(assignment.closeAt);
+    if (isClosed && (!assignment.allowLate || assignment.allowLate.policy === 'no')) {
+      return NextResponse.json(
+        { error: 'Ödev süresi doldu' },
+        { status: 403 }
+      );
+    }
+
     const isLate = assignment.dueDate && new Date(assignment.dueDate) < now;
 
     const submission = new AssignmentSubmission({
@@ -74,7 +90,9 @@ export async function POST(
       attachments: attachments || [],
       status: isLate ? 'late' : 'submitted',
       submittedAt: now,
-      maxGrade: assignment.maxGrade || 100
+      maxGrade: assignment.maxGrade || 100,
+      attempt: 1,
+      versions: [{ attempt: 1, submittedAt: now, content, attachments: attachments || [] }]
     });
 
     await submission.save();

@@ -69,12 +69,39 @@ export async function PUT(
     }
 
     const now = new Date();
+    const isBeforePublish = assignment.publishAt && now < new Date(assignment.publishAt);
+    if (isBeforePublish) {
+      return NextResponse.json(
+        { error: 'Ödev henüz yayınlanmadı' },
+        { status: 403 }
+      );
+    }
+
+    const isClosed = assignment.closeAt && now > new Date(assignment.closeAt);
+    if (isClosed && (!assignment.allowLate || assignment.allowLate.policy === 'no')) {
+      return NextResponse.json(
+        { error: 'Ödev süresi doldu' },
+        { status: 403 }
+      );
+    }
+
     const isLate = assignment.dueDate && new Date(assignment.dueDate) < now;
+
+    // attempts
+    const nextAttempt = (submission.attempt || 1) + 1;
+    if (assignment.maxAttempts && nextAttempt > assignment.maxAttempts) {
+      return NextResponse.json(
+        { error: 'Maksimum deneme hakkı aşıldı' },
+        { status: 403 }
+      );
+    }
 
     submission.content = content;
     submission.attachments = attachments || [];
     submission.submittedAt = now;
     submission.status = isLate ? 'late' : 'submitted';
+    submission.attempt = nextAttempt;
+    submission.versions = [...(submission.versions || []), { attempt: nextAttempt, submittedAt: now, content, attachments: attachments || [] }];
 
     await submission.save();
 
