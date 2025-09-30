@@ -25,7 +25,7 @@ export async function GET(
       .populate('classId', 'name')
       .populate('studentId', 'firstName lastName');
 
-    if (!assignment || assignment.teacherId.toString() !== authResult._id) {
+    if (!assignment || String(assignment.teacherId) !== String(authResult._id)) {
       return NextResponse.json(
         { error: 'Assignment not found or unauthorized' },
         { status: 404 }
@@ -68,7 +68,7 @@ export async function PUT(
     await connectDB();
 
     const assignment = await Assignment.findById(params.id);
-    if (!assignment || assignment.teacherId.toString() !== authResult._id) {
+    if (!assignment || String(assignment.teacherId) !== String(authResult._id)) {
       return NextResponse.json(
         { error: 'Assignment not found or unauthorized' },
         { status: 404 }
@@ -114,7 +114,7 @@ export async function DELETE(
     await connectDB();
 
     const assignment = await Assignment.findById(params.id);
-    if (!assignment || assignment.teacherId.toString() !== authResult._id) {
+    if (!assignment || String(assignment.teacherId) !== String(authResult._id)) {
       return NextResponse.json(
         { error: 'Assignment not found or unauthorized' },
         { status: 404 }
