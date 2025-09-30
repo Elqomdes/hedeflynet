@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 type CalendarGoal = {
   _id: string;
   title: string;
-  date: string; // ISO date string (yyyy-mm-dd)
+  date: string; // ISO string: yyyy-mm-dd or full ISO with time
   status?: 'pending' | 'in_progress' | 'completed' | 'cancelled';
 };
 
@@ -48,9 +48,26 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
       map[formatISODate(d)] = [];
     }
     for (const item of items) {
-      if (!map[item.date]) map[item.date] = [];
-      map[item.date].push(item);
+      // Group by day component (using local time of the item)
+      const key = (() => {
+        const dt = new Date(item.date);
+        if (isNaN(dt.getTime())) return item.date; // fallback
+        const y = dt.getFullYear();
+        const m = String(dt.getMonth() + 1).padStart(2, '0');
+        const da = String(dt.getDate()).padStart(2, '0');
+        return `${y}-${m}-${da}`;
+      })();
+      if (!map[key]) map[key] = [];
+      map[key].push(item);
     }
+    // Sort each day's items by time (if any)
+    Object.keys(map).forEach((k) => {
+      map[k].sort((a, b) => {
+        const ta = new Date(a.date).getTime();
+        const tb = new Date(b.date).getTime();
+        return ta - tb;
+      });
+    });
     return map;
   }, [days, items]);
 
@@ -78,11 +95,25 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
               </div>
               <div className="space-y-1 min-h-[2rem]">
                 {grouped[iso] && grouped[iso].length > 0 ? (
-                  grouped[iso].slice(0, 4).map((g) => (
-                    <div key={g._id} className="text-xs px-2 py-1 rounded bg-secondary-100 text-secondary-800 truncate">
-                      {g.title}
-                    </div>
-                  ))
+                  grouped[iso].slice(0, 4).map((g) => {
+                    const dt = new Date(g.date);
+                    const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
+                    const timeLabel = hasTime ? dt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+                    const statusColor = (() => {
+                      switch (g.status) {
+                        case 'completed': return 'bg-green-100 text-green-800';
+                        case 'in_progress': return 'bg-blue-100 text-blue-800';
+                        case 'cancelled': return 'bg-red-100 text-red-800';
+                        default: return 'bg-secondary-100 text-secondary-800';
+                      }
+                    })();
+                    return (
+                      <div key={g._id} className={`text-xs px-2 py-1 rounded truncate flex items-center gap-2 ${statusColor}`}>
+                        {timeLabel && <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded bg-white/60 text-secondary-900">{timeLabel}</span>}
+                        <span className="truncate">{g.title}</span>
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className="text-xs text-secondary-400">
                     {emptyText || 'Kayıt yok'}

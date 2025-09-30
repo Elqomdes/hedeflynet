@@ -80,7 +80,10 @@ export default function TeacherGoals() {
 
     try {
       const response = await fetch(`/api/teacher/goals/${goalId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
       });
 
       if (response.ok) {
@@ -140,7 +143,7 @@ export default function TeacherGoals() {
     .map(g => ({
     _id: g._id,
     title: g.title,
-    date: new Date(g.targetDate).toISOString().split('T')[0],
+    date: g.targetDate,
     status: g.status
   }));
 
@@ -373,12 +376,22 @@ export default function TeacherGoals() {
                   
                   <div>
                     <label className="block text-sm font-medium text-secondary-700">
-                      Hedef Tarihi
+                      Hedef Tarihi ve Saati
                     </label>
                     <input
-                      type="date"
+                      type="datetime-local"
                       name="targetDate"
-                      defaultValue={editingGoal?.targetDate ? new Date(editingGoal.targetDate).toISOString().split('T')[0] : (selectedDate || '')}
+                      defaultValue={(() => {
+                        if (editingGoal?.targetDate) {
+                          const d = new Date(editingGoal.targetDate);
+                          return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                        }
+                        if (selectedDate) {
+                          // selectedDate is yyyy-mm-dd; make it local 09:00 default
+                          return `${selectedDate}T09:00`;
+                        }
+                        return '';
+                      })()}
                       className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     />
