@@ -42,6 +42,7 @@ export default function StudentAnalysisPage() {
   const [student, setStudent] = useState<Student | null>(null);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [generatingReport, setGeneratingReport] = useState(false);
 
   const fetchAnalysisData = useCallback(async () => {
     try {
@@ -73,6 +74,9 @@ export default function StudentAnalysisPage() {
   }, [studentId, fetchAnalysisData]);
 
   const generateReport = async () => {
+    if (!analysisData || !student) return;
+    
+    setGeneratingReport(true);
     try {
       const response = await fetch(`/api/teacher/students/${studentId}/report`, {
         method: 'POST',
@@ -87,14 +91,23 @@ export default function StudentAnalysisPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${student?.firstName}_${student?.lastName}_raporu.pdf`;
+        a.download = `${student.firstName}_${student.lastName}_raporu.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+        
+        // Show success message
+        alert('Rapor başarıyla indirildi!');
+      } else {
+        const errorData = await response.json();
+        alert(`Rapor oluşturulurken hata oluştu: ${errorData.error || 'Bilinmeyen hata'}`);
       }
     } catch (error) {
       console.error('Report generation error:', error);
+      alert('Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setGeneratingReport(false);
     }
   };
 
@@ -138,10 +151,20 @@ export default function StudentAnalysisPage() {
           </div>
           <button
             onClick={generateReport}
-            className="btn-primary flex items-center space-x-2"
+            disabled={generatingReport || !analysisData}
+            className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download className="w-4 h-4" />
-            <span>Rapor İndir</span>
+            {generatingReport ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Oluşturuluyor...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Rapor İndir</span>
+              </>
+            )}
           </button>
         </div>
       </div>
