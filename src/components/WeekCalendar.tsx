@@ -100,12 +100,12 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
                     const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
                     const timeLabel = hasTime ? dt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
                     const statusColor = (() => {
-                      switch (g.status) {
-                        case 'completed': return 'bg-green-100 text-green-800';
-                        case 'in_progress': return 'bg-blue-100 text-blue-800';
-                        case 'cancelled': return 'bg-red-100 text-red-800';
-                        default: return 'bg-secondary-100 text-secondary-800';
-                      }
+                      const isPast = !isNaN(dt.getTime()) && dt.getTime() < new Date().getTime();
+                      if (g.status === 'completed') return 'bg-green-100 text-green-800';
+                      if (g.status === 'cancelled') return 'bg-red-100 text-red-800';
+                      if (isPast) return 'bg-orange-100 text-orange-800';
+                      if (g.status === 'in_progress') return 'bg-blue-100 text-blue-800';
+                      return 'bg-secondary-100 text-secondary-800';
                     })();
                     return (
                       <div key={g._id} className={`text-xs px-2 py-1 rounded truncate flex items-center gap-2 ${statusColor}`}>

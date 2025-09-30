@@ -102,6 +102,27 @@ export default function StudentGoals() {
     return new Date(targetDate) < new Date() && !goals.find(g => g.targetDate === targetDate)?.status.includes('completed');
   };
 
+  const updateGoal = async (goalId: string, data: Partial<Pick<Goal, 'status' | 'progress'>>) => {
+    try {
+      const res = await fetch(`/api/student/goals/${goalId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        await fetchGoals();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Hedef güncellenemedi');
+      }
+    } catch (e) {
+      console.error('Goal update error', e);
+      alert('Hedef güncellenemedi');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -178,6 +199,29 @@ export default function StudentGoals() {
                         className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${goal.progress}%` }}
                       ></div>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={() => updateGoal(goal._id, { status: 'completed', progress: 100 })}
+                        className="px-3 py-1 rounded-md text-xs bg-green-600 text-white hover:bg-green-700"
+                        title="Tamamlandı olarak işaretle"
+                      >
+                        Tamamlandı
+                      </button>
+                      <button
+                        onClick={() => updateGoal(goal._id, { status: 'in_progress' })}
+                        className="px-3 py-1 rounded-md text-xs bg-blue-600 text-white hover:bg-blue-700"
+                        title="Devam ediyor olarak işaretle"
+                      >
+                        Devam Ediyor
+                      </button>
+                      <button
+                        onClick={() => updateGoal(goal._id, { status: 'pending', progress: 0 })}
+                        className="px-3 py-1 rounded-md text-xs bg-orange-500 text-white hover:bg-orange-600"
+                        title="Bekliyor olarak işaretle"
+                      >
+                        Bekliyor
+                      </button>
                     </div>
                   </div>
                   
