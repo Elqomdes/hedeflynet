@@ -78,7 +78,11 @@ export default function TeacherAssignments() {
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch('/api/teacher/assignments');
+      const response = await fetch('/api/teacher/assignments', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       if (response.ok) {
         const data = await response.json();
         setAssignments(data);
@@ -92,7 +96,11 @@ export default function TeacherAssignments() {
 
   const fetchClasses = async () => {
     try {
-      const response = await fetch('/api/teacher/classes');
+      const response = await fetch('/api/teacher/classes', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       if (response.ok) {
         const data = await response.json();
         // Remove duplicate classes by name to prevent duplicate options
@@ -108,7 +116,11 @@ export default function TeacherAssignments() {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('/api/teacher/students');
+      const response = await fetch('/api/teacher/students', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       if (response.ok) {
         const data = await response.json();
         setStudents(data);
@@ -125,7 +137,10 @@ export default function TeacherAssignments() {
 
     try {
       const response = await fetch(`/api/teacher/assignments/${assignmentId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
       });
 
       if (response.ok) {
@@ -138,7 +153,11 @@ export default function TeacherAssignments() {
 
   const fetchSubmissions = async (assignmentId: string) => {
     try {
-      const response = await fetch(`/api/teacher/assignments/${assignmentId}/submissions`);
+      const response = await fetch(`/api/teacher/assignments/${assignmentId}/submissions`, {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       if (response.ok) {
         const data = await response.json();
         setSubmissions(data);
@@ -159,8 +178,11 @@ export default function TeacherAssignments() {
     try {
       const response = await fetch(`/api/teacher/assignments/submissions/${gradingSubmission._id}/grade`, {
         method: 'PUT',
+        credentials: 'include',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify({
           grade: grade,

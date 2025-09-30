@@ -31,7 +31,11 @@ export default function StudentGoals() {
 
   const fetchGoals = async () => {
     try {
-      const response = await fetch('/api/student/goals');
+      const response = await fetch('/api/student/goals', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       if (response.ok) {
         const data = await response.json();
         setGoals(data);

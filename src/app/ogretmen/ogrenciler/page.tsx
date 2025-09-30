@@ -35,7 +35,13 @@ export default function StudentsPage() {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('/api/teacher/students');
+      const response = await fetch('/api/teacher/students', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setStudents(data);
@@ -56,8 +62,11 @@ export default function StudentsPage() {
       
       const response = await fetch('/api/teacher/students', {
         method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify(newStudent),
       });
@@ -100,6 +109,11 @@ export default function StudentsPage() {
     try {
       const response = await fetch(`/api/teacher/students/${studentId}`, {
         method: 'DELETE',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
       });
 
       if (response.ok) {

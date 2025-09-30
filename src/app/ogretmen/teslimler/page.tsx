@@ -27,12 +27,20 @@ export default function TeacherSubmissionsPage() {
     const load = async () => {
       try {
         // Fetch teacher's assignments, then for each get submissions, flatten and sort latest first
-        const assignmentsRes = await fetch('/api/teacher/assignments');
+        const assignmentsRes = await fetch('/api/teacher/assignments', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
         if (!assignmentsRes.ok) return;
         const assignments = await assignmentsRes.json();
         const all: SubmissionItem[] = [];
         for (const a of assignments) {
-          const r = await fetch(`/api/teacher/assignments/${a._id}/submissions`);
+          const r = await fetch(`/api/teacher/assignments/${a._id}/submissions`, {
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' },
+          });
           if (r.ok) {
             const s = await r.json();
             all.push(...s);
@@ -61,7 +69,9 @@ export default function TeacherSubmissionsPage() {
     try {
       const res = await fetch(`/api/teacher/assignments/submissions/${grading._id}/grade`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
         body: JSON.stringify({ grade, teacherFeedback, status: 'graded' })
       });
       if (res.ok) {
@@ -74,12 +84,20 @@ export default function TeacherSubmissionsPage() {
         // re-run loader
         (async () => {
           try {
-            const assignmentsRes = await fetch('/api/teacher/assignments');
+            const assignmentsRes = await fetch('/api/teacher/assignments', {
+              credentials: 'include',
+              cache: 'no-store',
+              headers: { 'Cache-Control': 'no-cache' },
+            });
             if (!assignmentsRes.ok) return;
             const assignments = await assignmentsRes.json();
             const all: SubmissionItem[] = [];
             for (const a of assignments) {
-              const r = await fetch(`/api/teacher/assignments/${a._id}/submissions`);
+              const r = await fetch(`/api/teacher/assignments/${a._id}/submissions`, {
+                credentials: 'include',
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' },
+              });
               if (r.ok) {
                 const s = await r.json();
                 all.push(...s);

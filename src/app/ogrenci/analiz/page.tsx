@@ -36,7 +36,11 @@ export default function StudentAnalysisPage() {
 
   const fetchAnalysisData = async () => {
     try {
-      const response = await fetch('/api/student/analysis');
+      const response = await fetch('/api/student/analysis', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       if (response.ok) {
         const data = await response.json();
         setAnalysisData(data);

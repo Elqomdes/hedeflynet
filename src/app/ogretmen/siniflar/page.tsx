@@ -59,7 +59,11 @@ export default function TeacherClasses() {
 
   const fetchClasses = async () => {
     try {
-      const response = await fetch('/api/teacher/classes');
+      const response = await fetch('/api/teacher/classes', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       if (response.ok) {
         const data = await response.json();
         setClasses(data);
@@ -78,8 +82,16 @@ export default function TeacherClasses() {
   const fetchAvailableUsers = async () => {
     try {
       const [studentsResponse, teachersResponse] = await Promise.all([
-        fetch('/api/teacher/students'),
-        fetch('/api/admin/teachers')
+        fetch('/api/teacher/students', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        }),
+        fetch('/api/admin/teachers', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        })
       ]);
 
       if (studentsResponse.ok) {
@@ -107,7 +119,10 @@ export default function TeacherClasses() {
     try {
       console.log('Deleting class with ID:', classId);
       const response = await fetch(`/api/teacher/classes/${classId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
       });
 
       console.log('Delete response status:', response.status);
@@ -383,8 +398,11 @@ export default function TeacherClasses() {
 
                   const response = await fetch(url, {
                     method,
+                    credentials: 'include',
+                    cache: 'no-store',
                     headers: {
                       'Content-Type': 'application/json',
+                      'Cache-Control': 'no-cache',
                     },
                     body: JSON.stringify(classData)
                   });

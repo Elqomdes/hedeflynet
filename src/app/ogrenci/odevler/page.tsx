@@ -55,7 +55,11 @@ export default function StudentAssignments() {
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch('/api/student/assignments');
+      const response = await fetch('/api/student/assignments', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       if (response.ok) {
         const data = await response.json();
         setAssignments(data);
@@ -146,8 +150,11 @@ export default function StudentAssignments() {
     try {
       const response = await fetch(`/api/student/assignments/${assignmentId}/submit`, {
         method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify({
           content: submissionContent,
@@ -179,8 +186,11 @@ export default function StudentAssignments() {
     try {
       const response = await fetch(`/api/student/assignments/${assignmentId}/resubmit`, {
         method: 'PUT',
+        credentials: 'include',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify({
           content: submissionContent,

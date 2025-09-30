@@ -37,7 +37,13 @@ export default function TeacherGoals() {
 
   const fetchGoals = async () => {
     try {
-      const response = await fetch('/api/teacher/goals');
+      const response = await fetch('/api/teacher/goals', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setGoals(data);
@@ -51,7 +57,13 @@ export default function TeacherGoals() {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('/api/teacher/students');
+      const response = await fetch('/api/teacher/students', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setStudents(data);
@@ -291,8 +303,11 @@ export default function TeacherGoals() {
                 try {
                   const response = await fetch('/api/teacher/goals', {
                     method: 'POST',
+                    credentials: 'include',
+                    cache: 'no-store',
                     headers: {
                       'Content-Type': 'application/json',
+                      'Cache-Control': 'no-cache',
                     },
                     body: JSON.stringify(goalData)
                   });
