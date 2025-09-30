@@ -17,43 +17,42 @@ function logError(context: string, error: any, additionalData?: any) {
 }
 
 // Robust data validation and sanitization
-function validateAndSanitizeData(analysisData: any) {
-  const defaults = {
-    assignmentCompletion: 0,
-    totalAssignments: 0,
-    submittedAssignments: 0,
-    gradedAssignments: 0,
-    gradingRate: 0,
-    averageGrade: 0,
-    subjectStats: {},
-    subjectDetails: {},
-    goalsProgress: 0,
-    overallPerformance: 0,
-    monthlyProgress: [],
-    assignmentTitleCounts: []
+type SanitizedAnalysis = {
+  assignmentCompletion: number;
+  totalAssignments: number;
+  submittedAssignments: number;
+  gradedAssignments: number;
+  gradingRate: number;
+  averageGrade: number;
+  subjectStats: Record<string, any>;
+  subjectDetails: Record<string, any>;
+  goalsProgress: number;
+  overallPerformance: number;
+  monthlyProgress: any[];
+  assignmentTitleCounts: any[];
+};
+
+function clampPercent(value: any): number {
+  const num = typeof value === 'number' && isFinite(value) ? value : 0;
+  return Math.max(0, Math.min(100, Math.round(num)));
+}
+
+function validateAndSanitizeData(analysisData: any): SanitizedAnalysis {
+  const data = analysisData || {};
+  return {
+    assignmentCompletion: clampPercent(data.assignmentCompletion),
+    totalAssignments: typeof data.totalAssignments === 'number' && isFinite(data.totalAssignments) ? data.totalAssignments : 0,
+    submittedAssignments: typeof data.submittedAssignments === 'number' && isFinite(data.submittedAssignments) ? data.submittedAssignments : 0,
+    gradedAssignments: typeof data.gradedAssignments === 'number' && isFinite(data.gradedAssignments) ? data.gradedAssignments : 0,
+    gradingRate: clampPercent(data.gradingRate),
+    averageGrade: clampPercent(data.averageGrade),
+    subjectStats: data.subjectStats && typeof data.subjectStats === 'object' ? data.subjectStats : {},
+    subjectDetails: data.subjectDetails && typeof data.subjectDetails === 'object' ? data.subjectDetails : {},
+    goalsProgress: clampPercent(data.goalsProgress),
+    overallPerformance: clampPercent(data.overallPerformance),
+    monthlyProgress: Array.isArray(data.monthlyProgress) ? data.monthlyProgress : [],
+    assignmentTitleCounts: Array.isArray(data.assignmentTitleCounts) ? data.assignmentTitleCounts : []
   };
-
-  const sanitized = { ...defaults };
-  
-  // Safely extract and validate numeric values
-  Object.keys(defaults).forEach(key => {
-    if (key === 'subjectStats' || key === 'subjectDetails') {
-      sanitized[key] = analysisData[key] && typeof analysisData[key] === 'object' 
-        ? analysisData[key] 
-        : defaults[key];
-    } else if (key === 'monthlyProgress' || key === 'assignmentTitleCounts') {
-      sanitized[key] = Array.isArray(analysisData[key]) 
-        ? analysisData[key] 
-        : defaults[key];
-    } else {
-      const value = analysisData[key];
-      if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
-        sanitized[key] = Math.max(0, Math.min(100, value));
-      }
-    }
-  });
-
-  return sanitized;
 }
 
 // Alternative PDF generation using simple HTML-to-PDF approach
