@@ -99,7 +99,12 @@ export default function TeacherLayout({
             <div className="flex-shrink-0 flex border-t border-secondary-200 p-4">
               <div className="flex items-center w-full">
                 <div className="ml-3 flex-1">
-                  <p className="text-base font-medium text-secondary-800">{user?.firstName} {user?.lastName}</p>
+                  <Link 
+                    href="/ogretmen/profil"
+                    className="text-base font-medium text-secondary-800 hover:text-primary-600 transition-colors cursor-pointer"
+                  >
+                    {user?.firstName} {user?.lastName}
+                  </Link>
                   <p className="text-sm font-medium text-secondary-500">Öğretmen</p>
                 </div>
                 <button
@@ -136,7 +141,12 @@ export default function TeacherLayout({
             <div className="flex-shrink-0 flex border-t border-secondary-200 p-4">
               <div className="flex items-center">
                 <div className="ml-3">
-                  <p className="text-base font-medium text-secondary-800">{user?.firstName} {user?.lastName}</p>
+                  <Link 
+                    href="/ogretmen/profil"
+                    className="text-base font-medium text-secondary-800 hover:text-primary-600 transition-colors cursor-pointer"
+                  >
+                    {user?.firstName} {user?.lastName}
+                  </Link>
                   <p className="text-sm font-medium text-secondary-500">Öğretmen</p>
                 </div>
               </div>
