@@ -66,8 +66,19 @@ export async function PUT(
     };
 
     if (grade !== undefined) {
+      const max = assignment.maxGrade || 100;
+      if (grade > max) {
+        return NextResponse.json(
+          { error: `Grade cannot exceed maxGrade (${max})` },
+          { status: 400 }
+        );
+      }
       updateData.grade = grade;
-      updateData.maxGrade = assignment.maxGrade || 100;
+      updateData.maxGrade = max;
+      // If teacher sets a grade, default status to 'graded' unless explicitly provided
+      if (!status) {
+        updateData.status = 'graded';
+      }
     }
 
     if (teacherFeedback !== undefined) {

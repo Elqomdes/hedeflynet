@@ -63,14 +63,18 @@ export async function POST(
       );
     }
 
-    // Create submission
+    // Determine status (late or submitted) and carry maxGrade from assignment
+    const now = new Date();
+    const isLate = assignment.dueDate && new Date(assignment.dueDate) < now;
+
     const submission = new AssignmentSubmission({
       assignmentId,
       studentId,
       content,
       attachments: attachments || [],
-      status: 'submitted',
-      submittedAt: new Date()
+      status: isLate ? 'late' : 'submitted',
+      submittedAt: now,
+      maxGrade: assignment.maxGrade || 100
     });
 
     await submission.save();

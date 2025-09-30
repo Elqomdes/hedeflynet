@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         const assignment = new Assignment({
           title,
           description,
-          type: 'individual', // Convert to individual for each student
+          type: 'class',
           teacherId: authResult._id,
           classId: classId,
           studentId: student._id,
