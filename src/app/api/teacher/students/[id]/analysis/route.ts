@@ -176,12 +176,12 @@ export async function GET(
       });
     }
 
-    // Build assignment title counts for radar chart
+    // Build assignment title counts for bar chart
     const titleGroups = await Assignment.aggregate([
       { $match: { studentId } },
       { $group: { _id: '$title', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
-      { $limit: 12 }
+      { $limit: 10 }
     ]);
 
     return NextResponse.json({

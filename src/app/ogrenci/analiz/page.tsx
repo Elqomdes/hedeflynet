@@ -198,20 +198,35 @@ export default function StudentAnalysisPage() {
           </div>
         </div>
 
-        {/* Radar: Ödev başlığına göre adet */}
+        {/* Bar Chart: Ödev başlığına göre adet */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
             Başlığa Göre Ödev Dağılımı
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={(analysisData.assignmentTitleCounts || []).map(i => ({ title: i.title.length > 16 ? i.title.slice(0, 16) + '…' : i.title, count: i.count }))}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="title" />
-                <PolarRadiusAxis />
-                <Radar name="Ödev Adedi" dataKey="count" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.4} />
-                <Tooltip />
-              </RadarChart>
+              <BarChart 
+                data={(analysisData.assignmentTitleCounts || []).map(i => ({ 
+                  title: i.title.length > 20 ? i.title.slice(0, 20) + '…' : i.title, 
+                  count: i.count 
+                }))}
+                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="title" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                  interval={0}
+                />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
+                  labelFormatter={(label) => `Başlık: ${label}`}
+                />
+                <Bar dataKey="count" fill="#3B82F6" name="Ödev Adedi" />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
