@@ -44,30 +44,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, targetDate, teacherId } = await request.json();
-
-    if (!title || !description || !targetDate || !teacherId) {
-      return NextResponse.json(
-        { error: 'Tüm alanlar gereklidir' },
-        { status: 400 }
-      );
-    }
-
-    await connectDB();
-
-    const goal = new Goal({
-      studentId: authResult._id,
-      teacherId,
-      title,
-      description,
-      targetDate: new Date(targetDate),
-      status: 'pending',
-      progress: 0
-    });
-
-    await goal.save();
-
-    return NextResponse.json(goal, { status: 201 });
+    // Students are not allowed to create goals anymore
+    return NextResponse.json(
+      { error: 'Öğrenciler hedef oluşturamaz. Hedefler öğretmen tarafından eklenir.' },
+      { status: 403 }
+    );
   } catch (error) {
     console.error('Create goal error:', error);
     return NextResponse.json(

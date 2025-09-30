@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Target, Plus, Calendar, User, CheckCircle, Clock, AlertCircle, Edit3 } from 'lucide-react';
+import { Target, Calendar, User, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import WeekCalendar from '@/components/WeekCalendar';
 
 interface Goal {
   _id: string;
@@ -22,8 +23,7 @@ export default function StudentGoals() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  // Students cannot create or edit goals
 
   useEffect(() => {
     fetchGoals();
@@ -87,6 +87,13 @@ export default function StudentGoals() {
     return goal.status === filter;
   });
 
+  const weekItems = filteredGoals.map(g => ({
+    _id: g._id,
+    title: g.title,
+    date: new Date(g.targetDate).toISOString().split('T')[0],
+    status: g.status
+  }));
+
   const isOverdue = (targetDate: string) => {
     return new Date(targetDate) < new Date() && !goals.find(g => g.targetDate === targetDate)?.status.includes('completed');
   };
@@ -114,14 +121,11 @@ export default function StudentGoals() {
             <option value="in_progress">Devam Eden</option>
             <option value="completed">Tamamlanan</option>
           </select>
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Yeni Hedef
-          </button>
         </div>
+      </div>
+
+      <div>
+        <WeekCalendar items={weekItems} readOnly emptyText="Hedef yok" />
       </div>
 
       {filteredGoals.length === 0 ? (
@@ -185,135 +189,9 @@ export default function StudentGoals() {
                   </div>
                 </div>
                 
-                <button
-                  onClick={() => setEditingGoal(goal)}
-                  className="ml-4 p-2 text-secondary-400 hover:text-secondary-600"
-                >
-                  <Edit3 className="h-4 w-4" />
-                </button>
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Create/Edit Goal Modal */}
-      {(showCreateForm || editingGoal) && (
-        <div className="fixed inset-0 bg-secondary-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-secondary-900 mb-4">
-                {editingGoal ? 'Hedefi Düzenle' : 'Yeni Hedef Oluştur'}
-              </h3>
-              
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const goalData = {
-                  title: formData.get('title'),
-                  description: formData.get('description'),
-                  targetDate: formData.get('targetDate'),
-                  teacherId: formData.get('teacherId')
-                };
-
-                try {
-                  const response = await fetch('/api/student/goals', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(goalData)
-                  });
-
-                  if (response.ok) {
-                    fetchGoals(); // Refresh the list
-                    setShowCreateForm(false);
-                    setEditingGoal(null);
-                  } else {
-                    const error = await response.json();
-                    alert(error.error || 'Hedef oluşturulamadı');
-                  }
-                } catch (error) {
-                  console.error('Goal creation error:', error);
-                  alert('Hedef oluşturulamadı');
-                }
-              }}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Başlık
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      defaultValue={editingGoal?.title || ''}
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Açıklama
-                    </label>
-                    <textarea
-                      name="description"
-                      defaultValue={editingGoal?.description || ''}
-                      rows={3}
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Hedef Tarihi
-                    </label>
-                    <input
-                      type="date"
-                      name="targetDate"
-                      defaultValue={editingGoal?.targetDate ? new Date(editingGoal.targetDate).toISOString().split('T')[0] : ''}
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Öğretmen
-                    </label>
-                    <select
-                      name="teacherId"
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      required
-                    >
-                      <option value="">Öğretmen seçin</option>
-                      <option value="default">Varsayılan Öğretmen</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="mt-6 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      setEditingGoal(null);
-                    }}
-                    className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                  >
-                    İptal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                  >
-                    {editingGoal ? 'Güncelle' : 'Oluştur'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Target, Plus, User, Calendar, CheckCircle, Clock, AlertCircle, Edit3, Trash2 } from 'lucide-react';
+import WeekCalendar from '@/components/WeekCalendar';
 
 interface Goal {
   _id: string;
@@ -26,6 +27,8 @@ export default function TeacherGoals() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [students, setStudents] = useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
 
   useEffect(() => {
     fetchGoals();
@@ -120,6 +123,15 @@ export default function TeacherGoals() {
     return goal.status === filter;
   });
 
+  const weekItems = filteredGoals
+    .filter(g => !selectedStudentId || g.studentId._id === selectedStudentId)
+    .map(g => ({
+    _id: g._id,
+    title: g.title,
+    date: new Date(g.targetDate).toISOString().split('T')[0],
+    status: g.status
+  }));
+
   const isOverdue = (targetDate: string) => {
     return new Date(targetDate) < new Date() && !goals.find(g => g.targetDate === targetDate)?.status.includes('completed');
   };
@@ -138,6 +150,16 @@ export default function TeacherGoals() {
         <h1 className="text-2xl font-bold text-secondary-900">Hedeflerim</h1>
         <div className="mt-4 sm:mt-0 flex space-x-3">
           <select
+            value={selectedStudentId}
+            onChange={(e) => setSelectedStudentId(e.target.value)}
+            className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+          >
+            <option value="">Tüm Öğrenciler</option>
+            {students.map((s) => (
+              <option key={s._id} value={s._id}>{s.firstName} {s.lastName}</option>
+            ))}
+          </select>
+          <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as any)}
             className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
@@ -148,13 +170,22 @@ export default function TeacherGoals() {
             <option value="completed">Tamamlanan</option>
           </select>
           <button
-            onClick={() => setShowCreateForm(true)}
+            onClick={() => { if (!selectedStudentId) return; setSelectedDate(new Date().toISOString().split('T')[0]); setShowCreateForm(true); }}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            disabled={!selectedStudentId}
           >
             <Plus className="h-4 w-4 mr-2" />
             Yeni Hedef
           </button>
         </div>
+      </div>
+
+      <div>
+        <WeekCalendar
+          items={weekItems}
+          onSelectDate={(iso) => { if (!selectedStudentId) return; setSelectedDate(iso); setShowCreateForm(true); }}
+          emptyText={selectedStudentId ? 'Hedef yok' : 'Öğrenci seçiniz'}
+        />
       </div>
 
       {filteredGoals.length === 0 ? (
@@ -312,7 +343,7 @@ export default function TeacherGoals() {
                     </label>
                     <select
                       name="studentId"
-                      defaultValue={editingGoal?.studentId._id || ''}
+                      defaultValue={editingGoal?.studentId._id || selectedStudentId || ''}
                       className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
@@ -332,7 +363,7 @@ export default function TeacherGoals() {
                     <input
                       type="date"
                       name="targetDate"
-                      defaultValue={editingGoal?.targetDate ? new Date(editingGoal.targetDate).toISOString().split('T')[0] : ''}
+                      defaultValue={editingGoal?.targetDate ? new Date(editingGoal.targetDate).toISOString().split('T')[0] : (selectedDate || '')}
                       className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     />
