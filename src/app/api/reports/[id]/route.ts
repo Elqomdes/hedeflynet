@@ -11,7 +11,13 @@ export async function GET(
   try {
     await connectDB();
 
-    const report = await Report.findById(params.id)
+    // Allow access by database id or shareToken
+    const idOrToken = params.id;
+    const isHex24 = /^[a-fA-F0-9]{24}$/.test(idOrToken);
+
+    const query = isHex24 ? { _id: idOrToken } : { shareToken: idOrToken };
+
+    const report = await Report.findOne(query)
       .populate('studentId', 'firstName lastName')
       .populate('teacherId', 'firstName lastName');
 

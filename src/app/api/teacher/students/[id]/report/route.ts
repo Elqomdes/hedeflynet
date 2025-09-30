@@ -86,24 +86,38 @@ export async function POST(
 
     await report.save();
 
-    // Generate PDF content using jsPDF
-    const pdfBuffer = await generatePDFContent(student, validatedData);
-    
-    if (!pdfBuffer || pdfBuffer.length === 0) {
-      throw new Error('PDF oluşturulamadı - boş buffer');
+    // Decide response format
+    const format = request.nextUrl.searchParams.get('format') || 'json';
+
+    if (format === 'pdf') {
+      // Generate PDF content using jsPDF
+      const pdfBuffer = await generatePDFContent(student, validatedData);
+      
+      if (!pdfBuffer || pdfBuffer.length === 0) {
+        throw new Error('PDF oluşturulamadı - boş buffer');
+      }
+
+      // Create safe filename
+      const safeFirstName = student.firstName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
+      const safeLastName = student.lastName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
+      const filename = `${safeFirstName}_${safeLastName}_raporu.pdf`;
+
+      return new NextResponse(new Uint8Array(pdfBuffer), {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+          'Content-Length': pdfBuffer.length.toString()
+        }
+      });
     }
 
-    // Create safe filename
-    const safeFirstName = student.firstName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
-    const safeLastName = student.lastName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
-    const filename = `${safeFirstName}_${safeLastName}_raporu.pdf`;
-
-    return new NextResponse(new Uint8Array(pdfBuffer), {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': pdfBuffer.length.toString()
-      }
+    // Default JSON response
+    return NextResponse.json({
+      _id: report._id,
+      title: report.title,
+      createdAt: report.createdAt,
+      isPublic: report.isPublic,
+      url: `/rapor/${report._id}`
     });
   } catch (error) {
     console.error('Report generation error:', error);
@@ -118,6 +132,35 @@ export async function POST(
         error: 'Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.',
         details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : 'Unknown error' : undefined
       },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const authResult = await getCurrentUser(request);
+    if (!authResult || authResult.role !== 'teacher') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    await connectDB();
+
+    const reports = await Report.find({ studentId: params.id })
+      .sort({ createdAt: -1 })
+      .select('_id title createdAt isPublic');
+
+    return NextResponse.json(reports);
+  } catch (error) {
+    console.error('List reports error:', error);
+    return NextResponse.json(
+      { error: 'Sunucu hatası' },
       { status: 500 }
     );
   }

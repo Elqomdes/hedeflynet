@@ -149,11 +149,6 @@ export default function StudentAnalysisPage() {
     );
   }
 
-  const pieData = [
-    { name: 'Teslim Edildi', value: analysisData.submittedAssignments, color: '#3B82F6' },
-    { name: 'Değerlendirildi', value: analysisData.gradedAssignments, color: '#10B981' },
-    { name: 'Bekliyor', value: Math.max(0, (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0)), color: '#F59E0B' }
-  ];
 
   return (
     <div>
@@ -269,7 +264,11 @@ export default function StudentAnalysisPage() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={pieData}
+                  data={[
+                    { name: 'Teslim Edildi', value: analysisData.submittedAssignments, color: '#3B82F6' },
+                    { name: 'Değerlendirildi', value: analysisData.gradedAssignments, color: '#10B981' },
+                    { name: 'Bekliyor', value: Math.max(0, (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0)), color: '#F59E0B' }
+                  ]}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -277,12 +276,21 @@ export default function StudentAnalysisPage() {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {pieData.map((entry, index) => (
+                  {[
+                    { name: 'Teslim Edildi', value: analysisData.submittedAssignments, color: '#3B82F6' },
+                    { name: 'Değerlendirildi', value: analysisData.gradedAssignments, color: '#10B981' },
+                    { name: 'Bekliyor', value: Math.max(0, (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0)), color: '#F59E0B' }
+                  ].map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(value, name) => [`${value}`, name as string]} />
-                <Legend />
+                <Legend formatter={(value) => {
+                  if (value === 'Teslim Edildi') return 'Teslim Edildi (mavi)';
+                  if (value === 'Değerlendirildi') return 'Değerlendirildi (yeşil)';
+                  if (value === 'Bekliyor') return 'Bekliyor (turuncu)';
+                  return value;
+                }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { User, FileText, Target, BarChart3, Mail, Phone, Calendar } from 'lucide-react';
+import { User, FileText, Target, BarChart3, Mail, Phone, Calendar, Download } from 'lucide-react';
 import Link from 'next/link';
 
 interface Student {
@@ -30,12 +30,15 @@ export default function StudentDetailPage() {
   const [student, setStudent] = useState<Student | null>(null);
   const [stats, setStats] = useState<StudentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [reports, setReports] = useState<{ _id: string; title: string; createdAt: string; isPublic: boolean }[]>([]);
 
   const fetchStudentData = useCallback(async () => {
     try {
-      const [studentResponse, statsResponse] = await Promise.all([
+      const [studentResponse, statsResponse, reportsResponse] = await Promise.all([
         fetch(`/api/teacher/students/${studentId}`),
-        fetch(`/api/teacher/students/${studentId}/stats`)
+        fetch(`/api/teacher/students/${studentId}/stats`),
+        fetch(`/api/teacher/students/${studentId}/report`)
       ]);
 
       if (studentResponse.ok) {
@@ -46,6 +49,11 @@ export default function StudentDetailPage() {
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setStats(statsData);
+      }
+
+      if (reportsResponse.ok) {
+        const list = await reportsResponse.json();
+        setReports(list);
       }
     } catch (error) {
       console.error('Student data fetch error:', error);
@@ -59,6 +67,57 @@ export default function StudentDetailPage() {
       fetchStudentData();
     }
   }, [studentId, fetchStudentData]);
+
+  const handleGenerateReport = async () => {
+    if (!studentId) return;
+    try {
+      setIsGenerating(true);
+      // Send minimal data; API fills defaults
+      const res = await fetch(`/api/teacher/students/${studentId}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Rapor oluşturma başarısız');
+      }
+      // Refresh list
+      await fetchStudentData();
+      alert('Rapor oluşturuldu');
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : 'Hata');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!studentId) return;
+    try {
+      const res = await fetch(`/api/teacher/students/${studentId}/report?format=pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({})
+      });
+      if (!res.ok) throw new Error('PDF oluşturma başarısız');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${student?.firstName || 'ogrenci'}_${student?.lastName || 'raporu'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : 'Hata');
+    }
+  };
 
   if (loading) {
     return (
@@ -255,6 +314,32 @@ export default function StudentDetailPage() {
             </div>
           </div>
         </Link>
+
+        <div className="card">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-medium text-secondary-900">Raporlar</p>
+            <button onClick={handleGenerateReport} disabled={isGenerating} className="btn-primary text-sm">
+              {isGenerating ? 'Oluşturuluyor...' : 'Rapor Oluştur'}
+            </button>
+          </div>
+          <div className="space-y-2">
+            {reports.length === 0 && (
+              <p className="text-sm text-secondary-600">Henüz rapor yok</p>
+            )}
+            {reports.map((r) => (
+              <div key={r._id} className="flex items-center justify-between">
+                <Link href={`/rapor/${r._id}`} className="text-primary-600 hover:text-primary-800 text-sm">
+                  {r.title}
+                </Link>
+                <span className="text-xs text-secondary-500">{new Date(r.createdAt).toLocaleDateString('tr-TR')}</span>
+              </div>
+            ))}
+          </div>
+          <button onClick={handleDownloadPdf} className="btn-outline mt-4 w-full flex items-center justify-center space-x-2">
+            <Download className="w-4 h-4" />
+            <span>PDF İndir</span>
+          </button>
+        </div>
       </div>
     </div>
   );
