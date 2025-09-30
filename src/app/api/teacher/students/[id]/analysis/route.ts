@@ -37,9 +37,10 @@ export async function GET(
       status: 'completed' 
     });
     
-    const assignmentCompletion = totalAssignments > 0 
+    let assignmentCompletion = totalAssignments > 0 
       ? Math.round((submittedAssignments / totalAssignments) * 100)
       : 0;
+    assignmentCompletion = Math.max(0, Math.min(100, assignmentCompletion));
     
     const gradingRate = submittedAssignments > 0 
       ? Math.round((gradedAssignments / submittedAssignments) * 100)
@@ -148,33 +149,44 @@ export async function GET(
       (assignmentCompletion + goalsProgress + averageSubjectPerformance) / 3
     );
 
-    // Generate real monthly progress data
-    const monthlyProgress = [];
-    const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
-    
-    for (let i = 0; i < 6; i++) {
-      const startDate = new Date(2024, i, 1);
-      const endDate = new Date(2024, i + 1, 0);
-      
+    // Generate monthly progress data (last 6 months, dynamic)
+    const monthlyProgress = [] as any[];
+    const base = new Date();
+    base.setDate(1);
+    for (let i = 5; i >= 0; i--) {
+      const startDate = new Date(base.getFullYear(), base.getMonth() - i, 1);
+      const endDate = new Date(base.getFullYear(), base.getMonth() - i + 1, 0);
+      const label = startDate.toLocaleString('tr-TR', { month: 'short' });
+
       const monthlyAssignments = await Assignment.countDocuments({
         studentId,
         createdAt: { $gte: startDate, $lte: endDate }
       });
-      
-      const monthlyGoals = await Goal.countDocuments({
+
+      const monthlyGoalsCompleted = await Goal.countDocuments({
         studentId,
-        createdAt: { $gte: startDate, $lte: endDate }
+        status: 'completed',
+        updatedAt: { $gte: startDate, $lte: endDate }
       });
-      
+
       monthlyProgress.push({
-        month: months[i],
+        month: label,
         assignments: monthlyAssignments,
-        goals: monthlyGoals
+        goalsCompleted: monthlyGoalsCompleted
       });
     }
 
+    // Build assignment title counts for radar chart
+    const titleGroups = await Assignment.aggregate([
+      { $match: { studentId } },
+      { $group: { _id: '$title', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 12 }
+    ]);
+
     return NextResponse.json({
       assignmentCompletion,
+      totalAssignments,
       submittedAssignments,
       gradedAssignments,
       gradingRate,
@@ -183,7 +195,8 @@ export async function GET(
       subjectDetails,
       goalsProgress,
       overallPerformance,
-      monthlyProgress
+      monthlyProgress,
+      assignmentTitleCounts: titleGroups.map(t => ({ title: t._id, count: t.count }))
     });
   } catch (error) {
     console.error('Student analysis error:', error);
