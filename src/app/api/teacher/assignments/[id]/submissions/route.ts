@@ -34,8 +34,31 @@ export async function GET(
       );
     }
 
-    // Get all submissions for this assignment
-    const submissions = await AssignmentSubmission.find({ assignmentId })
+    // Collect submissions for this assignment and, if applicable, its sibling
+    // assignments that belong to the same class batch (same classId, title,
+    // dueDate, and teacherId). This covers the case where class assignments
+    // are materialized as individual per-student assignments.
+    let assignmentIds = [assignmentId];
+
+    if (assignment.classId) {
+      const siblingAssignments = await Assignment.find({
+        teacherId,
+        classId: assignment.classId,
+        title: assignment.title,
+        dueDate: assignment.dueDate
+      }).distinct('_id');
+
+      if (Array.isArray(siblingAssignments) && siblingAssignments.length > 0) {
+        assignmentIds = Array.from(new Set([
+          ...assignmentIds,
+          ...siblingAssignments.map((id: any) => id.toString())
+        ]));
+      }
+    }
+
+    const submissions = await AssignmentSubmission.find({
+      assignmentId: { $in: assignmentIds }
+    })
       .populate('studentId', 'firstName lastName email')
       .sort({ submittedAt: -1 });
 
