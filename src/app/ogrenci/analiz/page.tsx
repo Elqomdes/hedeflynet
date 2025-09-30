@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BarChart3, FileText, Target, TrendingUp, Star, CheckCircle, Clock, MessageSquare } from 'lucide-react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 
 interface AnalysisData {
   assignmentCompletion: number;
@@ -22,8 +22,9 @@ interface AnalysisData {
   monthlyProgress: Array<{
     month: string;
     assignments: number;
-    goals: number;
+    goalsCompleted: number;
   }>;
+  assignmentTitleCounts?: Array<{ title: string; count: number }>;
 }
 
 export default function StudentAnalysisPage() {
@@ -168,7 +169,7 @@ export default function StudentAnalysisPage() {
                   data={[
                     { name: 'Teslim Edildi', value: analysisData.submittedAssignments, color: '#3B82F6' },
                     { name: 'Değerlendirildi', value: analysisData.gradedAssignments, color: '#10B981' },
-                    { name: 'Bekliyor', value: (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0), color: '#F59E0B' }
+                    { name: 'Bekliyor', value: Math.max(0, (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0)), color: '#F59E0B' }
                   ]}
                   cx="50%"
                   cy="50%"
@@ -180,36 +181,37 @@ export default function StudentAnalysisPage() {
                   {[
                     { name: 'Teslim Edildi', value: analysisData.submittedAssignments, color: '#3B82F6' },
                     { name: 'Değerlendirildi', value: analysisData.gradedAssignments, color: '#10B981' },
-                    { name: 'Bekliyor', value: (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0), color: '#F59E0B' }
+                    { name: 'Bekliyor', value: Math.max(0, (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0)), color: '#F59E0B' }
                   ].map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [`${value}`, '']} />
+                <Tooltip formatter={(value, name) => [`${value}`, name as string]} />
+                <Legend formatter={(value) => {
+                  if (value === 'Teslim Edildi') return 'Teslim Edildi (mavi)';
+                  if (value === 'Değerlendirildi') return 'Değerlendirildi (yeşil)';
+                  if (value === 'Bekliyor') return 'Bekliyor (turuncu)';
+                  return value;
+                }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Subject Performance with Grades */}
+        {/* Radar: Ödev başlığına göre adet */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Branş Bazlı Not Dağılımım
+            Başlığa Göre Ödev Dağılımı
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={Object.entries(analysisData.subjectStats || {}).map(([subject, details]) => ({
-                subject: subject.length > 8 ? subject.substring(0, 8) + '...' : subject,
-                not: details.averageGrade,
-                teslim: details.completion
-              }))}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="subject" />
-                <YAxis domain={[0, 100]} />
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={(analysisData.assignmentTitleCounts || []).map(i => ({ title: i.title.length > 16 ? i.title.slice(0, 16) + '…' : i.title, count: i.count }))}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="title" />
+                <PolarRadiusAxis />
+                <Radar name="Ödev Adedi" dataKey="count" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.4} />
                 <Tooltip />
-                <Bar dataKey="not" fill="#3B82F6" name="Ortalama Not" />
-                <Bar dataKey="teslim" fill="#10B981" name="Teslim Oranı" />
-              </BarChart>
+              </RadarChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -227,8 +229,9 @@ export default function StudentAnalysisPage() {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
+              <Legend />
               <Line type="monotone" dataKey="assignments" stroke="#3B82F6" name="Ödevler" strokeWidth={2} />
-              <Line type="monotone" dataKey="goals" stroke="#10B981" name="Hedefler" strokeWidth={2} />
+              <Line type="monotone" dataKey="goalsCompleted" stroke="#10B981" name="Tamamlanan Hedefler" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
