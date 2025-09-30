@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User, Report } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +10,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  let analysisData: any = null;
+  
   try {
     const authResult = await getCurrentUser(request);
     if (!authResult || authResult.role !== 'teacher') {
@@ -19,7 +21,7 @@ export async function POST(
       );
     }
 
-    const analysisData = await request.json();
+    analysisData = await request.json();
     
     // Validate required analysis data
     if (!analysisData || typeof analysisData !== 'object') {
@@ -84,8 +86,17 @@ export async function POST(
     });
   } catch (error) {
     console.error('Report generation error:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      analysisData: analysisData ? 'Present' : 'Missing',
+      studentId: params.id
+    });
     return NextResponse.json(
-      { error: 'Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.' },
+      { 
+        error: 'Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.',
+        details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : 'Unknown error' : undefined
+      },
       { status: 500 }
     );
   }
@@ -122,10 +133,16 @@ ${new Date().toLocaleDateString('tr-TR')}
 }
 
 async function generatePDFContent(student: any, analysisData: any): Promise<Buffer> {
-  const doc = new jsPDF();
-  
-  // Set font and colors
-  doc.setFont('helvetica');
+  try {
+    // Check if jsPDF is available
+    if (!jsPDF) {
+      throw new Error('jsPDF kütüphanesi yüklenemedi');
+    }
+    
+    const doc = new jsPDF();
+    
+    // Set font and colors
+    doc.setFont('helvetica');
   
   // Header
   doc.setFontSize(20);
@@ -270,5 +287,9 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
     doc.text('Hedefly Eğitim Sistemi', 170, 285);
   }
   
-  return Buffer.from(doc.output('arraybuffer'));
+    return Buffer.from(doc.output('arraybuffer'));
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    throw new Error(`PDF oluşturma hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+  }
 }

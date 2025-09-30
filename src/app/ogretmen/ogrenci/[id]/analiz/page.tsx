@@ -101,11 +101,15 @@ export default function StudentAnalysisPage() {
         alert('Rapor başarıyla indirildi!');
       } else {
         const errorData = await response.json();
-        alert(`Rapor oluşturulurken hata oluştu: ${errorData.error || 'Bilinmeyen hata'}`);
+        console.error('Report generation error response:', errorData);
+        const errorMessage = errorData.details ? 
+          `${errorData.error}\n\nDetay: ${errorData.details}` : 
+          errorData.error || 'Bilinmeyen hata';
+        alert(`Rapor oluşturulurken hata oluştu:\n\n${errorMessage}`);
       }
     } catch (error) {
       console.error('Report generation error:', error);
-      alert('Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.');
+      alert(`Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.\n\nHata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
     } finally {
       setGeneratingReport(false);
     }
