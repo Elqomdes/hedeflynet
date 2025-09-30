@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import Assignment from '@/lib/models/Assignment';
+import mongoose from 'mongoose';
 import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
 import User from '@/lib/models/User';
 
@@ -38,7 +39,7 @@ export async function GET(
     // assignments that belong to the same class batch (same classId, title,
     // dueDate, and teacherId). This covers the case where class assignments
     // are materialized as individual per-student assignments.
-    let assignmentIds = [assignmentId];
+    let assignmentIds: mongoose.Types.ObjectId[] = [new mongoose.Types.ObjectId(assignmentId)];
 
     if (assignment.classId) {
       const siblingAssignments = await Assignment.find({
@@ -49,10 +50,11 @@ export async function GET(
       }).distinct('_id');
 
       if (Array.isArray(siblingAssignments) && siblingAssignments.length > 0) {
-        assignmentIds = Array.from(new Set([
-          ...assignmentIds,
-          ...siblingAssignments.map((id: any) => id.toString())
-        ]));
+        const siblingObjectIds = siblingAssignments.map((id: any) => new mongoose.Types.ObjectId(id));
+        const merged = [...assignmentIds, ...siblingObjectIds];
+        // Deduplicate by hex string
+        const uniqueByHex = Array.from(new Map(merged.map((oid) => [oid.toHexString(), oid])).values());
+        assignmentIds = uniqueByHex;
       }
     }
 
