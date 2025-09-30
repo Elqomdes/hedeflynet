@@ -56,6 +56,7 @@ export default function TeacherLayout({
     { name: 'Öğrenciler', href: '/ogretmen/ogrenciler', icon: Users },
     { name: 'Sınıflar', href: '/ogretmen/siniflar', icon: BookOpen },
     { name: 'Ödevler', href: '/ogretmen/odevler', icon: FileText },
+    { name: 'Teslim Edilen Ödevler', href: '/ogretmen/teslimler', icon: FileText },
     { name: 'Hedefler', href: '/ogretmen/hedefler', icon: Target },
     { name: 'Detaylı Analiz', href: '/ogretmen/analiz', icon: BarChart3 },
   ];
