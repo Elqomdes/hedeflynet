@@ -20,6 +20,28 @@ export async function POST(
     }
 
     const analysisData = await request.json();
+    
+    // Validate required analysis data
+    if (!analysisData || typeof analysisData !== 'object') {
+      return NextResponse.json(
+        { error: 'Geçersiz analiz verisi' },
+        { status: 400 }
+      );
+    }
+
+    // Ensure required fields exist with defaults
+    const validatedData = {
+      assignmentCompletion: analysisData.assignmentCompletion || 0,
+      subjectStats: analysisData.subjectStats || {},
+      goalsProgress: analysisData.goalsProgress || 0,
+      overallPerformance: analysisData.overallPerformance || 0,
+      submittedAssignments: analysisData.submittedAssignments || 0,
+      gradedAssignments: analysisData.gradedAssignments || 0,
+      averageGrade: analysisData.averageGrade || 0,
+      subjectDetails: analysisData.subjectDetails || {},
+      monthlyProgress: analysisData.monthlyProgress || []
+    };
+
     await connectDB();
 
     const studentId = params.id;
@@ -39,12 +61,12 @@ export async function POST(
       studentId,
       teacherId,
       title: `${student.firstName} ${student.lastName} - Performans Raporu`,
-      content: generateReportContent(student, analysisData),
+      content: generateReportContent(student, validatedData),
       data: {
-        assignmentCompletion: analysisData.assignmentCompletion,
-        subjectStats: analysisData.subjectStats,
-        goalsProgress: analysisData.goalsProgress,
-        overallPerformance: analysisData.overallPerformance
+        assignmentCompletion: validatedData.assignmentCompletion,
+        subjectStats: validatedData.subjectStats,
+        goalsProgress: validatedData.goalsProgress,
+        overallPerformance: validatedData.overallPerformance
       },
       isPublic: true
     });
@@ -52,7 +74,7 @@ export async function POST(
     await report.save();
 
     // Generate PDF content using jsPDF
-    const pdfBuffer = await generatePDFContent(student, analysisData);
+    const pdfBuffer = await generatePDFContent(student, validatedData);
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
@@ -63,30 +85,33 @@ export async function POST(
   } catch (error) {
     console.error('Report generation error:', error);
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: 'Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.' },
       { status: 500 }
     );
   }
 }
 
 function generateReportContent(student: any, analysisData: any): string {
+  const overallPerf = analysisData.overallPerformance || 0;
+  const subjectStats = analysisData.subjectStats || {};
+  
   return `
-# ${student.firstName} ${student.lastName} - Performans Raporu
+# ${student?.firstName || 'Bilinmeyen'} ${student?.lastName || 'Öğrenci'} - Performans Raporu
 
 ## Genel Değerlendirme
-- **Ödev Tamamlama Oranı**: %${analysisData.assignmentCompletion}
-- **Hedef İlerlemesi**: %${analysisData.goalsProgress}
-- **Genel Performans**: %${analysisData.overallPerformance}
+- **Ödev Tamamlama Oranı**: %${analysisData.assignmentCompletion || 0}
+- **Hedef İlerlemesi**: %${analysisData.goalsProgress || 0}
+- **Genel Performans**: %${overallPerf}
 
 ## Branş Bazlı Performans
-${Object.entries(analysisData.subjectStats).map(([subject, value]) => 
-  `- **${subject}**: %${value}`
+${Object.entries(subjectStats).map(([subject, value]) => 
+  `- **${subject}**: %${value || 0}`
 ).join('\n')}
 
 ## Öneriler
-${analysisData.overallPerformance > 80 ? 
+${overallPerf > 80 ? 
   'Öğrenci mükemmel bir performans sergiliyor. Bu başarıyı sürdürmesi için teşvik edilmelidir.' :
-  analysisData.overallPerformance > 60 ?
+  overallPerf > 60 ?
   'Öğrenci iyi bir performans sergiliyor. Daha da gelişmesi için ek çalışmalar önerilir.' :
   'Öğrencinin performansını artırmak için ek destek ve çalışma planı oluşturulmalıdır.'
 }
@@ -126,19 +151,19 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
   let yPos = 90;
   
   // Performance metrics
-  doc.text(`Ödev Tamamlama Oranı: %${analysisData.assignmentCompletion}`, 20, yPos);
+  doc.text(`Ödev Tamamlama Oranı: %${analysisData.assignmentCompletion || 0}`, 20, yPos);
   yPos += 15;
   
-  doc.text(`Hedef İlerlemesi: %${analysisData.goalsProgress}`, 20, yPos);
+  doc.text(`Hedef İlerlemesi: %${analysisData.goalsProgress || 0}`, 20, yPos);
   yPos += 15;
   
-  doc.text(`Genel Performans: %${analysisData.overallPerformance}`, 20, yPos);
+  doc.text(`Genel Performans: %${analysisData.overallPerformance || 0}`, 20, yPos);
   yPos += 15;
   
-  doc.text(`Teslim Edilen Ödevler: ${analysisData.submittedAssignments}`, 20, yPos);
+  doc.text(`Teslim Edilen Ödevler: ${analysisData.submittedAssignments || 0}`, 20, yPos);
   yPos += 15;
   
-  doc.text(`Değerlendirilen Ödevler: ${analysisData.gradedAssignments}`, 20, yPos);
+  doc.text(`Değerlendirilen Ödevler: ${analysisData.gradedAssignments || 0}`, 20, yPos);
   yPos += 15;
   
   doc.text(`Ortalama Not: ${analysisData.averageGrade || 0}/100`, 20, yPos);
@@ -154,7 +179,7 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
     doc.setFontSize(12);
     doc.setTextColor(60, 60, 60);
     
-    Object.entries(analysisData.subjectDetails).forEach(([subject, details]: [string, any]) => {
+    Object.entries(analysisData.subjectDetails || {}).forEach(([subject, details]: [string, any]) => {
       if (yPos > 250) {
         doc.addPage();
         yPos = 30;
@@ -167,15 +192,15 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
       
       doc.setFontSize(10);
       doc.setTextColor(80, 80, 80);
-      doc.text(`  • Toplam Ödev: ${details.totalAssignments}`, 25, yPos);
+      doc.text(`  • Toplam Ödev: ${details?.totalAssignments || 0}`, 25, yPos);
       yPos += 12;
-      doc.text(`  • Teslim Edilen: ${details.submittedAssignments}`, 25, yPos);
+      doc.text(`  • Teslim Edilen: ${details?.submittedAssignments || 0}`, 25, yPos);
       yPos += 12;
-      doc.text(`  • Değerlendirilen: ${details.gradedAssignments}`, 25, yPos);
+      doc.text(`  • Değerlendirilen: ${details?.gradedAssignments || 0}`, 25, yPos);
       yPos += 12;
-      doc.text(`  • Tamamlama Oranı: %${details.completion}`, 25, yPos);
+      doc.text(`  • Tamamlama Oranı: %${details?.completion || 0}`, 25, yPos);
       yPos += 12;
-      doc.text(`  • Ortalama Not: ${details.averageGrade || 0}/100`, 25, yPos);
+      doc.text(`  • Ortalama Not: ${details?.averageGrade || 0}/100`, 25, yPos);
       yPos += 20;
     });
   }
@@ -195,13 +220,13 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
     doc.setFontSize(10);
     doc.setTextColor(80, 80, 80);
     
-    analysisData.monthlyProgress.forEach((month: any) => {
+    (analysisData.monthlyProgress || []).forEach((month: any) => {
       if (yPos > 250) {
         doc.addPage();
         yPos = 30;
       }
       
-      doc.text(`${month.month}: ${month.assignments} ödev, ${month.goalsCompleted} hedef`, 20, yPos);
+      doc.text(`${month?.month || 'Bilinmeyen'}: ${month?.assignments || 0} ödev, ${month?.goalsCompleted || 0} hedef`, 20, yPos);
       yPos += 12;
     });
     yPos += 15;
@@ -222,9 +247,10 @@ async function generatePDFContent(student: any, analysisData: any): Promise<Buff
   doc.setTextColor(60, 60, 60);
   
   let recommendation = '';
-  if (analysisData.overallPerformance > 80) {
+  const overallPerf = analysisData.overallPerformance || 0;
+  if (overallPerf > 80) {
     recommendation = 'Öğrenci mükemmel bir performans sergiliyor. Bu başarıyı sürdürmesi için teşvik edilmelidir.';
-  } else if (analysisData.overallPerformance > 60) {
+  } else if (overallPerf > 60) {
     recommendation = 'Öğrenci iyi bir performans sergiliyor. Daha da gelişmesi için ek çalışmalar önerilir.';
   } else {
     recommendation = 'Öğrencinin performansını artırmak için ek destek ve çalışma planı oluşturulmalıdır.';
