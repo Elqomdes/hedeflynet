@@ -18,45 +18,6 @@ function logError(context: string, error: any, additionalData?: any) {
   });
 }
 
-// Robust data validation and sanitization
-type SanitizedAnalysis = {
-  assignmentCompletion: number;
-  totalAssignments: number;
-  submittedAssignments: number;
-  gradedAssignments: number;
-  gradingRate: number;
-  averageGrade: number;
-  subjectStats: Record<string, any>;
-  subjectDetails: Record<string, any>;
-  goalsProgress: number;
-  overallPerformance: number;
-  monthlyProgress: any[];
-  assignmentTitleCounts: any[];
-};
-
-function clampPercent(value: any): number {
-  const num = typeof value === 'number' && isFinite(value) ? value : 0;
-  return Math.max(0, Math.min(100, Math.round(num)));
-}
-
-function validateAndSanitizeData(analysisData: any): SanitizedAnalysis {
-  const data = analysisData || {};
-  return {
-    assignmentCompletion: clampPercent(data.assignmentCompletion),
-    totalAssignments: typeof data.totalAssignments === 'number' && isFinite(data.totalAssignments) ? data.totalAssignments : 0,
-    submittedAssignments: typeof data.submittedAssignments === 'number' && isFinite(data.submittedAssignments) ? data.submittedAssignments : 0,
-    gradedAssignments: typeof data.gradedAssignments === 'number' && isFinite(data.gradedAssignments) ? data.gradedAssignments : 0,
-    gradingRate: clampPercent(data.gradingRate),
-    averageGrade: clampPercent(data.averageGrade),
-    subjectStats: data.subjectStats && typeof data.subjectStats === 'object' ? data.subjectStats : {},
-    subjectDetails: data.subjectDetails && typeof data.subjectDetails === 'object' ? data.subjectDetails : {},
-    goalsProgress: clampPercent(data.goalsProgress),
-    overallPerformance: clampPercent(data.overallPerformance),
-    monthlyProgress: Array.isArray(data.monthlyProgress) ? data.monthlyProgress : [],
-    assignmentTitleCounts: Array.isArray(data.assignmentTitleCounts) ? data.assignmentTitleCounts : []
-  };
-}
-
 // Alternative PDF generation using simple HTML-to-PDF approach
 async function generateSimplePDF(student: any, analysisData: any): Promise<Buffer> {
   try {
@@ -119,272 +80,6 @@ async function generateSimplePDF(student: any, analysisData: any): Promise<Buffe
     logError('Simple PDF generation failed', error);
     throw new Error(`PDF oluşturma hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
   }
-}
-
-// Enhanced PDF generation with better error handling
-async function generateEnhancedPDF(student: any, analysisData: any): Promise<Buffer> {
-  try {
-    // Validate jsPDF availability
-    if (!jsPDF) {
-      throw new Error('jsPDF library not available');
-    }
-    
-    // Validate student data
-    if (!student?.firstName || !student?.lastName) {
-      throw new Error('Invalid student data');
-    }
-    
-    // Create document with error handling
-    let doc;
-    try {
-      doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    } catch (error) {
-      logError('jsPDF initialization failed', error);
-      throw new Error('PDF document creation failed');
-    }
-    
-    const pageWidth = 595.28;
-    const pageHeight = 841.89;
-    const margin = 40;
-    let yPos = margin + 20;
-    
-    // Safe text addition function
-    const addText = (text: string, x: number, y: number, fontSize = 12, color = [40, 40, 40]) => {
-      try {
-        doc.setFontSize(fontSize);
-        doc.setTextColor(color[0], color[1], color[2]);
-        doc.text(text, x, y);
-        return y + fontSize + 5;
-      } catch (error) {
-        logError('Text addition failed', error, { text, x, y, fontSize });
-        return y + 15; // Fallback spacing
-      }
-    };
-    
-    // Safe page break function
-    const checkPageBreak = (requiredSpace = 20) => {
-      if (yPos > pageHeight - margin - requiredSpace) {
-        try {
-          doc.addPage();
-          yPos = margin;
-        } catch (error) {
-          logError('Page break failed', error);
-        }
-      }
-    };
-    
-    // Header section
-    try {
-      yPos = addText(`${student.firstName} ${student.lastName} - Performans Raporu`, margin, yPos, 22);
-      yPos = addText(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, margin, yPos, 11, [100, 100, 100]);
-      
-      // Separator line
-      doc.setDrawColor(200, 200, 200);
-      doc.line(margin, yPos, pageWidth - margin, yPos);
-      yPos += 24;
-    } catch (error) {
-      logError('Header section failed', error);
-    }
-    
-    // General Performance Section
-    try {
-      checkPageBreak(100);
-      yPos = addText('Genel Performans', margin, yPos, 16);
-      
-      const generalRows = [
-        `Ödev Tamamlama Oranı: %${analysisData.assignmentCompletion || 0}`,
-        `Hedef İlerlemesi: %${analysisData.goalsProgress || 0}`,
-        `Genel Performans: %${analysisData.overallPerformance || 0}`,
-        `Teslim Edilen Ödevler: ${analysisData.submittedAssignments || 0}`,
-        `Değerlendirilen Ödevler: ${analysisData.gradedAssignments || 0}`,
-        `Ortalama Not: ${analysisData.averageGrade || 0}/100`
-      ];
-      
-      for (const row of generalRows) {
-        checkPageBreak(20);
-        yPos = addText(row, margin, yPos, 12);
-      }
-      yPos += 8;
-    } catch (error) {
-      logError('General performance section failed', error);
-    }
-    
-    // Subject Performance Section
-    try {
-      if (analysisData.subjectDetails && Object.keys(analysisData.subjectDetails).length > 0) {
-        checkPageBreak(120);
-        yPos = addText('Branş Bazlı Performans', margin, yPos, 16);
-        
-        Object.entries(analysisData.subjectDetails).forEach(([subject, details]: [string, any]) => {
-          checkPageBreak(80);
-          yPos = addText(subject, margin, yPos, 14);
-          
-          const subjectRows = [
-            `• Toplam Ödev: ${details?.totalAssignments || 0}`,
-            `• Teslim Edilen: ${details?.submittedAssignments || 0}`,
-            `• Değerlendirilen: ${details?.gradedAssignments || 0}`,
-            `• Tamamlama Oranı: %${details?.completion || 0}`,
-            `• Ortalama Not: ${details?.averageGrade || 0}/100`
-          ];
-          
-          for (const sRow of subjectRows) {
-            checkPageBreak(20);
-            yPos = addText(sRow, margin + 10, yPos, 10, [80, 80, 80]);
-          }
-          yPos += 10;
-        });
-      }
-    } catch (error) {
-      logError('Subject performance section failed', error);
-    }
-    
-    // Monthly Progress Section
-    try {
-      if (analysisData.monthlyProgress && analysisData.monthlyProgress.length > 0) {
-        checkPageBreak(140);
-        yPos = addText('Aylık İlerleme', margin, yPos, 16);
-        
-        (analysisData.monthlyProgress || []).forEach((month: any) => {
-          checkPageBreak(20);
-          yPos = addText(
-            `${month?.month || 'Bilinmeyen'}: ${month?.assignments || 0} ödev, ${month?.goalsCompleted || 0} hedef`,
-            margin, yPos, 10, [80, 80, 80]
-          );
-        });
-        yPos += 12;
-      }
-    } catch (error) {
-      logError('Monthly progress section failed', error);
-    }
-    
-    // Recommendations Section
-    try {
-      checkPageBreak(100);
-      yPos = addText('Öneriler', margin, yPos, 16);
-      
-      const overallPerf = analysisData.overallPerformance || 0;
-      let recommendation = 'Öğrencinin performansını artırmak için ek destek ve çalışma planı oluşturulmalıdır.';
-      if (overallPerf > 80) {
-        recommendation = 'Öğrenci mükemmel bir performans sergiliyor. Bu başarıyı sürdürmesi için teşvik edilmelidir.';
-      } else if (overallPerf > 60) {
-        recommendation = 'Öğrenci iyi bir performans sergiliyor. Daha da gelişmesi için ek çalışmalar önerilir.';
-      }
-      
-      // Safe text wrapping
-      try {
-        const splitText = doc.splitTextToSize(recommendation, pageWidth - margin * 2);
-        doc.text(splitText, margin, yPos);
-      } catch (textError) {
-        logError('Text wrapping failed', textError);
-        doc.text(recommendation, margin, yPos);
-      }
-    } catch (error) {
-      logError('Recommendations section failed', error);
-    }
-    
-    // Footer
-    try {
-      const pageCount = (doc as any).getNumberOfPages ? (doc as any).getNumberOfPages() : 1;
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(9);
-        doc.setTextColor(150, 150, 150);
-        doc.text('Hedefly Eğitim Sistemi', margin, pageHeight - margin / 2);
-        doc.text(`Sayfa ${i} / ${pageCount}`, pageWidth - margin - 80, pageHeight - margin / 2);
-      }
-    } catch (error) {
-      logError('Footer addition failed', error);
-    }
-    
-    // Generate PDF buffer with validation
-    try {
-      const pdfOutput = doc.output('arraybuffer');
-      if (!pdfOutput || pdfOutput.byteLength === 0) {
-        throw new Error('Empty PDF output generated');
-      }
-      
-      const buffer = Buffer.from(pdfOutput);
-      if (buffer.length === 0) {
-        throw new Error('Empty buffer created from PDF output');
-      }
-      
-      return buffer;
-    } catch (error) {
-      logError('PDF buffer generation failed', error);
-      throw error;
-    }
-    
-  } catch (error) {
-    logError('Enhanced PDF generation failed', error);
-    throw error;
-  }
-}
-
-// Main PDF generation with fallback
-async function generatePDFContent(student: any, analysisData: any): Promise<Buffer> {
-  const methods = [
-    { name: 'Enhanced PDF', fn: generateEnhancedPDF },
-    { name: 'Simple PDF', fn: generateSimplePDF }
-  ];
-  
-  for (const method of methods) {
-    try {
-      logError(`Attempting ${method.name} generation`, null, { studentId: student._id });
-      const result = await method.fn(student, analysisData);
-      
-      if (result && result.length > 0) {
-        logError(`${method.name} generation successful`, null, { 
-          bufferSize: result.length,
-          studentId: student._id 
-        });
-        return result;
-      } else {
-        throw new Error(`${method.name} returned empty result`);
-      }
-    } catch (error) {
-      logError(`${method.name} generation failed`, error, { studentId: student._id });
-      
-      // If this is the last method, throw the error
-      if (method === methods[methods.length - 1]) {
-        throw new Error(`All PDF generation methods failed. Last error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-      
-      // Otherwise, continue to next method
-      console.warn(`Falling back to next PDF generation method after ${method.name} failed`);
-    }
-  }
-  
-  throw new Error('No PDF generation methods available');
-}
-
-function generateReportContent(student: any, analysisData: any): string {
-  const overallPerf = analysisData.overallPerformance || 0;
-  const subjectStats = analysisData.subjectStats || {};
-  
-  return `
-# ${student?.firstName || 'Bilinmeyen'} ${student?.lastName || 'Öğrenci'} - Performans Raporu
-
-## Genel Değerlendirme
-- **Ödev Tamamlama Oranı**: %${analysisData.assignmentCompletion || 0}
-- **Hedef İlerlemesi**: %${analysisData.goalsProgress || 0}
-- **Genel Performans**: %${overallPerf}
-
-## Branş Bazlı Performans
-${Object.entries(subjectStats).map(([subject, value]) => 
-  `- **${subject}**: %${value || 0}`
-).join('\n')}
-
-## Öneriler
-${overallPerf > 80 ? 
-  'Öğrenci mükemmel bir performans sergiliyor. Bu başarıyı sürdürmesi için teşvik edilmelidir.' :
-  overallPerf > 60 ?
-  'Öğrenci iyi bir performans sergiliyor. Daha da gelişmesi için ek çalışmalar önerilir.' :
-  'Öğrencinin performansını artırmak için ek destek ve çalışma planı oluşturulmalıdır.'
-}
-
-## Tarih
-${new Date().toLocaleDateString('tr-TR')}
-  `;
 }
 
 export async function POST(
@@ -487,23 +182,13 @@ export async function POST(
         studentId,
         teacherId,
         title: `${reportData.student.firstName} ${reportData.student.lastName} - Performans Raporu`,
-        content: generateReportContent(reportData.student, reportData.performance),
-        data: {
-          assignmentCompletion: reportData.performance.assignmentCompletion,
-          subjectStats: reportData.subjectStats,
-          goalsProgress: reportData.performance.goalsProgress,
-          overallPerformance: reportData.performance.overallPerformance
-        },
-        isPublic: true
+        content: JSON.stringify(reportData),
+        isPublic: false
       });
-
       await report.save();
     } catch (reportError) {
-      logError('Report creation failed', reportError, { studentId, teacherId });
-      return NextResponse.json(
-        { error: 'Rapor kaydı oluşturulamadı' },
-        { status: 500 }
-      );
+      logError('Report creation failed', reportError, { studentId });
+      // Continue without report record
     }
 
     // Determine response format
@@ -519,7 +204,7 @@ export async function POST(
         } catch (puppeteerError) {
           console.warn('Puppeteer PDF generation failed, falling back to jsPDF:', puppeteerError);
           // Fallback to simple PDF generation
-          pdfBuffer = await generatePDFContent(reportData.student, reportData.performance);
+          pdfBuffer = await generateSimplePDF(reportData.student, reportData.performance);
         }
         
         if (!pdfBuffer || pdfBuffer.length === 0) {
@@ -551,11 +236,11 @@ export async function POST(
         
         // Fallback to JSON response if PDF fails
         return NextResponse.json({
-          _id: report._id,
-          title: report.title,
-          createdAt: report.createdAt,
-          isPublic: report.isPublic,
-          url: `/rapor/${report._id}`,
+          _id: report?._id,
+          title: report?.title,
+          createdAt: report?.createdAt,
+          isPublic: report?.isPublic,
+          url: `/rapor/${report?._id}`,
           error: 'PDF oluşturulamadı, JSON yanıtı döndürülüyor',
           pdfError: process.env.NODE_ENV === 'development' ? 
             (pdfError instanceof Error ? pdfError.message : 'Unknown PDF error') : undefined
@@ -565,57 +250,22 @@ export async function POST(
 
     // JSON response
     return NextResponse.json({
-      _id: report._id,
-      title: report.title,
-      createdAt: report.createdAt,
-      isPublic: report.isPublic,
-      url: `/rapor/${report._id}`,
+      _id: report?._id,
+      title: report?.title,
+      createdAt: report?.createdAt,
+      isPublic: report?.isPublic,
+      url: `/rapor/${report?._id}`,
       data: reportData
     });
-    
+
   } catch (error) {
-    const processingTime = Date.now() - startTime;
-    logError('Report generation failed', error, { 
-      processingTime,
-      studentId: params.id
-    });
-    
+    logError('Unexpected error in report generation', error, { studentId: params.id });
     return NextResponse.json(
       { 
-        error: 'Rapor oluşturulurken hata oluştu. Lütfen tekrar deneyin.',
+        error: 'Rapor oluşturulurken beklenmeyen bir hata oluştu',
         details: process.env.NODE_ENV === 'development' ? 
-          (error instanceof Error ? error.message : 'Unknown error') : undefined,
-        processingTime
+          (error instanceof Error ? error.message : 'Unknown error') : undefined
       },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const authResult = await getCurrentUser(request);
-    if (!authResult || authResult.role !== 'teacher') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    await connectDB();
-
-    const reports = await Report.find({ studentId: params.id })
-      .sort({ createdAt: -1 })
-      .select('_id title createdAt isPublic');
-
-    return NextResponse.json(reports);
-  } catch (error) {
-    logError('List reports failed', error, { studentId: params.id });
-    return NextResponse.json(
-      { error: 'Sunucu hatası' },
       { status: 500 }
     );
   }

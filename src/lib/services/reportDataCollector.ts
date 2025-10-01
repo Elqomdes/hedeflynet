@@ -128,11 +128,27 @@ export class ReportDataCollector {
   private static async getStudent(studentId: string) {
     try {
       console.log('ReportDataCollector: Getting student', studentId);
-      const student = await User.findById(studentId).select('firstName lastName email classId');
-      if (!student) {
+      
+      // First check if student exists with basic query
+      const studentExists = await User.findById(studentId);
+      console.log('ReportDataCollector: Student exists check', { exists: !!studentExists });
+      
+      if (!studentExists) {
         throw new Error(`Öğrenci bulunamadı: ${studentId}`);
       }
-      console.log('ReportDataCollector: Student found', { id: student._id, name: student.firstName });
+      
+      // Then get with specific fields
+      const student = await User.findById(studentId).select('firstName lastName email classId role');
+      if (!student) {
+        throw new Error(`Öğrenci verisi alınamadı: ${studentId}`);
+      }
+      
+      console.log('ReportDataCollector: Student found', { 
+        id: student._id, 
+        name: student.firstName,
+        role: student.role,
+        email: student.email
+      });
       return student;
     } catch (error) {
       console.error('ReportDataCollector: Error getting student', error);
@@ -533,3 +549,4 @@ export class ReportDataCollector {
 }
 
 export default ReportDataCollector;
+
