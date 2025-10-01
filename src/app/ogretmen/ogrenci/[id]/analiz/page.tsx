@@ -74,18 +74,27 @@ export default function StudentAnalysisPage() {
   }, [studentId, fetchAnalysisData]);
 
   const generateReport = async () => {
-    if (!analysisData || !student) return;
+    if (!student) {
+      alert('Öğrenci bilgileri yüklenemedi. Lütfen sayfayı yenileyin.');
+      return;
+    }
     
     setGeneratingReport(true);
     try {
-      const response = await fetch(`/api/teacher/students/${studentId}/report`, {
+      console.log('Generating report for student:', studentId);
+      
+      const response = await fetch(`/api/teacher/students/${studentId}/report?format=pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(analysisData),
+        body: JSON.stringify({
+          startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(), // Son 3 ay
+          endDate: new Date().toISOString()
+        }),
       });
 
+      console.log('Report response status:', response.status);
       const contentType = response.headers.get('content-type') || '';
       
       if (response.ok) {
@@ -99,7 +108,7 @@ export default function StudentAnalysisPage() {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${student.firstName}_${student.lastName}_raporu.pdf`;
+          a.download = `${student.firstName}_${student.lastName}_raporu_${new Date().toISOString().split('T')[0]}.pdf`;
           document.body.appendChild(a);
           a.click();
           window.URL.revokeObjectURL(url);
@@ -111,7 +120,7 @@ export default function StudentAnalysisPage() {
           const data = await response.json();
           if (data.url) {
             // Report created, show link
-            alert(`Rapor oluşturuldu! Görüntülemek için: ${window.location.origin}${data.url}`);
+            window.open(`${window.location.origin}${data.url}`, '_blank');
           } else {
             throw new Error(data.error || 'Bilinmeyen yanıt formatı');
           }
@@ -120,7 +129,7 @@ export default function StudentAnalysisPage() {
         }
       } else {
         // Error response
-        let errorMessage = 'Bilinmeyen hata';
+        let errorMessage = 'Rapor oluşturma başarısız';
         let details: string | undefined = undefined;
         
         try {
@@ -139,8 +148,17 @@ export default function StudentAnalysisPage() {
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
 
-        const finalMessage = details ? `${errorMessage}\n\nDetay: ${details}` : errorMessage;
-        alert(`Rapor oluşturulurken hata oluştu:\n\n${finalMessage}`);
+        // Show more specific error messages
+        if (errorMessage.includes('bulunamadı')) {
+          alert('Öğrenci veya öğretmen bulunamadı. Lütfen giriş yaptığınızdan emin olun.');
+        } else if (errorMessage.includes('bağlantı')) {
+          alert('Veritabanı bağlantı hatası. Lütfen daha sonra tekrar deneyin.');
+        } else if (errorMessage.includes('Geçersiz')) {
+          alert('Geçersiz öğrenci ID. Lütfen sayfayı yenileyin.');
+        } else {
+          const finalMessage = details ? `${errorMessage}\n\nDetay: ${details}` : errorMessage;
+          alert(`Rapor oluşturulurken hata oluştu:\n\n${finalMessage}`);
+        }
       }
     } catch (error) {
       console.error('Report generation error:', error);

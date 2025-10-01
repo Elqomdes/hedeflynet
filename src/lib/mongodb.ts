@@ -28,58 +28,70 @@ if (!cached) {
 }
 
 async function connectDB() {
-  // If MONGODB_URI is not provided, return null for build time
-  if (!MONGODB_URI) {
-    console.warn('MONGODB_URI not provided, skipping connection');
-    return null;
-  }
-
-  // If we have a cached connection and it's ready, return it
-  if (cached!.conn && mongoose.connection.readyState === 1) {
-    console.log('Using cached MongoDB connection');
-    return cached!.conn;
-  }
-
-  // If we don't have a promise, create one
-  if (!cached!.promise) {
-    console.log('Creating new MongoDB connection...');
-    const opts = {
-      bufferCommands: false,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 10000,
-      retryWrites: true,
-      w: 'majority' as const,
-      dbName: MONGODB_DB,
-    };
-
-    cached!.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
-      console.log(`MongoDB connected successfully (db: ${MONGODB_DB})`);
-      return mongooseInstance;
-    }).catch((error) => {
-      console.error('MongoDB connection failed:', error);
-      cached!.promise = null;
-      throw error;
-    }) as any;
-  }
-
   try {
+    // If MONGODB_URI is not provided, return null for build time
+    if (!MONGODB_URI) {
+      console.warn('MONGODB_URI not provided, skipping connection');
+      return null;
+    }
+
+    // If we have a cached connection and it's ready, return it
+    if (cached!.conn && mongoose.connection.readyState === 1) {
+      console.log('Using cached MongoDB connection');
+      return cached!.conn;
+    }
+
+    // If we don't have a promise, create one
+    if (!cached!.promise) {
+      console.log('Creating new MongoDB connection...');
+      const opts = {
+        bufferCommands: false,
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 15000, // Increased timeout
+        socketTimeoutMS: 60000, // Increased timeout
+        connectTimeoutMS: 15000, // Increased timeout
+        retryWrites: true,
+        w: 'majority' as const,
+        dbName: MONGODB_DB,
+        maxIdleTimeMS: 30000,
+        minPoolSize: 1,
+      };
+
+      cached!.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
+        console.log(`MongoDB connected successfully (db: ${MONGODB_DB})`);
+        return mongooseInstance;
+      }).catch((error) => {
+        console.error('MongoDB connection failed:', error);
+        cached!.promise = null;
+        throw new Error(`MongoDB bağlantı hatası: ${error.message}`);
+      }) as any;
+    }
+
     cached!.conn = await cached!.promise;
     
+    // Verify connection is actually ready
     if (mongoose.connection.readyState !== 1) {
       throw new Error(`MongoDB connection not ready. State: ${mongoose.connection.readyState}`);
     }
     
+    // Test the connection with a ping
+    try {
+      if (mongoose.connection.db) {
+        await mongoose.connection.db.admin().ping();
+        console.log('MongoDB connection verified with ping');
+      }
+    } catch (pingError) {
+      console.warn('MongoDB ping failed, but connection exists:', pingError);
+    }
+    
     console.log('MongoDB connection is ready');
-  } catch (e) {
-    console.error('MongoDB connection error:', e);
+    return cached!.conn;
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
     cached!.promise = null;
     cached!.conn = null;
-    throw e;
+    throw new Error(`Veritabanı bağlantı hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
   }
-
-  return cached!.conn;
 }
 
 export default connectDB;

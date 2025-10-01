@@ -12,145 +12,267 @@ export class ReportDataCollector {
   public static async collectStudentData(analysisData: StudentAnalysisData): Promise<ReportData> {
     const { studentId, teacherId, startDate, endDate } = analysisData;
     
-    // Set default date range (last 3 months)
-    const defaultEndDate = new Date();
-    const defaultStartDate = new Date();
-    defaultStartDate.setMonth(defaultStartDate.getMonth() - 3);
-    
-    const dateFilter = {
-      $gte: startDate || defaultStartDate,
-      $lte: endDate || defaultEndDate
-    };
+    try {
+      // Validate input parameters
+      if (!studentId || !teacherId) {
+        throw new Error('Student ID ve Teacher ID gerekli');
+      }
 
-    // Collect all data in parallel
-    const [
-      student,
-      teacher,
-      assignments,
-      submissions,
-      goals,
-      studentClass
-    ] = await Promise.all([
-      this.getStudent(studentId),
-      this.getTeacher(teacherId),
-      this.getAssignments(studentId, dateFilter),
-      this.getSubmissions(studentId, dateFilter),
-      this.getGoals(studentId, dateFilter),
-      this.getStudentClass(studentId)
-    ]);
+      // Set default date range (last 3 months)
+      const defaultEndDate = new Date();
+      const defaultStartDate = new Date();
+      defaultStartDate.setMonth(defaultStartDate.getMonth() - 3);
+      
+      const dateFilter = {
+        $gte: startDate || defaultStartDate,
+        $lte: endDate || defaultEndDate
+      };
 
-    // Calculate performance metrics
-    const performance = this.calculatePerformance(assignments, submissions);
-    const subjectStats = this.calculateSubjectStats(assignments, submissions);
-    const monthlyProgress = this.calculateMonthlyProgress(assignments, submissions, goals, dateFilter);
-    const goalsWithProgress = this.calculateGoalsProgress(goals);
-    const assignmentsWithStatus = this.calculateAssignmentStatus(assignments, submissions);
-    const recommendations = this.generateRecommendations(performance, subjectStats, goalsWithProgress);
-    const strengths = this.identifyStrengths(performance, subjectStats);
-    const areasForImprovement = this.identifyAreasForImprovement(performance, subjectStats);
+      console.log('ReportDataCollector: Starting data collection', {
+        studentId,
+        teacherId,
+        dateFilter
+      });
 
-    return {
-      student: {
-        _id: (student._id as any).toString(),
-        firstName: student.firstName,
-        lastName: student.lastName,
-        email: student.email,
-        classId: studentClass?._id?.toString()
-      },
-      teacher: {
-        firstName: teacher.firstName,
-        lastName: teacher.lastName,
-        email: teacher.email
-      },
-      performance,
-      subjectStats,
-      monthlyProgress,
-      goals: goalsWithProgress,
-      assignments: assignmentsWithStatus,
-      recommendations,
-      strengths,
-      areasForImprovement
-    };
+      // Collect all data in parallel with error handling
+      const [
+        student,
+        teacher,
+        assignments,
+        submissions,
+        goals,
+        studentClass
+      ] = await Promise.allSettled([
+        this.getStudent(studentId),
+        this.getTeacher(teacherId),
+        this.getAssignments(studentId, dateFilter),
+        this.getSubmissions(studentId, dateFilter),
+        this.getGoals(studentId, dateFilter),
+        this.getStudentClass(studentId)
+      ]);
+
+      // Check for critical errors
+      if (student.status === 'rejected') {
+        throw new Error(`Öğrenci bulunamadı: ${student.reason}`);
+      }
+      if (teacher.status === 'rejected') {
+        throw new Error(`Öğretmen bulunamadı: ${teacher.reason}`);
+      }
+
+      // Extract successful results
+      const studentData = student.status === 'fulfilled' ? student.value : null;
+      const teacherData = teacher.status === 'fulfilled' ? teacher.value : null;
+      const assignmentsData = assignments.status === 'fulfilled' ? assignments.value : [];
+      const submissionsData = submissions.status === 'fulfilled' ? submissions.value : [];
+      const goalsData = goals.status === 'fulfilled' ? goals.value : [];
+      const studentClassData = studentClass.status === 'fulfilled' ? studentClass.value : null;
+
+      if (!studentData) {
+        throw new Error('Öğrenci verisi alınamadı');
+      }
+      if (!teacherData) {
+        throw new Error('Öğretmen verisi alınamadı');
+      }
+
+      console.log('ReportDataCollector: Data collected successfully', {
+        student: !!studentData,
+        teacher: !!teacherData,
+        assignments: assignmentsData.length,
+        submissions: submissionsData.length,
+        goals: goalsData.length,
+        class: !!studentClassData
+      });
+
+      // Calculate performance metrics with error handling
+      const performance = this.calculatePerformance(assignmentsData, submissionsData);
+      const subjectStats = this.calculateSubjectStats(assignmentsData, submissionsData);
+      const monthlyProgress = this.calculateMonthlyProgress(assignmentsData, submissionsData, goalsData, dateFilter);
+      const goalsWithProgress = this.calculateGoalsProgress(goalsData);
+      const assignmentsWithStatus = this.calculateAssignmentStatus(assignmentsData, submissionsData);
+      const recommendations = this.generateRecommendations(performance, subjectStats, goalsWithProgress);
+      const strengths = this.identifyStrengths(performance, subjectStats);
+      const areasForImprovement = this.identifyAreasForImprovement(performance, subjectStats);
+
+      const result = {
+        student: {
+          _id: (studentData._id as any).toString(),
+          firstName: studentData.firstName || 'Bilinmeyen',
+          lastName: studentData.lastName || 'Öğrenci',
+          email: studentData.email || '',
+          classId: studentClassData?._id?.toString()
+        },
+        teacher: {
+          firstName: teacherData.firstName || 'Bilinmeyen',
+          lastName: teacherData.lastName || 'Öğretmen',
+          email: teacherData.email || ''
+        },
+        performance,
+        subjectStats,
+        monthlyProgress,
+        goals: goalsWithProgress,
+        assignments: assignmentsWithStatus,
+        recommendations,
+        strengths,
+        areasForImprovement
+      };
+
+      console.log('ReportDataCollector: Report data generated successfully');
+      return result;
+
+    } catch (error) {
+      console.error('ReportDataCollector: Error collecting student data', error);
+      throw new Error(`Veri toplama hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+    }
   }
 
   private static async getStudent(studentId: string) {
-    const student = await User.findById(studentId).select('firstName lastName email classId');
-    if (!student) {
-      throw new Error('Öğrenci bulunamadı');
+    try {
+      console.log('ReportDataCollector: Getting student', studentId);
+      const student = await User.findById(studentId).select('firstName lastName email classId');
+      if (!student) {
+        throw new Error(`Öğrenci bulunamadı: ${studentId}`);
+      }
+      console.log('ReportDataCollector: Student found', { id: student._id, name: student.firstName });
+      return student;
+    } catch (error) {
+      console.error('ReportDataCollector: Error getting student', error);
+      throw new Error(`Öğrenci verisi alınamadı: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
     }
-    return student;
   }
 
   private static async getTeacher(teacherId: string) {
-    const teacher = await User.findById(teacherId).select('firstName lastName email');
-    if (!teacher) {
-      throw new Error('Öğretmen bulunamadı');
+    try {
+      console.log('ReportDataCollector: Getting teacher', teacherId);
+      const teacher = await User.findById(teacherId).select('firstName lastName email');
+      if (!teacher) {
+        throw new Error(`Öğretmen bulunamadı: ${teacherId}`);
+      }
+      console.log('ReportDataCollector: Teacher found', { id: teacher._id, name: teacher.firstName });
+      return teacher;
+    } catch (error) {
+      console.error('ReportDataCollector: Error getting teacher', error);
+      throw new Error(`Öğretmen verisi alınamadı: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
     }
-    return teacher;
   }
 
   private static async getAssignments(studentId: string, dateFilter: any) {
-    return await Assignment.find({
-      assignedTo: studentId,
-      dueDate: dateFilter
-    }).populate('createdBy', 'firstName lastName').sort({ dueDate: -1 });
+    try {
+      console.log('ReportDataCollector: Getting assignments', { studentId, dateFilter });
+      const assignments = await Assignment.find({
+        studentId: studentId,
+        dueDate: dateFilter
+      }).populate('teacherId', 'firstName lastName').sort({ dueDate: -1 });
+      console.log('ReportDataCollector: Assignments found', assignments.length);
+      return assignments;
+    } catch (error) {
+      console.error('ReportDataCollector: Error getting assignments', error);
+      return []; // Return empty array instead of throwing
+    }
   }
 
   private static async getSubmissions(studentId: string, dateFilter: any) {
-    return await AssignmentSubmission.find({
-      studentId,
-      submittedAt: dateFilter
-    }).populate('assignmentId').sort({ submittedAt: -1 });
+    try {
+      console.log('ReportDataCollector: Getting submissions', { studentId, dateFilter });
+      const submissions = await AssignmentSubmission.find({
+        studentId,
+        submittedAt: dateFilter
+      }).populate('assignmentId').sort({ submittedAt: -1 });
+      console.log('ReportDataCollector: Submissions found', submissions.length);
+      return submissions;
+    } catch (error) {
+      console.error('ReportDataCollector: Error getting submissions', error);
+      return []; // Return empty array instead of throwing
+    }
   }
 
   private static async getGoals(studentId: string, dateFilter: any) {
-    return await Goal.find({
-      studentId,
-      createdAt: dateFilter
-    }).sort({ dueDate: -1 });
+    try {
+      console.log('ReportDataCollector: Getting goals', { studentId, dateFilter });
+      const goals = await Goal.find({
+        studentId,
+        createdAt: dateFilter
+      }).sort({ targetDate: -1 });
+      console.log('ReportDataCollector: Goals found', goals.length);
+      return goals;
+    } catch (error) {
+      console.error('ReportDataCollector: Error getting goals', error);
+      return []; // Return empty array instead of throwing
+    }
   }
 
   private static async getStudentClass(studentId: string) {
-    const student = await User.findById(studentId).select('classId');
-    if (student && (student as any).classId) {
-      return await Class.findById((student as any).classId);
+    try {
+      console.log('ReportDataCollector: Getting student class', studentId);
+      const student = await User.findById(studentId).select('classId');
+      if (student && (student as any).classId) {
+        const classData = await Class.findById((student as any).classId);
+        console.log('ReportDataCollector: Class found', classData ? classData._id : 'null');
+        return classData;
+      }
+      console.log('ReportDataCollector: No class found for student');
+      return null;
+    } catch (error) {
+      console.error('ReportDataCollector: Error getting student class', error);
+      return null; // Return null instead of throwing
     }
-    return null;
   }
 
   private static calculatePerformance(assignments: any[], submissions: any[]) {
-    const totalAssignments = assignments.length;
-    const submittedAssignments = submissions.length;
-    const gradedAssignments = submissions.filter(s => s.grade !== null && s.grade !== undefined).length;
-    
-    const assignmentCompletion = totalAssignments > 0 ? Math.round((submittedAssignments / totalAssignments) * 100) : 0;
-    const gradingRate = submittedAssignments > 0 ? Math.round((gradedAssignments / submittedAssignments) * 100) : 0;
-    
-    const grades = submissions
-      .filter(s => s.grade !== null && s.grade !== undefined)
-      .map(s => s.grade);
-    
-    const averageGrade = grades.length > 0 
-      ? Math.round(grades.reduce((sum, grade) => sum + grade, 0) / grades.length)
-      : 0;
+    try {
+      console.log('ReportDataCollector: Calculating performance', {
+        assignments: assignments.length,
+        submissions: submissions.length
+      });
 
-    // Calculate overall performance based on multiple factors
-    const overallPerformance = Math.round(
-      (assignmentCompletion * 0.4) + 
-      (gradingRate * 0.3) + 
-      (averageGrade * 0.3)
-    );
+      const totalAssignments = assignments.length;
+      const submittedAssignments = submissions.length;
+      const gradedAssignments = submissions.filter(s => s && s.grade !== null && s.grade !== undefined).length;
+      
+      const assignmentCompletion = totalAssignments > 0 ? Math.round((submittedAssignments / totalAssignments) * 100) : 0;
+      const gradingRate = submittedAssignments > 0 ? Math.round((gradedAssignments / submittedAssignments) * 100) : 0;
+      
+      const grades = submissions
+        .filter(s => s && s.grade !== null && s.grade !== undefined)
+        .map(s => Number(s.grade))
+        .filter(grade => !isNaN(grade));
+      
+      const averageGrade = grades.length > 0 
+        ? Math.round(grades.reduce((sum, grade) => sum + grade, 0) / grades.length)
+        : 0;
 
-    return {
-      assignmentCompletion,
-      goalsProgress: 0, // Will be calculated separately
-      overallPerformance,
-      averageGrade,
-      totalAssignments,
-      submittedAssignments,
-      gradedAssignments,
-      gradingRate
-    };
+      // Calculate overall performance based on multiple factors
+      const overallPerformance = Math.round(
+        (assignmentCompletion * 0.4) + 
+        (gradingRate * 0.3) + 
+        (averageGrade * 0.3)
+      );
+
+      const result = {
+        assignmentCompletion: Math.max(0, Math.min(100, assignmentCompletion)),
+        goalsProgress: 0, // Will be calculated separately
+        overallPerformance: Math.max(0, Math.min(100, overallPerformance)),
+        averageGrade: Math.max(0, Math.min(100, averageGrade)),
+        totalAssignments,
+        submittedAssignments,
+        gradedAssignments,
+        gradingRate: Math.max(0, Math.min(100, gradingRate))
+      };
+
+      console.log('ReportDataCollector: Performance calculated', result);
+      return result;
+    } catch (error) {
+      console.error('ReportDataCollector: Error calculating performance', error);
+      return {
+        assignmentCompletion: 0,
+        goalsProgress: 0,
+        overallPerformance: 0,
+        averageGrade: 0,
+        totalAssignments: 0,
+        submittedAssignments: 0,
+        gradedAssignments: 0,
+        gradingRate: 0
+      };
+    }
   }
 
   private static calculateSubjectStats(assignments: any[], submissions: any[]) {
@@ -275,7 +397,7 @@ export class ReportDataCollector {
         title: goal.title,
         description: goal.description || '',
         progress,
-        dueDate: goal.dueDate ? goal.dueDate.toLocaleDateString('tr-TR') : '',
+        dueDate: goal.targetDate ? goal.targetDate.toLocaleDateString('tr-TR') : '',
         status
       };
     });

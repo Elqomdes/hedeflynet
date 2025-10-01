@@ -419,6 +419,11 @@ export async function POST(
     // Collect comprehensive student data
     let reportData: ReportData;
     try {
+      // Validate student ID format
+      if (!studentId || typeof studentId !== 'string' || studentId.length < 10) {
+        throw new Error('Geçersiz öğrenci ID formatı');
+      }
+
       const analysisData: StudentAnalysisData = {
         studentId,
         teacherId: (teacherId as string),
@@ -426,11 +431,41 @@ export async function POST(
         endDate: requestData.endDate ? new Date(requestData.endDate) : undefined
       };
       
+      console.log('Report API: Starting data collection', {
+        studentId,
+        teacherId,
+        startDate: analysisData.startDate,
+        endDate: analysisData.endDate
+      });
+      
       reportData = await ReportDataCollector.collectStudentData(analysisData);
+      
+      console.log('Report API: Data collection successful', {
+        student: reportData.student.firstName,
+        assignments: reportData.assignments.length,
+        goals: reportData.goals.length
+      });
     } catch (dataError) {
-      logError('Data collection failed', dataError, { studentId });
+      logError('Data collection failed', dataError, { studentId, teacherId });
+      
+      // Provide more specific error messages
+      let errorMessage = 'Öğrenci verileri toplanamadı';
+      if (dataError instanceof Error) {
+        if (dataError.message.includes('bulunamadı')) {
+          errorMessage = 'Öğrenci veya öğretmen bulunamadı';
+        } else if (dataError.message.includes('bağlantı')) {
+          errorMessage = 'Veritabanı bağlantı hatası';
+        } else if (dataError.message.includes('Geçersiz')) {
+          errorMessage = dataError.message;
+        }
+      }
+      
       return NextResponse.json(
-        { error: 'Öğrenci verileri toplanamadı' },
+        { 
+          error: errorMessage,
+          details: process.env.NODE_ENV === 'development' ? 
+            (dataError instanceof Error ? dataError.message : 'Bilinmeyen hata') : undefined
+        },
         { status: 500 }
       );
     }
