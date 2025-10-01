@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User, Report } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import PDFGenerator, { ReportData } from '@/lib/services/pdfGenerator';
+import ReportDataCollector, { StudentAnalysisData } from '@/lib/services/reportDataCollector';
 import { jsPDF } from 'jspdf';
 
 export const dynamic = 'force-dynamic';
@@ -379,7 +381,6 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  let analysisData: any = null;
   const startTime = Date.now();
   
   try {
@@ -392,19 +393,14 @@ export async function POST(
       );
     }
 
-    // Parse and validate request data
+    // Parse request data
+    let requestData: any = {};
     try {
-      analysisData = await request.json();
+      requestData = await request.json();
     } catch (parseError) {
       logError('Request parsing failed', parseError);
-      return NextResponse.json(
-        { error: 'Geçersiz istek verisi' },
-        { status: 400 }
-      );
+      // Continue with empty data if parsing fails
     }
-    
-    // Validate and sanitize analysis data
-    const validatedData = validateAndSanitizeData(analysisData);
     
     // Database connection
     try {
@@ -420,29 +416,22 @@ export async function POST(
     const studentId = params.id;
     const teacherId = authResult._id;
 
-    // Get student info with error handling
-    let student;
+    // Collect comprehensive student data
+    let reportData: ReportData;
     try {
-      student = await User.findById(studentId).select('firstName lastName');
-      if (!student) {
-        return NextResponse.json(
-          { error: 'Öğrenci bulunamadı' },
-          { status: 404 }
-        );
-      }
-    } catch (studentError) {
-      logError('Student lookup failed', studentError, { studentId });
+      const analysisData: StudentAnalysisData = {
+        studentId,
+        teacherId: (teacherId as string),
+        startDate: requestData.startDate ? new Date(requestData.startDate) : undefined,
+        endDate: requestData.endDate ? new Date(requestData.endDate) : undefined
+      };
+      
+      reportData = await ReportDataCollector.collectStudentData(analysisData);
+    } catch (dataError) {
+      logError('Data collection failed', dataError, { studentId });
       return NextResponse.json(
-        { error: 'Öğrenci bilgileri alınamadı' },
+        { error: 'Öğrenci verileri toplanamadı' },
         { status: 500 }
-      );
-    }
-
-    // Validate student data
-    if (!student.firstName || !student.lastName) {
-      return NextResponse.json(
-        { error: 'Öğrenci bilgileri eksik' },
-        { status: 400 }
       );
     }
 
@@ -452,13 +441,13 @@ export async function POST(
       report = new Report({
         studentId,
         teacherId,
-        title: `${student.firstName} ${student.lastName} - Performans Raporu`,
-        content: generateReportContent(student, validatedData),
+        title: `${reportData.student.firstName} ${reportData.student.lastName} - Performans Raporu`,
+        content: generateReportContent(reportData.student, reportData.performance),
         data: {
-          assignmentCompletion: validatedData.assignmentCompletion,
-          subjectStats: validatedData.subjectStats,
-          goalsProgress: validatedData.goalsProgress,
-          overallPerformance: validatedData.overallPerformance
+          assignmentCompletion: reportData.performance.assignmentCompletion,
+          subjectStats: reportData.subjectStats,
+          goalsProgress: reportData.performance.goalsProgress,
+          overallPerformance: reportData.performance.overallPerformance
         },
         isPublic: true
       });
@@ -477,17 +466,18 @@ export async function POST(
 
     if (format === 'pdf') {
       try {
-        // Generate PDF with fallback mechanisms
-        const pdfBuffer = await generatePDFContent(student, validatedData);
+        // Generate advanced PDF
+        const pdfGenerator = PDFGenerator.getInstance();
+        const pdfBuffer = await pdfGenerator.generateAdvancedPDF(reportData);
         
         if (!pdfBuffer || pdfBuffer.length === 0) {
           throw new Error('PDF buffer is empty');
         }
 
         // Create safe filename
-        const safeFirstName = student.firstName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
-        const safeLastName = student.lastName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
-        const filename = `${safeFirstName}_${safeLastName}_raporu.pdf`;
+        const safeFirstName = reportData.student.firstName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
+        const safeLastName = reportData.student.lastName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
+        const filename = `${safeFirstName}_${safeLastName}_raporu_${new Date().toISOString().split('T')[0]}.pdf`;
 
         const processingTime = Date.now() - startTime;
         logError('PDF generation successful', null, { 
@@ -527,15 +517,15 @@ export async function POST(
       title: report.title,
       createdAt: report.createdAt,
       isPublic: report.isPublic,
-      url: `/rapor/${report._id}`
+      url: `/rapor/${report._id}`,
+      data: reportData
     });
     
   } catch (error) {
     const processingTime = Date.now() - startTime;
     logError('Report generation failed', error, { 
       processingTime,
-      studentId: params.id,
-      hasAnalysisData: !!analysisData
+      studentId: params.id
     });
     
     return NextResponse.json(
