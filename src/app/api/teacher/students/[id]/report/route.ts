@@ -60,12 +60,14 @@ function validateAndSanitizeData(analysisData: any): SanitizedAnalysis {
 // Alternative PDF generation using simple HTML-to-PDF approach
 async function generateSimplePDF(student: any, analysisData: any): Promise<Buffer> {
   try {
+    console.log('Generating simple PDF for student:', student?.firstName);
+    
     const doc = new jsPDF();
     
     // Basic document setup
     doc.setFont('helvetica');
     doc.setFontSize(16);
-    doc.text(`${student.firstName} ${student.lastName} - Performans Raporu`, 20, 20);
+    doc.text(`${student?.firstName || 'Bilinmeyen'} ${student?.lastName || 'Öğrenci'} - Performans Raporu`, 20, 20);
     
     doc.setFontSize(12);
     doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 40);
@@ -79,22 +81,27 @@ async function generateSimplePDF(student: any, analysisData: any): Promise<Buffe
     };
     
     addText('Genel Performans', 14);
-    addText(`Ödev Tamamlama: %${analysisData.assignmentCompletion}`);
-    addText(`Hedef İlerlemesi: %${analysisData.goalsProgress}`);
-    addText(`Genel Performans: %${analysisData.overallPerformance}`);
-    addText(`Ortalama Not: ${analysisData.averageGrade}/100`);
+    addText(`Ödev Tamamlama: %${analysisData?.assignmentCompletion || 0}`);
+    addText(`Hedef İlerlemesi: %${analysisData?.goalsProgress || 0}`);
+    addText(`Genel Performans: %${analysisData?.overallPerformance || 0}`);
+    addText(`Ortalama Not: ${analysisData?.averageGrade || 0}/100`);
     
     // Subject details
-    if (analysisData.subjectDetails && Object.keys(analysisData.subjectDetails).length > 0) {
+    if (analysisData?.subjectDetails && Object.keys(analysisData.subjectDetails).length > 0) {
       addText('Branş Detayları', 14);
       Object.entries(analysisData.subjectDetails).forEach(([subject, details]: [string, any]) => {
         addText(`${subject}: %${details?.completion || 0}`, 10);
+      });
+    } else if (analysisData?.subjectStats && Object.keys(analysisData.subjectStats).length > 0) {
+      addText('Branş Detayları', 14);
+      Object.entries(analysisData.subjectStats).forEach(([subject, value]: [string, any]) => {
+        addText(`${subject}: %${value || 0}`, 10);
       });
     }
     
     // Recommendations
     addText('Öneriler', 14);
-    const overallPerf = analysisData.overallPerformance || 0;
+    const overallPerf = analysisData?.overallPerformance || 0;
     let recommendation = 'Öğrencinin performansını artırmak için ek destek önerilir.';
     if (overallPerf > 80) {
       recommendation = 'Öğrenci mükemmel performans sergiliyor. Bu başarıyı sürdürmesi için teşvik edilmelidir.';
@@ -104,10 +111,13 @@ async function generateSimplePDF(student: any, analysisData: any): Promise<Buffe
     addText(recommendation);
     
     const pdfOutput = doc.output('arraybuffer');
-    return Buffer.from(pdfOutput);
+    const buffer = Buffer.from(pdfOutput);
+    
+    console.log('Simple PDF generated successfully, size:', buffer.length);
+    return buffer;
   } catch (error) {
     logError('Simple PDF generation failed', error);
-    throw error;
+    throw new Error(`PDF oluşturma hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
   }
 }
 
@@ -501,9 +511,16 @@ export async function POST(
 
     if (format === 'pdf') {
       try {
-        // Generate advanced PDF
-        const pdfGenerator = PDFGenerator.getInstance();
-        const pdfBuffer = await pdfGenerator.generateAdvancedPDF(reportData);
+        // Try advanced PDF first (Puppeteer)
+        let pdfBuffer: Buffer;
+        try {
+          const pdfGenerator = PDFGenerator.getInstance();
+          pdfBuffer = await pdfGenerator.generateAdvancedPDF(reportData);
+        } catch (puppeteerError) {
+          console.warn('Puppeteer PDF generation failed, falling back to jsPDF:', puppeteerError);
+          // Fallback to simple PDF generation
+          pdfBuffer = await generatePDFContent(reportData.student, reportData.performance);
+        }
         
         if (!pdfBuffer || pdfBuffer.length === 0) {
           throw new Error('PDF buffer is empty');

@@ -91,6 +91,11 @@ export class PDFGenerator {
 
   public async generateAdvancedPDF(data: ReportData): Promise<Buffer> {
     try {
+      // Check if Puppeteer is available
+      if (process.env.NODE_ENV === 'production' && !process.env.ENABLE_PUPPETEER) {
+        throw new Error('Puppeteer disabled in production');
+      }
+
       const browser = await this.getBrowser();
       const page = await browser.newPage();
       

@@ -155,6 +155,15 @@ export default function StudentAnalysisPage() {
           alert('Veritabanı bağlantı hatası. Lütfen daha sonra tekrar deneyin.');
         } else if (errorMessage.includes('Geçersiz')) {
           alert('Geçersiz öğrenci ID. Lütfen sayfayı yenileyin.');
+        } else if (errorMessage.includes('PDF oluşturulamadı')) {
+          // Try to open the report in browser instead
+          const data = await response.json().catch(() => ({}));
+          if (data.url) {
+            window.open(`${window.location.origin}${data.url}`, '_blank');
+            alert('PDF oluşturulamadı, rapor tarayıcıda açılıyor.');
+          } else {
+            alert('PDF oluşturulamadı. Lütfen daha sonra tekrar deneyin.');
+          }
         } else {
           const finalMessage = details ? `${errorMessage}\n\nDetay: ${details}` : errorMessage;
           alert(`Rapor oluşturulurken hata oluştu:\n\n${finalMessage}`);
