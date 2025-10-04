@@ -88,28 +88,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-primary-600 mb-2">Hedefly</h1>
-          <h2 className="text-3xl font-bold text-secondary-900">
+    <div className="min-h-screen gradient-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-primary-100/20"></div>
+      <div className="max-w-md w-full space-y-8 relative z-10">
+        <div className="text-center animate-fade-in">
+          <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-glow">
+            <span className="text-white font-bold text-2xl">H</span>
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent mb-2">
+            Hedefly
+          </h1>
+          <h2 className="text-3xl font-bold text-secondary-900 mb-4">
             Giriş Yap
           </h2>
-          <p className="mt-2 text-sm text-secondary-600">
+          <p className="text-secondary-600">
             Hesabınıza giriş yaparak devam edin
           </p>
         </div>
 
-        <div className="card">
+        <div className="card animate-slide-up">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              <div className="alert alert-danger">
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-secondary-700 mb-2">
+              <label htmlFor="username" className="block text-sm font-semibold text-secondary-700 mb-3">
                 Kullanıcı Adı veya E-posta
               </label>
               <input
@@ -125,7 +131,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-secondary-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-secondary-700 mb-3">
                 Şifre
               </label>
               <div className="relative">
@@ -136,18 +142,18 @@ export default function LoginPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="input-field pr-10"
+                  className="input-field pr-12"
                   placeholder="Şifreniz"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-secondary-50 rounded-r-xl transition-colors duration-200"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-secondary-400" />
+                    <EyeOff className="h-5 w-5 text-secondary-500" />
                   ) : (
-                    <Eye className="h-4 w-4 text-secondary-400" />
+                    <Eye className="h-5 w-5 text-secondary-500" />
                   )}
                 </button>
               </div>
@@ -156,26 +162,26 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-primary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn-primary flex items-center justify-center space-x-3 py-4 text-lg"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="loading-spinner w-5 h-5" />
                   <span>Giriş yapılıyor...</span>
                 </>
               ) : (
                 <>
-                  <LogIn className="w-4 h-4" />
+                  <LogIn className="w-5 h-5" />
                   <span>Giriş Yap</span>
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-secondary-600">
+          <div className="mt-8 text-center">
+            <p className="text-secondary-600">
               Öğretmen olmak için{' '}
-              <Link href="/iletisim" className="text-primary-600 hover:text-primary-500 font-medium">
+              <Link href="/iletisim" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors duration-200">
                 başvuru yapın
               </Link>
             </p>

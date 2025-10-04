@@ -77,27 +77,27 @@ export default function TeacherDashboard() {
   ];
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-secondary-900">Öğretmen Dashboard</h1>
-        <p className="mt-2 text-secondary-600">
+    <div className="animate-fade-in">
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold text-secondary-900 mb-3">Öğretmen Dashboard</h1>
+        <p className="text-lg text-secondary-600">
           Öğrenci koçluğunuzu yönetin ve ilerlemeleri takip edin
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {statCards.map((stat) => (
-          <Link key={stat.name} href={stat.href} className="card hover:shadow-lg transition-shadow">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+        {statCards.map((stat, index) => (
+          <Link key={stat.name} href={stat.href} className="card card-hover group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
             <div className="flex items-center">
-              <div className={`p-3 rounded-lg ${stat.color}`}>
-                <stat.icon className="h-6 w-6 text-white" />
+              <div className={`p-4 rounded-2xl ${stat.color} shadow-lg group-hover:shadow-glow transition-all duration-300`}>
+                <stat.icon className="h-8 w-8 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-secondary-600">{stat.name}</p>
-                <p className="text-2xl font-semibold text-secondary-900">{stat.value}</p>
+              <div className="ml-6">
+                <p className="text-sm font-semibold text-secondary-600 mb-1">{stat.name}</p>
+                <p className="text-3xl font-bold text-secondary-900 mb-1">{stat.value}</p>
                 {stat.subtitle && (
-                  <p className="text-xs text-secondary-500">{stat.subtitle}</p>
+                  <p className="text-sm text-secondary-500">{stat.subtitle}</p>
                 )}
               </div>
             </div>
@@ -106,71 +106,79 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Assignment Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="card">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Ödev Durumu
-          </h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        <div className="card card-hover animate-slide-up">
+          <div className="card-header">
+            <h3 className="card-title">
+              Ödev Durumu
+            </h3>
+          </div>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-3 bg-warning-50 rounded-xl">
               <div className="flex items-center">
-                <Clock className="h-5 w-5 text-yellow-500 mr-2" />
-                <span className="text-sm text-secondary-600">Bekleyen Değerlendirme</span>
+                <Clock className="h-6 w-6 text-warning-600 mr-3" />
+                <span className="text-secondary-700 font-medium">Bekleyen Değerlendirme</span>
               </div>
-              <span className="text-lg font-semibold text-secondary-900">{stats.pendingGrading}</span>
+              <span className="text-2xl font-bold text-warning-600">{stats.pendingGrading}</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-3 bg-success-50 rounded-xl">
               <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-sm text-secondary-600">Değerlendirildi</span>
+                <CheckCircle className="h-6 w-6 text-success-600 mr-3" />
+                <span className="text-secondary-700 font-medium">Değerlendirildi</span>
               </div>
-              <span className="text-lg font-semibold text-secondary-900">{stats.gradedAssignments}</span>
+              <span className="text-2xl font-bold text-success-600">{stats.gradedAssignments}</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-3 bg-primary-50 rounded-xl">
               <div className="flex items-center">
-                <FileText className="h-5 w-5 text-blue-500 mr-2" />
-                <span className="text-sm text-secondary-600">Toplam Teslim</span>
+                <FileText className="h-6 w-6 text-primary-600 mr-3" />
+                <span className="text-secondary-700 font-medium">Toplam Teslim</span>
               </div>
-              <span className="text-lg font-semibold text-secondary-900">{stats.submittedAssignments}</span>
+              <span className="text-2xl font-bold text-primary-600">{stats.submittedAssignments}</span>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Değerlendirme İlerlemesi
-          </h3>
+        <div className="card card-hover animate-slide-up" style={{animationDelay: '0.1s'}}>
+          <div className="card-header">
+            <h3 className="card-title">
+              Değerlendirme İlerlemesi
+            </h3>
+          </div>
           <div className="flex items-center">
             <div className="flex-1">
-              <div className="flex justify-between text-sm text-secondary-600 mb-2">
+              <div className="flex justify-between text-sm text-secondary-600 mb-3">
                 <span>Değerlendirilen</span>
-                <span>{stats.gradedAssignments}/{stats.submittedAssignments}</span>
+                <span className="font-semibold">{stats.gradedAssignments}/{stats.submittedAssignments}</span>
               </div>
-              <div className="w-full bg-secondary-200 rounded-full h-3">
+              <div className="progress-bar">
                 <div 
-                  className="bg-primary-600 h-3 rounded-full transition-all duration-300"
+                  className="progress-fill progress-primary"
                   style={{ width: `${stats.gradingRate}%` }}
                 ></div>
               </div>
-              <p className="text-sm text-secondary-600 mt-2">
+              <p className="text-sm text-secondary-600 mt-3">
                 %{stats.gradingRate} tamamlandı
               </p>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Hızlı Erişim
-          </h3>
-          <div className="space-y-3">
+        <div className="card card-hover animate-slide-up" style={{animationDelay: '0.2s'}}>
+          <div className="card-header">
+            <h3 className="card-title">
+              Hızlı Erişim
+            </h3>
+          </div>
+          <div className="space-y-4">
             <Link
               href="/ogretmen/odevler"
-              className="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+              className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 group"
             >
-              <FileText className="h-5 w-5 text-blue-600 mr-3" />
-              <div>
-                <p className="font-medium text-secondary-900">Ödevleri Yönet</p>
+              <div className="p-3 bg-primary-500 rounded-xl group-hover:bg-primary-600 transition-colors duration-300">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="font-semibold text-secondary-900">Ödevleri Yönet</p>
                 <p className="text-sm text-secondary-600">
                   {stats.totalAssignments} ödev
                 </p>
@@ -178,11 +186,13 @@ export default function TeacherDashboard() {
             </Link>
             <Link
               href="/ogretmen/ogrenciler"
-              className="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+              className="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 group"
             >
-              <Users className="h-5 w-5 text-green-600 mr-3" />
-              <div>
-                <p className="font-medium text-secondary-900">Öğrenci Analizleri</p>
+              <div className="p-3 bg-success-500 rounded-xl group-hover:bg-success-600 transition-colors duration-300">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="font-semibold text-secondary-900">Öğrenci Analizleri</p>
                 <p className="text-sm text-secondary-600">
                   {stats.totalStudents} öğrenci
                 </p>
@@ -193,19 +203,23 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Hızlı İşlemler
-          </h3>
-          <div className="space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="card animate-slide-up">
+          <div className="card-header">
+            <h3 className="card-title">
+              Hızlı İşlemler
+            </h3>
+          </div>
+          <div className="space-y-4">
             <Link
               href="/ogretmen/ogrenciler"
-              className="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+              className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 group"
             >
-              <UserPlus className="h-5 w-5 text-blue-600 mr-3" />
-              <div>
-                <p className="font-medium text-secondary-900">Yeni Öğrenci Ekle</p>
+              <div className="p-3 bg-primary-500 rounded-xl group-hover:bg-primary-600 transition-colors duration-300">
+                <UserPlus className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="font-semibold text-secondary-900">Yeni Öğrenci Ekle</p>
                 <p className="text-sm text-secondary-600">
                   Öğrenci hesabı oluşturun
                 </p>
@@ -213,11 +227,13 @@ export default function TeacherDashboard() {
             </Link>
             <Link
               href="/ogretmen/siniflar"
-              className="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+              className="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 group"
             >
-              <BookOpen className="h-5 w-5 text-green-600 mr-3" />
-              <div>
-                <p className="font-medium text-secondary-900">Sınıf Oluştur</p>
+              <div className="p-3 bg-success-500 rounded-xl group-hover:bg-success-600 transition-colors duration-300">
+                <BookOpen className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="font-semibold text-secondary-900">Sınıf Oluştur</p>
                 <p className="text-sm text-secondary-600">
                   Yeni sınıf açın ve öğrenci atayın
                 </p>
@@ -225,11 +241,13 @@ export default function TeacherDashboard() {
             </Link>
             <Link
               href="/ogretmen/odevler"
-              className="flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100 transition-colors"
+              className="flex items-center p-4 bg-gradient-to-r from-warning-50 to-warning-100 border border-warning-200 rounded-xl hover:from-warning-100 hover:to-warning-200 transition-all duration-300 group"
             >
-              <FileText className="h-5 w-5 text-yellow-600 mr-3" />
-              <div>
-                <p className="font-medium text-secondary-900">Ödev Ver</p>
+              <div className="p-3 bg-warning-500 rounded-xl group-hover:bg-warning-600 transition-colors duration-300">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="font-semibold text-secondary-900">Ödev Ver</p>
                 <p className="text-sm text-secondary-600">
                   Bireysel veya sınıf ödevi oluşturun
                 </p>
@@ -238,22 +256,24 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        <div className="card">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Son Aktiviteler
-          </h3>
+        <div className="card animate-slide-up" style={{animationDelay: '0.1s'}}>
+          <div className="card-header">
+            <h3 className="card-title">
+              Son Aktiviteler
+            </h3>
+          </div>
           <div className="space-y-4">
-            <div className="flex items-center text-sm text-secondary-600">
-              <div className="w-2 h-2 bg-primary-500 rounded-full mr-3"></div>
-              <span>Dashboard&apos;a hoş geldiniz!</span>
+            <div className="flex items-center p-3 bg-primary-50 rounded-xl">
+              <div className="w-3 h-3 bg-primary-500 rounded-full mr-4"></div>
+              <span className="text-secondary-700 font-medium">Dashboard&apos;a hoş geldiniz!</span>
             </div>
-            <div className="flex items-center text-sm text-secondary-600">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-              <span>Öğrenci ekleme işlemlerine başlayabilirsiniz</span>
+            <div className="flex items-center p-3 bg-success-50 rounded-xl">
+              <div className="w-3 h-3 bg-success-500 rounded-full mr-4"></div>
+              <span className="text-secondary-700 font-medium">Öğrenci ekleme işlemlerine başlayabilirsiniz</span>
             </div>
-            <div className="flex items-center text-sm text-secondary-600">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-              <span>Sınıf oluşturarak grup çalışmaları yapabilirsiniz</span>
+            <div className="flex items-center p-3 bg-blue-50 rounded-xl">
+              <div className="w-3 h-3 bg-blue-500 rounded-full mr-4"></div>
+              <span className="text-secondary-700 font-medium">Sınıf oluşturarak grup çalışmaları yapabilirsiniz</span>
             </div>
           </div>
         </div>
