@@ -331,17 +331,17 @@ export class AdaptiveLearningService {
   async getAdaptiveModule(studentId: string, moduleId: string): Promise<LearningModuleData | null> {
     await connectDB();
 
-    const module = await LearningModule.findById(moduleId)
+    const learningModule = await LearningModule.findById(moduleId)
       .populate('createdBy', 'firstName lastName');
 
-    if (!module) return null;
+    if (!learningModule) return null;
 
     // Apply adaptive rules if module is adaptive
-    if (module.isAdaptive) {
-      await this.applyAdaptiveRules(module, studentId);
+    if (learningModule.isAdaptive) {
+      await this.applyAdaptiveRules(learningModule, studentId);
     }
 
-    return this.formatLearningModuleData(module);
+    return this.formatLearningModuleData(learningModule);
   }
 
   /**
@@ -354,8 +354,8 @@ export class AdaptiveLearningService {
   }> {
     await connectDB();
 
-    const module = await LearningModule.findById(moduleId);
-    if (!module || !module.assessment.questions.length) {
+    const learningModule = await LearningModule.findById(moduleId);
+    if (!learningModule || !learningModule.assessment.questions.length) {
       throw new Error('Assessment not found');
     }
 
@@ -432,9 +432,9 @@ export class AdaptiveLearningService {
     // Get next question if not complete
     let nextQuestion = null;
     if (!isComplete) {
-      const module = await LearningModule.findById(assessment.moduleId);
-      if (module) {
-        nextQuestion = this.getNextQuestion(assessment, module);
+      const learningModule = await LearningModule.findById(assessment.moduleId);
+      if (learningModule) {
+        nextQuestion = this.getNextQuestion(assessment, learningModule);
       }
     }
 
@@ -479,12 +479,12 @@ export class AdaptiveLearningService {
     const modules = await LearningModule.find({ _id: { $in: moduleIds } });
 
     return recentHistory.map((history: any) => {
-      const module = modules.find(m => m._id.toString() === history.moduleId.toString());
+      const learningModule = modules.find(m => m._id.toString() === history.moduleId.toString());
       return {
         id: history.moduleId.toString(),
-        title: module?.title || 'Unknown Module',
-        subject: module?.subject || 'Unknown',
-        type: module?.type || 'unknown',
+        title: learningModule?.title || 'Unknown Module',
+        subject: learningModule?.subject || 'Unknown',
+        type: learningModule?.type || 'unknown',
         completedAt: history.completedAt,
         score: history.score,
         timeSpent: history.timeSpent
@@ -669,23 +669,23 @@ export class AdaptiveLearningService {
   /**
    * Format learning module data
    */
-  private formatLearningModuleData(module: any): LearningModuleData {
+  private formatLearningModuleData(learningModule: any): LearningModuleData {
     return {
-      id: module._id.toString(),
-      title: module.title,
-      description: module.description,
-      subject: module.subject,
-      level: module.level,
-      type: module.type,
-      content: module.content,
-      learningObjectives: module.learningObjectives,
-      prerequisites: module.prerequisites.map((p: any) => p.toString()),
-      estimatedTime: module.estimatedTime,
-      difficulty: module.difficulty,
-      tags: module.tags,
-      isAdaptive: module.isAdaptive,
+      id: learningModule._id.toString(),
+      title: learningModule.title,
+      description: learningModule.description,
+      subject: learningModule.subject,
+      level: learningModule.level,
+      type: learningModule.type,
+      content: learningModule.content,
+      learningObjectives: learningModule.learningObjectives,
+      prerequisites: learningModule.prerequisites.map((p: any) => p.toString()),
+      estimatedTime: learningModule.estimatedTime,
+      difficulty: learningModule.difficulty,
+      tags: learningModule.tags,
+      isAdaptive: learningModule.isAdaptive,
       assessment: {
-        questions: module.assessment.questions.map((q: any) => ({
+        questions: learningModule.assessment.questions.map((q: any) => ({
           id: q.id,
           question: q.question,
           type: q.type,
@@ -693,14 +693,14 @@ export class AdaptiveLearningService {
           points: q.points,
           difficulty: q.difficulty
         })),
-        passingScore: module.assessment.passingScore,
-        timeLimit: module.assessment.timeLimit,
-        attempts: module.assessment.attempts
+        passingScore: learningModule.assessment.passingScore,
+        timeLimit: learningModule.assessment.timeLimit,
+        attempts: learningModule.assessment.attempts
       },
-      isActive: module.isActive,
+      isActive: learningModule.isActive,
       createdBy: {
-        id: module.createdBy._id.toString(),
-        name: `${module.createdBy.firstName} ${module.createdBy.lastName}`
+        id: learningModule.createdBy._id.toString(),
+        name: `${learningModule.createdBy.firstName} ${learningModule.createdBy.lastName}`
       }
     };
   }
@@ -708,7 +708,7 @@ export class AdaptiveLearningService {
   /**
    * Apply adaptive rules to module
    */
-  private async applyAdaptiveRules(module: ILearningModule, studentId: string): Promise<void> {
+  private async applyAdaptiveRules(learningModule: ILearningModule, studentId: string): Promise<void> {
     // This would implement the adaptive rules based on student profile
     // For now, it's a placeholder
   }
@@ -717,8 +717,8 @@ export class AdaptiveLearningService {
    * Create adaptive assessment
    */
   private async createAdaptiveAssessment(studentId: string, moduleId: string): Promise<IAdaptiveAssessment> {
-    const module = await LearningModule.findById(moduleId);
-    if (!module) {
+    const learningModule = await LearningModule.findById(moduleId);
+    if (!learningModule) {
       throw new Error('Module not found');
     }
 
@@ -726,14 +726,14 @@ export class AdaptiveLearningService {
       studentId: studentId as any,
       moduleId: moduleId as any,
       type: 'adaptive',
-      questions: module.assessment.questions,
+      questions: learningModule.assessment.questions,
       studentAnswers: [],
       adaptiveAlgorithm: {
         currentDifficulty: 5,
         nextDifficulty: 5,
         adjustmentReason: 'Initial assessment',
         questionsShown: 0,
-        totalQuestions: Math.min(module.assessment.questions.length, 10)
+        totalQuestions: Math.min(learningModule.assessment.questions.length, 10)
       },
       results: {
         score: 0,
@@ -756,9 +756,9 @@ export class AdaptiveLearningService {
   /**
    * Get next question for adaptive assessment
    */
-  private getNextQuestion(assessment: IAdaptiveAssessment, module: ILearningModule): any {
+  private getNextQuestion(assessment: IAdaptiveAssessment, learningModule: ILearningModule): any {
     const shownQuestions = assessment.studentAnswers.map(a => a.questionId);
-    const availableQuestions = module.assessment.questions.filter(q => !shownQuestions.includes(q.id));
+    const availableQuestions = learningModule.assessment.questions.filter(q => !shownQuestions.includes(q.id));
     
     if (availableQuestions.length === 0) return null;
 
