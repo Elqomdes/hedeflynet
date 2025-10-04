@@ -326,10 +326,46 @@ export default function HomePage() {
                 <Users className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Ko-Öğretmen Sistemi
+                AI Koçluk Sistemi
               </h3>
               <p className="text-secondary-600 leading-relaxed">
-                Maksimum 3 ko-öğretmen ekleyerek işbirliği yapın.
+                Yapay zeka destekli kişiselleştirilmiş öğrenme önerileri ve çalışma planları.
+              </p>
+            </div>
+
+            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.6s'}}>
+              <div className="w-20 h-20 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                <Target className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-secondary-900 mb-4">
+                Gamification
+              </h3>
+              <p className="text-secondary-600 leading-relaxed">
+                Puan, rozet ve seviye sistemi ile öğrenmeyi eğlenceli hale getirin.
+              </p>
+            </div>
+
+            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.7s'}}>
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                <Users className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-secondary-900 mb-4">
+                Sosyal Öğrenme
+              </h3>
+              <p className="text-secondary-600 leading-relaxed">
+                Çalışma grupları, oturumlar ve topluluk etkileşimi ile birlikte öğrenin.
+              </p>
+            </div>
+
+            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.8s'}}>
+              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                <Users className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-secondary-900 mb-4">
+                Veli Portalı
+              </h3>
+              <p className="text-secondary-600 leading-relaxed">
+                Ebeveynler çocuklarının ilerlemesini detaylı raporlarla takip edebilir.
               </p>
             </div>
           </div>

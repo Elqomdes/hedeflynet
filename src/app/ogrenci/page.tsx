@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { FileText, Target, BookOpen, TrendingUp, CheckCircle, Clock, Star, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import AICoachingWidget from '@/components/AICoachingWidget';
+import GamificationWidget from '@/components/GamificationWidget';
+import SocialLearningWidget from '@/components/SocialLearningWidget';
 
 export default function StudentDashboard() {
   const [stats, setStats] = useState({
@@ -203,6 +206,17 @@ export default function StudentDashboard() {
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* AI Coaching and Gamification */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+        <AICoachingWidget />
+        <GamificationWidget />
+      </div>
+
+      {/* Social Learning */}
+      <div className="mb-10">
+        <SocialLearningWidget />
       </div>
 
       {/* Recent Activities */}
