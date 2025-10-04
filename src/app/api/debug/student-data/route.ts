@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         studentId,
         debug: {
           studentExists: false,
-          teacherId: teacherId.toString()
+          teacherId: (teacherId as string).toString()
         }
       });
     }
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     if (!teacher) {
       return NextResponse.json({
         error: 'Teacher not found',
-        teacherId: teacherId.toString(),
+        teacherId: (teacherId as string).toString(),
         debug: {
           teacherExists: false
         }
@@ -123,16 +123,16 @@ export async function GET(request: NextRequest) {
 
     const debugData = {
       student: {
-        _id: student._id.toString(),
+        _id: (student._id as any).toString(),
         firstName: student.firstName,
         lastName: student.lastName,
         email: student.email,
         role: student.role,
         isActive: student.isActive,
-        classId: student.classId?.toString()
+        classId: (student as any).classId?.toString()
       },
       teacher: {
-        _id: teacher._id.toString(),
+        _id: (teacher._id as any).toString(),
         firstName: teacher.firstName,
         lastName: teacher.lastName,
         email: teacher.email,
@@ -147,27 +147,27 @@ export async function GET(request: NextRequest) {
         completedGoals
       },
       assignments: assignments.map(a => ({
-        _id: a._id.toString(),
+        _id: (a._id as any).toString(),
         title: a.title,
-        subject: a.subject,
+        subject: a.tags && a.tags.length > 0 ? a.tags[0] : 'Genel',
         dueDate: a.dueDate,
-        teacherName: a.teacherId ? `${a.teacherId.firstName} ${a.teacherId.lastName}` : 'Unknown'
+        teacherName: a.teacherId ? `${(a.teacherId as any).firstName} ${(a.teacherId as any).lastName}` : 'Unknown'
       })),
       submissions: submissions.map(s => ({
-        _id: s._id.toString(),
+        _id: (s._id as any).toString(),
         assignmentId: s.assignmentId?._id?.toString(),
         grade: s.grade,
         submittedAt: s.submittedAt
       })),
       goals: goals.map(g => ({
-        _id: g._id.toString(),
+        _id: (g._id as any).toString(),
         title: g.title,
         status: g.status,
         progress: g.progress,
         targetDate: g.targetDate
       })),
       class: studentClass ? {
-        _id: studentClass._id.toString(),
+        _id: (studentClass._id as any).toString(),
         name: studentClass.name
       } : null
     };
