@@ -265,7 +265,10 @@ export class RobustReportDataCollector {
   private static async getAssignments(studentId: string, dateFilter: any) {
     try {
       const assignments = await Assignment.find({
-        studentId: studentId,
+        $or: [
+          { studentId: studentId },
+          { 'classId.students': studentId }
+        ],
         dueDate: dateFilter
       }).populate('teacherId', 'firstName lastName').sort({ dueDate: -1 });
       
@@ -333,11 +336,16 @@ export class RobustReportDataCollector {
   private static calculateMetrics(data: any) {
     const { assignments, submissions, goals } = data;
 
+    // Ensure arrays exist and are valid
+    const safeAssignments = Array.isArray(assignments) ? assignments : [];
+    const safeSubmissions = Array.isArray(submissions) ? submissions : [];
+    const safeGoals = Array.isArray(goals) ? goals : [];
+
     // Performance metrics
-    const totalAssignments = assignments.length;
-    const submittedAssignments = submissions.length;
-    const gradedAssignments = submissions.filter((s: any) => 
-      s.grade !== null && s.grade !== undefined && !isNaN(s.grade)
+    const totalAssignments = safeAssignments.length;
+    const submittedAssignments = safeSubmissions.length;
+    const gradedAssignments = safeSubmissions.filter((s: any) => 
+      s && s.grade !== null && s.grade !== undefined && !isNaN(s.grade)
     ).length;
     
     const assignmentCompletion = totalAssignments > 0 ? 
@@ -346,16 +354,16 @@ export class RobustReportDataCollector {
     const gradingRate = submittedAssignments > 0 ? 
       Math.round((gradedAssignments / submittedAssignments) * 100) : 0;
 
-    const grades = submissions
-      .filter((s: any) => s.grade !== null && s.grade !== undefined && !isNaN(s.grade))
+    const grades = safeSubmissions
+      .filter((s: any) => s && s.grade !== null && s.grade !== undefined && !isNaN(s.grade))
       .map((s: any) => Number(s.grade));
     
     const averageGrade = grades.length > 0 ? 
       Math.round(grades.reduce((sum: number, grade: number) => sum + grade, 0) / grades.length) : 0;
 
-    const completedGoals = goals.filter((g: any) => g.status === 'completed').length;
-    const goalsProgress = goals.length > 0 ? 
-      Math.round((completedGoals / goals.length) * 100) : 0;
+    const completedGoals = safeGoals.filter((g: any) => g && g.status === 'completed').length;
+    const goalsProgress = safeGoals.length > 0 ? 
+      Math.round((completedGoals / safeGoals.length) * 100) : 0;
 
     const overallPerformance = Math.round(
       (assignmentCompletion * 0.4) + 
@@ -365,30 +373,37 @@ export class RobustReportDataCollector {
 
     // Subject stats
     const subjectStats: Record<string, any> = {};
-    assignments.forEach((assignment: any) => {
-      const subject = assignment.subject || 'Genel';
-      if (!subjectStats[subject]) {
-        subjectStats[subject] = {
-          totalAssignments: 0,
-          submittedAssignments: 0,
-          gradedAssignments: 0,
-          grades: []
-        };
+    safeAssignments.forEach((assignment: any) => {
+      if (assignment) {
+        const subject = assignment.subject || 'Genel';
+        if (!subjectStats[subject]) {
+          subjectStats[subject] = {
+            totalAssignments: 0,
+            submittedAssignments: 0,
+            gradedAssignments: 0,
+            grades: []
+          };
+        }
+        subjectStats[subject].totalAssignments++;
       }
-      subjectStats[subject].totalAssignments++;
     });
 
-    submissions.forEach((submission: any) => {
-      if (submission.assignmentId) {
-        const assignment = assignments.find((a: any) => a._id === submission.assignmentId);
-        if (assignment) {
-          const subject = assignment.subject || 'Genel';
-          if (subjectStats[subject]) {
-            subjectStats[subject].submittedAssignments++;
-            if (submission.grade !== null && submission.grade !== undefined) {
-              subjectStats[subject].gradedAssignments++;
-              subjectStats[subject].grades.push(submission.grade);
-            }
+    // Create a map of assignment IDs to subjects for faster lookup
+    const assignmentSubjectMap = new Map();
+    safeAssignments.forEach((assignment: any) => {
+      if (assignment && assignment._id) {
+        assignmentSubjectMap.set(assignment._id, assignment.subject || 'Genel');
+      }
+    });
+
+    safeSubmissions.forEach((submission: any) => {
+      if (submission && submission.assignmentId) {
+        const subject = assignmentSubjectMap.get(submission.assignmentId) || 'Genel';
+        if (subjectStats[subject]) {
+          subjectStats[subject].submittedAssignments++;
+          if (submission.grade !== null && submission.grade !== undefined && !isNaN(submission.grade)) {
+            subjectStats[subject].gradedAssignments++;
+            subjectStats[subject].grades.push(Number(submission.grade));
           }
         }
       }
@@ -405,26 +420,49 @@ export class RobustReportDataCollector {
 
     // Monthly progress
     const monthlyData = new Map<string, any>();
-    assignments.forEach((assignment: any) => {
-      const month = assignment.dueDate.toISOString().substring(0, 7);
-      if (!monthlyData.has(month)) {
-        monthlyData.set(month, { assignments: 0, goalsCompleted: 0, grades: [] });
+    
+    // Process assignments
+    safeAssignments.forEach((assignment: any) => {
+      if (assignment && assignment.dueDate) {
+        try {
+          const dueDate = new Date(assignment.dueDate);
+          const month = dueDate.toISOString().substring(0, 7);
+          if (!monthlyData.has(month)) {
+            monthlyData.set(month, { assignments: 0, goalsCompleted: 0, grades: [] });
+          }
+          monthlyData.get(month).assignments++;
+        } catch (error) {
+          console.warn('Invalid assignment due date:', assignment.dueDate);
+        }
       }
-      monthlyData.get(month).assignments++;
     });
 
-    submissions.forEach((submission: any) => {
-      const month = submission.submittedAt.toISOString().substring(0, 7);
-      if (monthlyData.has(month) && submission.grade !== null && submission.grade !== undefined) {
-        monthlyData.get(month).grades.push(submission.grade);
+    // Process submissions
+    safeSubmissions.forEach((submission: any) => {
+      if (submission && submission.submittedAt) {
+        try {
+          const submittedDate = new Date(submission.submittedAt);
+          const month = submittedDate.toISOString().substring(0, 7);
+          if (monthlyData.has(month) && submission.grade !== null && submission.grade !== undefined && !isNaN(submission.grade)) {
+            monthlyData.get(month).grades.push(Number(submission.grade));
+          }
+        } catch (error) {
+          console.warn('Invalid submission date:', submission.submittedAt);
+        }
       }
     });
 
-    goals.forEach((goal: any) => {
-      if (goal.status === 'completed' && goal.completedAt) {
-        const month = goal.completedAt.toISOString().substring(0, 7);
-        if (monthlyData.has(month)) {
-          monthlyData.get(month).goalsCompleted++;
+    // Process goals
+    safeGoals.forEach((goal: any) => {
+      if (goal && goal.status === 'completed' && goal.completedAt) {
+        try {
+          const completedDate = new Date(goal.completedAt);
+          const month = completedDate.toISOString().substring(0, 7);
+          if (monthlyData.has(month)) {
+            monthlyData.get(month).goalsCompleted++;
+          }
+        } catch (error) {
+          console.warn('Invalid goal completion date:', goal.completedAt);
         }
       }
     });
@@ -460,6 +498,12 @@ export class RobustReportDataCollector {
     const recommendations: string[] = [];
     const strengths: string[] = [];
     const areasForImprovement: string[] = [];
+
+    // Ensure performance and subjectStats exist
+    if (!performance) {
+      console.warn('Performance metrics not available for insights generation');
+      return { recommendations: ['Veri yetersizliği nedeniyle öneri oluşturulamadı'], strengths: [], areasForImprovement: [] };
+    }
 
     // Performance-based recommendations
     if (performance.assignmentCompletion < 70) {
@@ -498,7 +542,8 @@ export class RobustReportDataCollector {
     });
 
     // Goals-based recommendations
-    const incompleteGoals = goals.filter((goal: any) => goal.status !== 'completed');
+    const safeGoals = Array.isArray(goals) ? goals : [];
+    const incompleteGoals = safeGoals.filter((goal: any) => goal && goal.status !== 'completed');
     if (incompleteGoals.length > 0) {
       recommendations.push('Belirlenen hedeflere ulaşmak için daha sistematik bir yaklaşım benimsenmelidir.');
     }
