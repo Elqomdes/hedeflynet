@@ -371,7 +371,7 @@ export class AdaptiveLearningService {
     }
 
     // Get next question based on adaptive algorithm
-    const nextQuestion = this.getNextQuestion(assessment, module);
+    const nextQuestion = this.getNextQuestion(assessment, learningModule);
 
     const isComplete = assessment.adaptiveAlgorithm.questionsShown >= assessment.adaptiveAlgorithm.totalQuestions;
 
