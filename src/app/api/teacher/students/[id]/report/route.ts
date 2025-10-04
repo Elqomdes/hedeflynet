@@ -125,8 +125,13 @@ export async function POST(
     let reportData: ReportData;
     try {
       // Validate student ID format
-      if (!studentId || typeof studentId !== 'string' || studentId.length < 10) {
+      if (!studentId || typeof studentId !== 'string') {
         throw new Error('Geçersiz öğrenci ID formatı');
+      }
+
+      // Additional validation for MongoDB ObjectId format
+      if (studentId.length !== 24) {
+        throw new Error('Geçersiz öğrenci ID formatı (MongoDB ObjectId bekleniyor)');
       }
 
       const analysisData: StudentAnalysisData = {
@@ -141,6 +146,24 @@ export async function POST(
         teacherId,
         startDate: analysisData.startDate,
         endDate: analysisData.endDate
+      });
+      
+      // First, let's verify the student exists and is accessible
+      const studentCheck = await User.findById(studentId).select('firstName lastName role isActive');
+      if (!studentCheck) {
+        throw new Error(`Öğrenci bulunamadı: ${studentId}`);
+      }
+      if (studentCheck.role !== 'student') {
+        throw new Error(`Kullanıcı öğrenci değil: ${studentCheck.role}`);
+      }
+      if (!studentCheck.isActive) {
+        throw new Error(`Öğrenci aktif değil: ${studentId}`);
+      }
+      
+      console.log('Report API: Student validation passed', {
+        studentName: studentCheck.firstName,
+        role: studentCheck.role,
+        isActive: studentCheck.isActive
       });
       
       reportData = await ReportDataCollector.collectStudentData(analysisData);
@@ -162,6 +185,10 @@ export async function POST(
           errorMessage = 'Veritabanı bağlantı hatası';
         } else if (dataError.message.includes('Geçersiz')) {
           errorMessage = dataError.message;
+        } else if (dataError.message.includes('aktif değil')) {
+          errorMessage = dataError.message;
+        } else if (dataError.message.includes('öğrenci değil')) {
+          errorMessage = dataError.message;
         }
       }
       
@@ -169,7 +196,9 @@ export async function POST(
         { 
           error: errorMessage,
           details: process.env.NODE_ENV === 'development' ? 
-            (dataError instanceof Error ? dataError.message : 'Bilinmeyen hata') : undefined
+            (dataError instanceof Error ? dataError.message : 'Bilinmeyen hata') : undefined,
+          studentId,
+          teacherId: (teacherId as string).toString()
         },
         { status: 500 }
       );

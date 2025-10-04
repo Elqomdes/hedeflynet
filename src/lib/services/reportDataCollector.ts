@@ -129,25 +129,39 @@ export class ReportDataCollector {
     try {
       console.log('ReportDataCollector: Getting student', studentId);
       
-      // First check if student exists with basic query
-      const studentExists = await User.findById(studentId);
-      console.log('ReportDataCollector: Student exists check', { exists: !!studentExists });
+      // Validate student ID format
+      if (!studentId || typeof studentId !== 'string') {
+        throw new Error('Geçersiz öğrenci ID formatı');
+      }
+
+      // Check if student exists and is active
+      const student = await User.findById(studentId).select('firstName lastName email classId role isActive');
+      console.log('ReportDataCollector: Student query result', { 
+        exists: !!student,
+        id: student?._id,
+        name: student?.firstName,
+        role: student?.role,
+        isActive: student?.isActive
+      });
       
-      if (!studentExists) {
+      if (!student) {
         throw new Error(`Öğrenci bulunamadı: ${studentId}`);
       }
-      
-      // Then get with specific fields
-      const student = await User.findById(studentId).select('firstName lastName email classId role');
-      if (!student) {
-        throw new Error(`Öğrenci verisi alınamadı: ${studentId}`);
+
+      if (student.role !== 'student') {
+        throw new Error(`Kullanıcı öğrenci değil: ${student.role}`);
+      }
+
+      if (!student.isActive) {
+        throw new Error(`Öğrenci aktif değil: ${studentId}`);
       }
       
       console.log('ReportDataCollector: Student found', { 
         id: student._id, 
         name: student.firstName,
         role: student.role,
-        email: student.email
+        email: student.email,
+        isActive: student.isActive
       });
       return student;
     } catch (error) {
@@ -159,11 +173,39 @@ export class ReportDataCollector {
   private static async getTeacher(teacherId: string) {
     try {
       console.log('ReportDataCollector: Getting teacher', teacherId);
-      const teacher = await User.findById(teacherId).select('firstName lastName email');
+      
+      // Validate teacher ID format
+      if (!teacherId || typeof teacherId !== 'string') {
+        throw new Error('Geçersiz öğretmen ID formatı');
+      }
+
+      const teacher = await User.findById(teacherId).select('firstName lastName email role isActive');
+      console.log('ReportDataCollector: Teacher query result', { 
+        exists: !!teacher,
+        id: teacher?._id,
+        name: teacher?.firstName,
+        role: teacher?.role,
+        isActive: teacher?.isActive
+      });
+
       if (!teacher) {
         throw new Error(`Öğretmen bulunamadı: ${teacherId}`);
       }
-      console.log('ReportDataCollector: Teacher found', { id: teacher._id, name: teacher.firstName });
+
+      if (teacher.role !== 'teacher') {
+        throw new Error(`Kullanıcı öğretmen değil: ${teacher.role}`);
+      }
+
+      if (!teacher.isActive) {
+        throw new Error(`Öğretmen aktif değil: ${teacherId}`);
+      }
+
+      console.log('ReportDataCollector: Teacher found', { 
+        id: teacher._id, 
+        name: teacher.firstName,
+        role: teacher.role,
+        isActive: teacher.isActive
+      });
       return teacher;
     } catch (error) {
       console.error('ReportDataCollector: Error getting teacher', error);
