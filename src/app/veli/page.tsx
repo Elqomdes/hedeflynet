@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Bell, FileText, TrendingUp, AlertTriangle, CheckCircle, Clock, Star } from 'lucide-react';
+import { Users, Bell, FileText, TrendingUp, AlertTriangle, CheckCircle, Clock, Star, Brain, Award, Video, BarChart3, Smartphone, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 interface ParentDashboardData {
@@ -41,6 +41,15 @@ interface ParentDashboardData {
     studentId: string;
     studentName: string;
   }[];
+  // Yeni özellikler için veriler
+  newFeatures: {
+    aiRecommendations: number;
+    videoSessions: number;
+    adaptiveLearningModules: number;
+    mobileUsers: number;
+    socialLearningPosts: number;
+    gamificationPoints: number;
+  };
 }
 
 export default function ParentDashboard() {
@@ -270,6 +279,84 @@ export default function ParentDashboard() {
           </div>
         )}
 
+        {/* Yeni Özellikler v3.4 */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-secondary-900 mb-6">Yeni Özellikler (v3.4)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="card card-hover group animate-scale-in">
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <Brain className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2">AI Koçluk</h3>
+                <p className="text-secondary-600 mb-4">Çocuğunuz için kişiselleştirilmiş öneriler</p>
+                <div className="text-2xl font-bold text-purple-600">{data?.newFeatures?.aiRecommendations || 0}</div>
+                <div className="text-sm text-secondary-500">AI Önerisi</div>
+              </div>
+            </div>
+
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.1s'}}>
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <Video className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2">Video Koçluk</h3>
+                <p className="text-secondary-600 mb-4">Canlı video oturumları</p>
+                <div className="text-2xl font-bold text-blue-600">{data?.newFeatures?.videoSessions || 0}</div>
+                <div className="text-sm text-secondary-500">Video Oturumu</div>
+              </div>
+            </div>
+
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.2s'}}>
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <BarChart3 className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2">Adaptif Öğrenme</h3>
+                <p className="text-secondary-600 mb-4">Kişiselleştirilmiş öğrenme modülleri</p>
+                <div className="text-2xl font-bold text-green-600">{data?.newFeatures?.adaptiveLearningModules || 0}</div>
+                <div className="text-sm text-secondary-500">Öğrenme Modülü</div>
+              </div>
+            </div>
+
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.3s'}}>
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <Award className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2">Gamification</h3>
+                <p className="text-secondary-600 mb-4">Puan ve rozet sistemi</p>
+                <div className="text-2xl font-bold text-orange-600">{data?.newFeatures?.gamificationPoints || 0}</div>
+                <div className="text-sm text-secondary-500">Toplam Puan</div>
+              </div>
+            </div>
+
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.4s'}}>
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <MessageSquare className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2">Sosyal Öğrenme</h3>
+                <p className="text-secondary-600 mb-4">Çalışma grupları ve topluluk</p>
+                <div className="text-2xl font-bold text-pink-600">{data?.newFeatures?.socialLearningPosts || 0}</div>
+                <div className="text-sm text-secondary-500">Topluluk Gönderisi</div>
+              </div>
+            </div>
+
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.5s'}}>
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <Smartphone className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2">Mobil Uygulama</h3>
+                <p className="text-secondary-600 mb-4">Mobil cihazlardan erişim</p>
+                <div className="text-2xl font-bold text-indigo-600">{data?.newFeatures?.mobileUsers || 0}</div>
+                <div className="text-sm text-secondary-500">Mobil Kullanıcı</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link href="/veli/raporlar" className="card card-hover group animate-scale-in">
@@ -285,7 +372,7 @@ export default function ParentDashboard() {
               <Bell className="w-8 h-8 text-primary-600 mx-auto mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="font-semibold text-secondary-900 mb-2">Bildirimler</h3>
               <p className="text-sm text-secondary-600">
-                {data.notifications.unread} okunmamış bildirim
+                {data?.notifications?.unread || 0} okunmamış bildirim
               </p>
             </div>
           </Link>
