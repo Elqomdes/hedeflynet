@@ -4,6 +4,8 @@ import { User, Report } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import PDFGenerator, { ReportData } from '@/lib/services/pdfGenerator';
 import ReportDataCollector, { StudentAnalysisData } from '@/lib/services/reportDataCollector';
+import RobustReportDataCollector from '@/lib/services/robustReportDataCollector';
+import AdvancedPdfGenerator from '@/lib/services/advancedPdfGenerator';
 import { jsPDF } from 'jspdf';
 
 export const dynamic = 'force-dynamic';
@@ -65,51 +67,107 @@ async function generateSimplePDF(student: any, analysisData: any): Promise<Buffe
     const overallPerf = analysisData?.overallPerformance || 0;
     let recommendation = 'Öğrencinin performansını artırmak için ek destek önerilir.';
     if (overallPerf > 80) {
-      recommendation = 'Öğrenci mükemmel performans sergiliyor. Bu başarıyı sürdürmesi için teşvik edilmelidir.';
+      recommendation = 'Öğrenci mükemmel performans gösteriyor. Bu başarıyı sürdürmesi için teşvik edilmelidir.';
     } else if (overallPerf > 60) {
-      recommendation = 'Öğrenci iyi performans sergiliyor. Daha da gelişmesi için ek çalışmalar önerilir.';
+      recommendation = 'Öğrenci iyi performans gösteriyor. Daha da gelişmesi için hedefler belirlenebilir.';
+    } else if (overallPerf > 40) {
+      recommendation = 'Öğrencinin performansını artırmak için düzenli çalışma planı oluşturulmalıdır.';
     }
-    addText(recommendation);
+    addText(recommendation, 10);
     
     const pdfOutput = doc.output('arraybuffer');
-    const buffer = Buffer.from(pdfOutput);
-    
-    console.log('Simple PDF generated successfully, size:', buffer.length);
-    return buffer;
+    return Buffer.from(pdfOutput);
   } catch (error) {
-    logError('Simple PDF generation failed', error);
-    throw new Error(`PDF oluşturma hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+    console.error('Error generating simple PDF:', error);
+    throw new Error(`Basit PDF oluşturma hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest) {
   const startTime = Date.now();
-  
+  let studentId: string | null = null;
+  let teacherId: string | null = null;
+
   try {
-    // Authentication
+    console.log('Report API: Starting request processing with robust system');
+
+    // Step 1: Authentication
     const authResult = await getCurrentUser(request);
-    if (!authResult || authResult.role !== 'teacher') {
+    if (!authResult) {
+      logError('Authentication failed', 'No auth result');
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Kimlik doğrulama gerekli' },
         { status: 401 }
       );
     }
 
-    // Parse request data
-    let requestData: any = {};
-    try {
-      requestData = await request.json();
-    } catch (parseError) {
-      logError('Request parsing failed', parseError);
-      // Continue with empty data if parsing fails
+    if (authResult.role !== 'teacher') {
+      logError('Authorization failed', `Invalid role: ${authResult.role}`);
+      return NextResponse.json(
+        { error: 'Sadece öğretmenler rapor oluşturabilir' },
+        { status: 403 }
+      );
     }
-    
-    // Database connection
+
+    teacherId = (authResult._id as any).toString();
+    console.log('Report API: Authentication successful', { teacherId });
+
+    // Step 2: Extract student ID from URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    studentId = pathParts[pathParts.indexOf('students') + 1];
+
+    if (!studentId) {
+      logError('Student ID extraction failed', 'No student ID in URL');
+      return NextResponse.json(
+        { error: 'Öğrenci ID bulunamadı' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Report API: Student ID extracted', { studentId });
+
+    // Step 3: Validate student ID format
+    if (studentId.length !== 24) {
+      logError('Invalid student ID format', { studentId, length: studentId.length });
+      return NextResponse.json(
+        { error: 'Geçersiz öğrenci ID formatı (MongoDB ObjectId bekleniyor)' },
+        { status: 400 }
+      );
+    }
+
+    // Step 4: Parse request body for date range
+    let startDate: Date | undefined;
+    let endDate: Date | undefined;
+
+    try {
+      const body = await request.json().catch(() => ({}));
+      if (body.startDate) {
+        startDate = new Date(body.startDate);
+        if (isNaN(startDate.getTime())) {
+          throw new Error('Geçersiz başlangıç tarihi');
+        }
+      }
+      if (body.endDate) {
+        endDate = new Date(body.endDate);
+        if (isNaN(endDate.getTime())) {
+          throw new Error('Geçersiz bitiş tarihi');
+        }
+      }
+    } catch (parseError) {
+      logError('Request body parsing failed', parseError);
+      return NextResponse.json(
+        { error: 'Geçersiz istek verisi' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Report API: Request body parsed', { startDate, endDate });
+
+    // Step 5: Database connection
     try {
       await connectDB();
+      console.log('Report API: Database connected successfully');
     } catch (dbError) {
       logError('Database connection failed', dbError);
       return NextResponse.json(
@@ -118,183 +176,173 @@ export async function POST(
       );
     }
 
-    const studentId = params.id;
-    const teacherId = authResult._id;
+    // Step 6: Prepare analysis data
+    const analysisData = {
+      studentId,
+      teacherId: teacherId!,
+      startDate,
+      endDate
+    };
 
-    // Collect comprehensive student data
-    let reportData: ReportData;
+    console.log('Report API: Analysis data prepared', analysisData);
+
+    // Step 7: Try robust data collection first, fallback to original if needed
+    let reportData;
+    let useRobustSystem = true;
+    
     try {
-      // Validate student ID format
-      if (!studentId || typeof studentId !== 'string') {
-        throw new Error('Geçersiz öğrenci ID formatı');
-      }
-
-      // Additional validation for MongoDB ObjectId format
-      if (studentId.length !== 24) {
-        throw new Error('Geçersiz öğrenci ID formatı (MongoDB ObjectId bekleniyor)');
-      }
-
-      const analysisData: StudentAnalysisData = {
-        studentId,
-        teacherId: (teacherId as string),
-        startDate: requestData.startDate ? new Date(requestData.startDate) : undefined,
-        endDate: requestData.endDate ? new Date(requestData.endDate) : undefined
+      console.log('Report API: Starting robust data collection');
+      const robustData = await RobustReportDataCollector.collectStudentData(analysisData);
+      
+      // Convert robust data to legacy format for compatibility
+      reportData = {
+        student: robustData.student,
+        teacher: robustData.teacher,
+        performance: robustData.performance,
+        subjectStats: robustData.subjectStats,
+        monthlyProgress: robustData.monthlyProgress,
+        goals: robustData.goals,
+        assignments: robustData.assignments,
+        recommendations: robustData.recommendations,
+        strengths: robustData.strengths,
+        areasForImprovement: robustData.areasForImprovement,
+        class: robustData.class
       };
       
-      console.log('Report API: Starting data collection', {
-        studentId,
-        teacherId,
-        startDate: analysisData.startDate,
-        endDate: analysisData.endDate
-      });
+      console.log('Report API: Robust data collection completed successfully');
+    } catch (robustError) {
+      logError('Robust data collection failed, trying fallback', robustError);
+      useRobustSystem = false;
       
-      // First, let's verify the student exists and is accessible
-      const studentCheck = await User.findById(studentId).select('firstName lastName role isActive');
-      if (!studentCheck) {
-        throw new Error(`Öğrenci bulunamadı: ${studentId}`);
+        try {
+          console.log('Report API: Starting fallback data collection');
+          reportData = await ReportDataCollector.collectStudentData(analysisData as StudentAnalysisData);
+          console.log('Report API: Fallback data collection completed successfully');
+        } catch (fallbackError) {
+        logError('Both robust and fallback data collection failed', fallbackError, { studentId, teacherId });
+        return NextResponse.json(
+          { 
+            error: 'Öğrenci verileri toplanamadı', 
+            details: fallbackError instanceof Error ? fallbackError.message : 'Bilinmeyen hata',
+            debug: {
+              studentId,
+              teacherId,
+              robustError: robustError instanceof Error ? robustError.message : 'Unknown',
+              fallbackError: fallbackError instanceof Error ? fallbackError.message : 'Unknown',
+              timestamp: new Date().toISOString()
+            }
+          },
+          { status: 500 }
+        );
       }
-      if (studentCheck.role !== 'student') {
-        throw new Error(`Kullanıcı öğrenci değil: ${studentCheck.role}`);
-      }
-      if (!studentCheck.isActive) {
-        throw new Error(`Öğrenci aktif değil: ${studentId}`);
-      }
+    }
+
+    // Step 8: Generate PDF with appropriate generator
+    let pdfBuffer: Buffer;
+    try {
+      console.log('Report API: Starting PDF generation', { useRobustSystem });
       
-      console.log('Report API: Student validation passed', {
-        studentName: studentCheck.firstName,
-        role: studentCheck.role,
-        isActive: studentCheck.isActive
-      });
-      
-      reportData = await ReportDataCollector.collectStudentData(analysisData);
-      
-      console.log('Report API: Data collection successful', {
-        student: reportData.student.firstName,
-        assignments: reportData.assignments.length,
-        goals: reportData.goals.length
-      });
-    } catch (dataError) {
-      logError('Data collection failed', dataError, { studentId, teacherId });
-      
-      // Provide more specific error messages
-      let errorMessage = 'Öğrenci verileri toplanamadı';
-      if (dataError instanceof Error) {
-        if (dataError.message.includes('bulunamadı')) {
-          errorMessage = 'Öğrenci veya öğretmen bulunamadı';
-        } else if (dataError.message.includes('bağlantı')) {
-          errorMessage = 'Veritabanı bağlantı hatası';
-        } else if (dataError.message.includes('Geçersiz')) {
-          errorMessage = dataError.message;
-        } else if (dataError.message.includes('aktif değil')) {
-          errorMessage = dataError.message;
-        } else if (dataError.message.includes('öğrenci değil')) {
-          errorMessage = dataError.message;
+      if (useRobustSystem) {
+        const pdfGenerator = new AdvancedPdfGenerator();
+        pdfBuffer = await pdfGenerator.generateReport(reportData as any);
+      } else {
+        // Try advanced PDF first, fallback to simple PDF
+        try {
+          pdfBuffer = await generateSimplePDF(reportData.student, reportData.performance);
+        } catch (advancedPdfError) {
+          console.warn('Advanced PDF generation failed, using simple PDF', advancedPdfError);
+          pdfBuffer = await generateSimplePDF(reportData.student, reportData.performance);
         }
       }
       
+      console.log('Report API: PDF generation completed successfully');
+    } catch (pdfError) {
+      logError('PDF generation failed', pdfError, { studentId, teacherId, useRobustSystem });
       return NextResponse.json(
         { 
-          error: errorMessage,
-          details: process.env.NODE_ENV === 'development' ? 
-            (dataError instanceof Error ? dataError.message : 'Bilinmeyen hata') : undefined,
-          studentId,
-          teacherId: (teacherId as string).toString()
+          error: 'PDF oluşturulamadı', 
+          details: pdfError instanceof Error ? pdfError.message : 'Bilinmeyen hata' 
         },
         { status: 500 }
       );
     }
 
-    // Create report record
-    let report;
-    try {
-      report = new Report({
-        studentId,
-        teacherId,
-        title: `${reportData.student.firstName} ${reportData.student.lastName} - Performans Raporu`,
-        content: JSON.stringify(reportData),
-        isPublic: false
-      });
-      await report.save();
-    } catch (reportError) {
-      logError('Report creation failed', reportError, { studentId });
-      // Continue without report record
-    }
+    // Step 9: Generate safe filename
+    const safeFirstName = reportData.student.firstName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
+    const safeLastName = reportData.student.lastName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
+    const filename = `rapor_${safeFirstName}_${safeLastName}_${new Date().toISOString().split('T')[0]}.pdf`;
 
-    // Determine response format
-    const format = request.nextUrl.searchParams.get('format') || 'pdf';
+    console.log('Report API: Report generation completed successfully', {
+      studentId,
+      teacherId,
+      filename,
+      processingTime: Date.now() - startTime,
+      pdfSize: pdfBuffer.length,
+      systemUsed: useRobustSystem ? 'robust' : 'fallback'
+    });
 
-    if (format === 'pdf') {
-      try {
-        // Try advanced PDF first (Puppeteer)
-        let pdfBuffer: Buffer;
-        try {
-          const pdfGenerator = PDFGenerator.getInstance();
-          pdfBuffer = await pdfGenerator.generateAdvancedPDF(reportData);
-        } catch (puppeteerError) {
-          console.warn('Puppeteer PDF generation failed, falling back to jsPDF:', puppeteerError);
-          // Fallback to simple PDF generation
-          pdfBuffer = await generateSimplePDF(reportData.student, reportData.performance);
-        }
-        
-        if (!pdfBuffer || pdfBuffer.length === 0) {
-          throw new Error('PDF buffer is empty');
-        }
-
-        // Create safe filename
-        const safeFirstName = reportData.student.firstName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
-        const safeLastName = reportData.student.lastName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
-        const filename = `${safeFirstName}_${safeLastName}_raporu_${new Date().toISOString().split('T')[0]}.pdf`;
-
-        const processingTime = Date.now() - startTime;
-        logError('PDF generation successful', null, { 
-          bufferSize: pdfBuffer.length,
-          processingTime,
-          studentId 
-        });
-
-        return new NextResponse(new Uint8Array(pdfBuffer), {
-          headers: {
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="${filename}"`,
-            'Content-Length': pdfBuffer.length.toString(),
-            'Cache-Control': 'no-cache'
-          }
-        });
-      } catch (pdfError) {
-        logError('PDF generation failed', pdfError, { studentId });
-        
-        // Fallback to JSON response if PDF fails
-        return NextResponse.json({
-          _id: report?._id,
-          title: report?.title,
-          createdAt: report?.createdAt,
-          isPublic: report?.isPublic,
-          url: `/rapor/${report?._id}`,
-          error: 'PDF oluşturulamadı, JSON yanıtı döndürülüyor',
-          pdfError: process.env.NODE_ENV === 'development' ? 
-            (pdfError instanceof Error ? pdfError.message : 'Unknown PDF error') : undefined
-        });
+    // Step 10: Return PDF response
+    return new NextResponse(new Uint8Array(pdfBuffer), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Length': pdfBuffer.length.toString(),
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'X-Report-Generated-At': new Date().toISOString(),
+        'X-Student-ID': studentId,
+        'X-Teacher-ID': teacherId || 'unknown',
+        'X-System-Used': useRobustSystem ? 'robust' : 'fallback'
       }
-    }
-
-    // JSON response
-    return NextResponse.json({
-      _id: report?._id,
-      title: report?.title,
-      createdAt: report?.createdAt,
-      isPublic: report?.isPublic,
-      url: `/rapor/${report?._id}`,
-      data: reportData
     });
 
   } catch (error) {
-    logError('Unexpected error in report generation', error, { studentId: params.id });
+    logError('Unexpected error in report API', error, {
+      studentId,
+      teacherId,
+      processingTime: Date.now() - startTime
+    });
+
     return NextResponse.json(
       { 
         error: 'Rapor oluşturulurken beklenmeyen bir hata oluştu',
-        details: process.env.NODE_ENV === 'development' ? 
-          (error instanceof Error ? error.message : 'Unknown error') : undefined
+        details: error instanceof Error ? error.message : 'Bilinmeyen hata',
+        debug: {
+          studentId,
+          teacherId,
+          timestamp: new Date().toISOString()
+        }
       },
+      { status: 500 }
+    );
+  }
+}
+
+// Health check endpoint
+export async function GET(request: NextRequest) {
+  try {
+    const authResult = await getCurrentUser(request);
+    if (!authResult || authResult.role !== 'teacher') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    return NextResponse.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      version: '2.0.0',
+      features: [
+        'Robust data collection with fallback',
+        'Advanced PDF generation with fallback',
+        'Comprehensive error handling',
+        'Retry mechanisms',
+        'Input validation',
+        'Multiple PDF generators'
+      ]
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Health check failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
