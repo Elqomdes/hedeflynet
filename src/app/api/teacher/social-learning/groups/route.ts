@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-import { User } from '@/lib/models';
+import { User, StudyGroup, IStudyGroup } from '@/lib/models';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,12 +20,17 @@ export async function GET(request: NextRequest) {
     const totalStudents = await User.countDocuments({ role: 'student' });
 
     // Get real study groups from database
-    const groups = [];
-    
-    // Note: Real groups will be populated from the StudyGroup collection
-    // when students start creating actual study groups
+    const groups: IStudyGroup[] = await StudyGroup.find({})
+      .populate('createdBy', 'name email')
+      .populate('members', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
 
-    return NextResponse.json({ data: groups });
+    return NextResponse.json({ 
+      data: groups,
+      totalStudents,
+      totalGroups: groups.length 
+    });
 
   } catch (error) {
     console.error('Get social learning groups error:', error);

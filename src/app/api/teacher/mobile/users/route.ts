@@ -3,6 +3,16 @@ import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
 
+interface MobileUser {
+  id: string;
+  userId: string;
+  deviceId: string;
+  platform: 'ios' | 'android' | 'web';
+  lastActive: string;
+  isOnline: boolean;
+  pushToken?: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser(request);
@@ -20,12 +30,16 @@ export async function GET(request: NextRequest) {
     const students = await User.find({ role: 'student' }).lean();
 
     // Get real mobile users from database
-    const mobileUsers = [];
+    const mobileUsers: MobileUser[] = [];
     
     // Note: Real mobile users will be populated from the MobileDevice collection
     // when students start using the mobile app
 
-    return NextResponse.json({ data: mobileUsers });
+    return NextResponse.json({ 
+      data: mobileUsers,
+      totalStudents: students.length,
+      totalMobileUsers: mobileUsers.length 
+    });
 
   } catch (error) {
     console.error('Get mobile users error:', error);

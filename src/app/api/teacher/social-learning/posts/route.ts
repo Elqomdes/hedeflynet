@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-import { User, Class } from '@/lib/models';
+import { User, Class, StudyPost, IStudyPost } from '@/lib/models';
 import { GamificationService } from '@/lib/services/gamificationService';
 import { MobileService } from '@/lib/services/mobileService';
 
@@ -45,12 +45,18 @@ export async function GET(request: NextRequest) {
     }).lean();
 
     // Get real social learning posts from database
-    const posts = [];
-    
-    // Note: Real posts will be populated from the StudyPost collection
-    // when students start creating actual posts
+    const posts: IStudyPost[] = await StudyPost.find({})
+      .populate('authorId', 'name email')
+      .populate('groupId', 'name')
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
 
-    return NextResponse.json({ data: posts });
+    return NextResponse.json({ 
+      data: posts,
+      totalPosts: posts.length,
+      totalStudents: students.length 
+    });
 
   } catch (error) {
     console.error('Get social learning posts error:', error);
