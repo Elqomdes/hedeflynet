@@ -66,15 +66,12 @@ export default function TeacherLayout({
     { name: 'Teslimler', href: '/ogretmen/teslimler', icon: Inbox },
     { name: 'Hedefler', href: '/ogretmen/hedefler', icon: Target },
     { name: 'Detaylı Analiz', href: '/ogretmen/analiz', icon: BarChart3 },
-  ];
-
-  const newFeaturesNavigation = [
-    { name: 'AI Koçluk', href: '/ogretmen/ai-koçluk', icon: Brain, badge: 'YENİ' },
-    { name: 'Video Koçluk', href: '/ogretmen/video-koçluk', icon: Video, badge: 'YENİ' },
-    { name: 'Adaptif Öğrenme', href: '/ogretmen/adaptif-öğrenme', icon: BarChart3, badge: 'YENİ' },
-    { name: 'Gamification', href: '/ogretmen/gamification', icon: Award, badge: 'YENİ' },
-    { name: 'Sosyal Öğrenme', href: '/ogretmen/sosyal-öğrenme', icon: MessageSquare, badge: 'YENİ' },
-    { name: 'Mobil Uygulama', href: '/ogretmen/mobil', icon: Smartphone, badge: 'YENİ' },
+    { name: 'AI Koçluk', href: '/ogretmen/ai-koçluk', icon: Brain },
+    { name: 'Video Koçluk', href: '/ogretmen/video-koçluk', icon: Video },
+    { name: 'Adaptif Öğrenme', href: '/ogretmen/adaptif-öğrenme', icon: Activity },
+    { name: 'Gamification', href: '/ogretmen/gamification', icon: Award },
+    { name: 'Sosyal Öğrenme', href: '/ogretmen/sosyal-öğrenme', icon: MessageSquare },
+    { name: 'Mobil Uygulama', href: '/ogretmen/mobil', icon: Smartphone },
   ];
 
   return (
@@ -109,31 +106,6 @@ export default function TeacherLayout({
                     {item.name}
                   </Link>
                 ))}
-                
-                {/* Yeni Özellikler Bölümü */}
-                <div className="pt-6">
-                  <div className="px-2 mb-3">
-                    <h3 className="text-xs font-semibold text-secondary-500 uppercase tracking-wider">
-                      Yeni Özellikler v3.4
-                    </h3>
-                  </div>
-                  {newFeaturesNavigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="group flex items-center px-2 py-2 text-base font-medium rounded-md text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 relative"
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="mr-4 h-6 w-6" />
-                      {item.name}
-                      {item.badge && (
-                        <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
               </nav>
             </div>
             <div className="flex-shrink-0 flex border-t border-secondary-200 p-4">
@@ -176,30 +148,6 @@ export default function TeacherLayout({
                     {item.name}
                   </Link>
                 ))}
-                
-                {/* Yeni Özellikler Bölümü */}
-                <div className="pt-6">
-                  <div className="px-2 mb-3">
-                    <h3 className="text-xs font-semibold text-secondary-500 uppercase tracking-wider">
-                      Yeni Özellikler v3.4
-                    </h3>
-                  </div>
-                  {newFeaturesNavigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 relative"
-                    >
-                      <item.icon className="mr-3 h-6 w-6" />
-                      {item.name}
-                      {item.badge && (
-                        <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
               </nav>
             </div>
             <div className="flex-shrink-0 flex border-t border-secondary-200 p-4">

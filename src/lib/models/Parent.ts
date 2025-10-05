@@ -344,7 +344,7 @@ const ParentReportSchema = new Schema<IParentReport>({
 });
 
 // Indexes for better performance
-ParentSchema.index({ email: 1 });
+// Note: 'email' already has a unique index via schema definition; avoid duplicate index declarations
 ParentSchema.index({ children: 1 });
 ParentNotificationSchema.index({ parentId: 1, isRead: 1 });
 ParentNotificationSchema.index({ studentId: 1, createdAt: -1 });

@@ -3,6 +3,9 @@ import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
 import Assignment from '@/lib/models/Assignment';
+import { GamificationService } from '@/lib/services/gamificationService';
+import { MobileService } from '@/lib/services/mobileService';
+import { Parent } from '@/lib/models';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,6 +97,50 @@ export async function PUT(
       updateData,
       { new: true }
     ).populate('studentId', 'firstName lastName email');
+
+    // Cross-feature integrations (non-blocking)
+    try {
+      const gamification = GamificationService.getInstance();
+      const studentId = String((updatedSubmission as any).studentId._id || (updatedSubmission as any).studentId);
+      // Add experience based on grade
+      if (updateData.grade !== undefined) {
+        const xp = Math.max(5, Math.min(25, Math.floor((updateData.grade as number) / 4)));
+        await gamification.addExperience(studentId, xp, 'assignment_grade');
+        await gamification.checkAchievements(studentId, 'assignment');
+      }
+    } catch (e) {
+      console.error('Gamification on grade error:', e);
+    }
+
+    try {
+      const mobile = MobileService.getInstance();
+      const studentId = String((updatedSubmission as any).studentId._id || (updatedSubmission as any).studentId);
+      if (updateData.grade !== undefined) {
+        await mobile.sendPushNotification(studentId, {
+          title: 'Ödev Notunuz Yayınlandı',
+          body: `Ödeviniz değerlendirildi. Notunuz: ${(updateData.grade as number).toString()}`,
+          data: { type: 'assignment', submissionId: submissionId },
+          priority: 'high'
+        });
+
+        // Notify parents
+        try {
+          const parents = await Parent.find({ children: studentId }).lean();
+          for (const parent of parents) {
+            await mobile.sendPushNotification(String((parent as any).user), {
+              title: 'Çocuğunuzun Ödev Notu Yayınlandı',
+              body: 'Çocuğunuzun bir ödev notu yayınlandı.',
+              data: { type: 'assignment', submissionId: submissionId, studentId },
+              priority: 'normal'
+            });
+          }
+        } catch (pnErr) {
+          console.error('Parent notify on grade error:', pnErr);
+        }
+      }
+    } catch (e) {
+      console.error('Mobile notification on grade error:', e);
+    }
 
     return NextResponse.json(updatedSubmission);
   } catch (error) {

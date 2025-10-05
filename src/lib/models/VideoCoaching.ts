@@ -737,7 +737,7 @@ const VideoAnalyticsSchema = new Schema<IVideoAnalytics>({
 // Indexes for better performance
 VideoSessionSchema.index({ teacherId: 1, scheduledFor: 1 });
 VideoSessionSchema.index({ studentId: 1, status: 1 });
-VideoSessionSchema.index({ meetingId: 1 });
+// meetingId already has a unique index on the field; avoid duplicate index declaration
 VideoRecordingSchema.index({ sessionId: 1 });
 VideoRecordingSchema.index({ createdBy: 1 });
 VideoResourceSchema.index({ subject: 1, level: 1 });

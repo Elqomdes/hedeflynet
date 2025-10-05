@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Goal } from '@/lib/models';
+import { Goal, Parent } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import { GamificationService } from '@/lib/services/gamificationService';
+import { MobileService } from '@/lib/services/mobileService';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +50,44 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     await goal.save();
+
+    // Cross-feature integrations when goal is completed
+    if (goal.status === 'completed') {
+      try {
+        const gamification = GamificationService.getInstance();
+        await gamification.addExperience(String(authResult._id), 20, 'goal_complete');
+        await gamification.checkAchievements(String(authResult._id), 'goal');
+      } catch (e) {
+        console.error('Gamification on goal complete error:', e);
+      }
+
+      try {
+        const mobile = MobileService.getInstance();
+        await mobile.sendPushNotification(String(authResult._id), {
+          title: 'Tebrikler! Hedef Tamamlandı',
+          body: 'Bir hedefinizi başarıyla tamamladınız. Harika ilerliyorsunuz!',
+          data: { type: 'goal', goalId: String(goalId) },
+          priority: 'high'
+        });
+
+        // Notify parents linked to the student
+        try {
+          const parents = await Parent.find({ children: authResult._id }).lean();
+          for (const parent of parents) {
+            await mobile.sendPushNotification(String((parent as any).user), {
+              title: 'Çocuğunuz Bir Hedefini Tamamladı',
+              body: 'Harika haber! Çocuğunuz bir hedefini tamamladı.',
+              data: { type: 'goal', studentId: String(authResult._id), goalId: String(goalId) },
+              priority: 'normal'
+            });
+          }
+        } catch (pnErr) {
+          console.error('Parent notify on goal complete error:', pnErr);
+        }
+      } catch (e) {
+        console.error('Mobile notification on goal complete error:', e);
+      }
+    }
 
     return NextResponse.json({ message: 'Hedef güncellendi', goal });
   } catch (error) {
