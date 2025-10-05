@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const videoCoachingService = VideoCoachingService.getInstance();
     
     // Get real video sessions from database
-    const sessions = await videoCoachingService.getVideoSessions(user.id);
+    const sessions = await videoCoachingService.getUserVideoSessions(user.id, 'teacher');
 
     return NextResponse.json({ data: sessions });
 
@@ -45,7 +45,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, scheduledFor, duration, maxParticipants } = body;
+    const { title, description, scheduledFor, duration, studentId, type } = body;
+
+    if (!title || !description || !scheduledFor || !duration || !studentId || !type) {
+      return NextResponse.json({ error: 'Eksik alanlar' }, { status: 400 });
+    }
 
     await connectDB();
     const videoCoachingService = VideoCoachingService.getInstance();
@@ -55,9 +59,10 @@ export async function POST(request: NextRequest) {
       title,
       description,
       teacherId: user.id,
+      studentId,
+      type: type as 'one_on_one' | 'group' | 'class' | 'consultation',
       scheduledFor: new Date(scheduledFor),
-      duration: parseInt(duration),
-      maxParticipants: parseInt(maxParticipants)
+      duration: parseInt(duration)
     });
 
     return NextResponse.json({ 

@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }).lean();
 
     // Get real social learning posts from database
-    const posts: IStudyPost[] = await StudyPost.find({})
+    const posts = await StudyPost.find({})
       .populate('authorId', 'name email')
       .populate('groupId', 'name')
       .sort({ createdAt: -1 })

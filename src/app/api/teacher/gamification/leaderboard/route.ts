@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const gamificationService = GamificationService.getInstance();
     
     // Get real leaderboard data
-    const leaderboard = await gamificationService.getLeaderboard('experience', 50);
+    const leaderboard = await gamificationService.getLeaderboard('all_time', 'experience');
     
     // Transform to match expected format
     const formattedLeaderboard = leaderboard.map((entry, index) => ({

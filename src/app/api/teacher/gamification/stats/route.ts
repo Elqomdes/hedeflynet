@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     
     // Get real gamification statistics
     const totalStudents = await User.countDocuments({ role: 'student' });
-    const leaderboard = await gamificationService.getLeaderboard('experience', 10);
+    const leaderboard = await gamificationService.getLeaderboard('all_time', 'experience');
     
     // Calculate real statistics from database
     const stats = {

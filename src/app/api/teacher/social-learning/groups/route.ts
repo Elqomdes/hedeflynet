@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const totalStudents = await User.countDocuments({ role: 'student' });
 
     // Get real study groups from database
-    const groups: IStudyGroup[] = await StudyGroup.find({})
+    const groups = await StudyGroup.find({})
       .populate('createdBy', 'name email')
       .populate('members', 'name email')
       .sort({ createdAt: -1 })

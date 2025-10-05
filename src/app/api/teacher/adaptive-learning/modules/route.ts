@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const totalStudents = await User.countDocuments({ role: 'student' });
 
     // Get real learning modules from database
-    const modules: ILearningModule[] = await LearningModule.find({ 
+    const modules = await LearningModule.find({ 
       createdBy: user.id,
       isActive: true 
     })

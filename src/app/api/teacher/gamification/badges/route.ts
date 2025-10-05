@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-import { User } from '@/lib/models';
+import { User, Achievement } from '@/lib/models';
 import { GamificationService } from '@/lib/services/gamificationService';
 
 export async function GET(request: NextRequest) {
@@ -17,12 +17,15 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const gamificationService = GamificationService.getInstance();
-    
     // Get real badges from database
-    const badges = await gamificationService.getAllAchievements();
+    const badges = await Achievement.find({})
+      .sort({ createdAt: -1 })
+      .lean();
 
-    return NextResponse.json({ data: badges });
+    return NextResponse.json({ 
+      data: badges,
+      totalBadges: badges.length 
+    });
 
   } catch (error) {
     console.error('Get gamification badges error:', error);
@@ -53,19 +56,31 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    const gamificationService = GamificationService.getInstance();
-    
-    // Create new achievement using real service
-    const newBadge = await gamificationService.createAchievement({
+    // Create new achievement directly
+    const newBadge = new Achievement({
       name,
       description,
       icon: badgeIcon || '🏆',
       category,
       points: parseInt(points),
-      requirements: { type: 'manual', value: 1 } // Default requirement
+      requirements: { type: 'manual', value: 1 }, // Default requirement
+      isActive: true
     });
 
-    return NextResponse.json({ success: true, data: newBadge });
+    const savedBadge = await newBadge.save();
+
+    return NextResponse.json({ 
+      success: true, 
+      data: {
+        id: savedBadge._id,
+        name: savedBadge.name,
+        description: savedBadge.description,
+        icon: savedBadge.icon,
+        category: savedBadge.category,
+        points: savedBadge.points,
+        createdAt: savedBadge.createdAt
+      }
+    });
   } catch (error) {
     console.error('Create gamification badge error:', error);
     return NextResponse.json(
