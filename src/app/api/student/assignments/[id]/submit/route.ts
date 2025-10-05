@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Assignment, AssignmentSubmission } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
-import { GamificationService } from '@/lib/services/gamificationService';
-import { MobileService } from '@/lib/services/mobileService';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,29 +96,6 @@ export async function POST(
     });
 
     await submission.save();
-
-    // Cross-feature integrations (non-blocking)
-    try {
-      const gamification = GamificationService.getInstance();
-      // Award experience for submitting an assignment
-      await gamification.addExperience(String(studentId), 10, 'assignment_submit');
-      // Update assignment streak
-      await gamification.updateStreak(String(studentId), 'assignment');
-    } catch (e) {
-      console.error('Gamification on submit error:', e);
-    }
-
-    try {
-      const mobile = MobileService.getInstance();
-      await mobile.sendPushNotification(String(studentId), {
-        title: 'Ödev Teslim Edildi',
-        body: 'Ödeviniz başarıyla teslim edildi. Aferin!',
-        data: { type: 'assignment', assignmentId: String(assignmentId) },
-        priority: 'normal'
-      });
-    } catch (e) {
-      console.error('Mobile notification on submit error:', e);
-    }
 
     return NextResponse.json(submission, { status: 201 });
   } catch (error) {

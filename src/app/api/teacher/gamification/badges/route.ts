@@ -113,3 +113,51 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (user.role !== 'teacher') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { name, description, category, points, badgeIcon } = body;
+
+    if (!name || !description || !category || !points) {
+      return NextResponse.json({ error: 'Eksik alanlar' }, { status: 400 });
+    }
+
+    await connectDB();
+
+    // Öğrenci sayısı
+    const totalStudents = await User.countDocuments({ role: 'student' });
+
+    // Yeni rozet oluştur
+    const newBadge = {
+      id: `badge_${Date.now()}`,
+      name,
+      description,
+      icon: badgeIcon || '🏆',
+      points: parseInt(points),
+      category,
+      earnedBy: 0, // Yeni oluşturulan rozet henüz kimse tarafından kazanılmamış
+      totalStudents
+    };
+
+    // Burada gerçek uygulamada Achievement modelini kullanarak veritabanına kaydederiz
+    // Şimdilik başarılı yanıt döndürüyoruz
+
+    return NextResponse.json({ success: true, data: newBadge });
+  } catch (error) {
+    console.error('Create gamification badge error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: (error as Error).message },
+      { status: 500 }
+    );
+  }
+}

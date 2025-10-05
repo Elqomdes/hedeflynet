@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
+import { AIRecommendation } from '@/lib/models';
 
 export async function PATCH(
   request: NextRequest,
@@ -22,14 +24,36 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
-    // Burada gerçek uygulamada veritabanında öneriyi güncelleriz
-    // Şimdilik sadece başarılı yanıt döndürüyoruz
+    await connectDB();
+
+    // AI önerisini bul ve güncelle
+    const recommendation = await AIRecommendation.findById(id);
+    if (!recommendation) {
+      return NextResponse.json({ error: 'Recommendation not found' }, { status: 404 });
+    }
+
+    // Durumu güncelle
     const newStatus = action === 'apply' ? 'applied' : 'dismissed';
+    recommendation.status = newStatus;
+    
+    if (action === 'apply') {
+      recommendation.appliedAt = new Date();
+    } else {
+      recommendation.dismissedAt = new Date();
+    }
+
+    await recommendation.save();
 
     return NextResponse.json({ 
       success: true, 
       message: `Öneri ${action === 'apply' ? 'uygulandı' : 'reddedildi'}`,
-      status: newStatus
+      status: newStatus,
+      data: {
+        id: recommendation._id,
+        status: recommendation.status,
+        appliedAt: recommendation.appliedAt,
+        dismissedAt: recommendation.dismissedAt
+      }
     });
 
   } catch (error) {

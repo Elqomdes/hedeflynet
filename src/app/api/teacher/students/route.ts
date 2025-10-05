@@ -91,15 +91,31 @@ export async function POST(request: NextRequest) {
 
     console.log('Validation passed, connecting to MongoDB...');
     
-    // Connect to MongoDB
-    await connectDB();
+    // Connect to MongoDB with better error handling
+    const connection = await connectDB();
+    if (!connection) {
+      console.error('MongoDB connection failed');
+      return NextResponse.json(
+        { error: 'Veritabanı bağlantısı kurulamadı' },
+        { status: 500 }
+      );
+    }
     console.log('MongoDB connected successfully');
 
-    // Check for existing user
+    // Check for existing user with better error handling
     console.log('Checking for existing user...');
-    const existingUser = await User.findOne({
-      $or: [{ username }, { email }]
-    });
+    let existingUser;
+    try {
+      existingUser = await User.findOne({
+        $or: [{ username }, { email }]
+      });
+    } catch (dbError) {
+      console.error('Database query error:', dbError);
+      return NextResponse.json(
+        { error: 'Veritabanı sorgu hatası' },
+        { status: 500 }
+      );
+    }
 
     if (existingUser) {
       console.log('User already exists');
@@ -124,8 +140,16 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Saving student to database...');
-    await student.save();
-    console.log('Student saved successfully with ID:', student._id);
+    try {
+      await student.save();
+      console.log('Student saved successfully with ID:', student._id);
+    } catch (saveError) {
+      console.error('Student save error:', saveError);
+      return NextResponse.json(
+        { error: 'Öğrenci kaydedilemedi' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       message: 'Öğrenci başarıyla eklendi',

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-import { User, Assignment, AssignmentSubmission, Goal } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission, Goal, AIRecommendation } from '@/lib/models';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,20 +34,87 @@ export async function GET(request: NextRequest) {
     // Tamamlanan hedef sayısı
     const completedGoals = await Goal.countDocuments({ status: 'completed' });
 
-    // AI önerileri için simüle edilmiş veriler
-    const totalRecommendations = Math.floor(totalStudents * 2.5); // Öğrenci başına ortalama 2.5 öneri
-    const appliedRecommendations = Math.floor(totalRecommendations * 0.6); // %60 uygulanmış
-    const pendingRecommendations = totalRecommendations - appliedRecommendations;
-    const successRate = Math.floor(Math.random() * 20) + 75; // %75-95 arası başarı oranı
-    const topPerformingStudents = Math.floor(totalStudents * 0.3); // %30'u üst performans
-    const averageResponseTime = Math.floor(Math.random() * 24) + 2; // 2-26 saat arası
+    // AI önerileri gerçek verileri
+    const totalRecommendations = await AIRecommendation.countDocuments();
+    const appliedRecommendations = await AIRecommendation.countDocuments({ status: 'applied' });
+    const pendingRecommendations = await AIRecommendation.countDocuments({ status: 'pending' });
+    const dismissedRecommendations = await AIRecommendation.countDocuments({ status: 'dismissed' });
+    
+    // Başarı oranı hesapla (uygulanan / toplam)
+    const successRate = totalRecommendations > 0 ? Math.round((appliedRecommendations / totalRecommendations) * 100) : 0;
+    
+    // Üst performans gösteren öğrenci sayısı (ortalama not > 80)
+    const topPerformingStudents = await User.aggregate([
+      { $match: { role: 'student' } },
+      {
+        $lookup: {
+          from: 'assignmentsubmissions',
+          localField: '_id',
+          foreignField: 'student',
+          as: 'submissions'
+        }
+      },
+      {
+        $addFields: {
+          averageGrade: {
+            $avg: {
+              $map: {
+                input: { $filter: { input: '$submissions', cond: { $ne: ['$$this.grade', null] } } },
+                as: 'sub',
+                in: '$$sub.grade'
+              }
+            }
+          }
+        }
+      },
+      { $match: { averageGrade: { $gt: 80 } } },
+      { $count: 'count' }
+    ]);
+    
+    const topPerformingCount = topPerformingStudents.length > 0 ? topPerformingStudents[0].count : 0;
+    
+    // Ortalama yanıt süresi (saat cinsinden)
+    const responseTimeData = await AIRecommendation.aggregate([
+      {
+        $match: {
+          $or: [
+            { appliedAt: { $exists: true } },
+            { dismissedAt: { $exists: true } }
+          ]
+        }
+      },
+      {
+        $addFields: {
+          responseTime: {
+            $divide: [
+              {
+                $subtract: [
+                  { $ifNull: ['$appliedAt', '$dismissedAt'] },
+                  '$createdAt'
+                ]
+              },
+              1000 * 60 * 60 // milisaniyeyi saate çevir
+            ]
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          averageResponseTime: { $avg: '$responseTime' }
+        }
+      }
+    ]);
+    
+    const averageResponseTime = responseTimeData.length > 0 ? Math.round(responseTimeData[0].averageResponseTime) : 0;
 
     const stats = {
       totalRecommendations,
       appliedRecommendations,
       pendingRecommendations,
+      dismissedRecommendations,
       successRate,
-      topPerformingStudents,
+      topPerformingStudents: topPerformingCount,
       averageResponseTime,
       // Ek istatistikler
       totalStudents,

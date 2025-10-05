@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 // MongoDB connection string - MUST be provided via environment variable
 // In development, fall back to provided Atlas URI if not set
 const MONGODB_URI = process.env.MONGODB_URI || (process.env.NODE_ENV !== 'production'
-  ? 'mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/?retryWrites=true&w=majority&appName=hedeflydatas'
+  ? 'mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/hedeflydatas?retryWrites=true&w=majority&appName=hedeflydatas'
   : undefined);
 // Preferred database name (defaults to 'hedeflydatas' if not provided)
 const MONGODB_DB = process.env.MONGODB_DB || 'hedeflydatas';
@@ -47,14 +47,16 @@ async function connectDB() {
       const opts = {
         bufferCommands: false,
         maxPoolSize: 10,
-        serverSelectionTimeoutMS: 15000, // Increased timeout
-        socketTimeoutMS: 60000, // Increased timeout
-        connectTimeoutMS: 15000, // Increased timeout
+        serverSelectionTimeoutMS: 30000, // Increased timeout for better reliability
+        socketTimeoutMS: 120000, // Increased timeout for long operations
+        connectTimeoutMS: 30000, // Increased timeout for initial connection
         retryWrites: true,
         w: 'majority' as const,
         dbName: MONGODB_DB,
-        maxIdleTimeMS: 30000,
-        minPoolSize: 1,
+        maxIdleTimeMS: 60000, // Increased idle time
+        minPoolSize: 2, // Minimum pool size for better performance
+        heartbeatFrequencyMS: 10000, // Heartbeat frequency
+        maxStalenessSeconds: 90, // Max staleness for secondary reads
       };
 
       cached!.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
@@ -82,7 +84,24 @@ async function connectDB() {
       }
     } catch (pingError) {
       console.warn('MongoDB ping failed, but connection exists:', pingError);
+      // Don't throw error for ping failure, connection might still be usable
     }
+    
+    // Set up connection event listeners for better error handling
+    mongoose.connection.on('error', (error) => {
+      console.error('MongoDB connection error:', error);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.warn('MongoDB disconnected');
+      // Clear cache on disconnect
+      cached!.conn = null;
+      cached!.promise = null;
+    });
+    
+    mongoose.connection.on('reconnected', () => {
+      console.log('MongoDB reconnected');
+    });
     
     console.log('MongoDB connection is ready');
     return cached!.conn;

@@ -232,7 +232,7 @@ export default function HomePage() {
                 Hedefly
               </h1>
               <p className="text-xl md:text-2xl text-secondary-700 mb-12 max-w-4xl mx-auto leading-relaxed">
-                Modern öğrenci koçluk platformu ile öğrencilerinizin hedeflerine ulaşmasına yardımcı olun
+                AI koçluk, video koçluk, adaptif öğrenme, gamification ve sosyal öğrenme ile sonuç odaklı modern öğrenci koçluğu.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -243,6 +243,120 @@ export default function HomePage() {
               <Link href="/iletisim" className="btn-outline text-lg px-10 py-4 btn-lg">
                 İletişime Geç
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Detailed Features Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 animate-fade-in">
+            <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 mb-6">Özellikler</h2>
+            <p className="text-xl text-secondary-600 max-w-3xl mx-auto leading-relaxed">
+              Hedefly, modern öğrenci koçluğunun tüm bileşenlerini tek bir platformda bir araya getirir.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="card p-8 animate-slide-up">
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">AI Koçluk</h3>
+              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
+                <li>Kişiselleştirilmiş çalışma önerileri</li>
+                <li>Hedef revizyonu ve odak alanları</li>
+                <li>Performans verisine dayalı öneriler</li>
+              </ul>
+              <div className="mt-6">
+                <a href="/ogretmen/ai-koçluk" className="btn-link">AI Koçluk’u keşfet</a>
+              </div>
+            </div>
+            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.05s'}}>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Video Koçluk</h3>
+              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
+                <li>Planlı canlı oturumlar</li>
+                <li>Katılımcı ve süre yönetimi</li>
+                <li>Oturum sonrası kaynak paylaşımı</li>
+              </ul>
+              <div className="mt-6">
+                <a href="/ogretmen/video-koçluk" className="btn-link">Video Koçluk oturumları</a>
+              </div>
+            </div>
+            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Adaptif Öğrenme</h3>
+              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
+                <li>Düzeye göre modül önerileri</li>
+                <li>Modül türleri: video, interaktif, ölçme</li>
+                <li>Tahmini süre ve zorluk yönetimi</li>
+              </ul>
+              <div className="mt-6">
+                <a href="/ogretmen/adaptif-öğrenme" className="btn-link">Modül kataloğu</a>
+              </div>
+            </div>
+            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.15s'}}>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Gamification</h3>
+              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
+                <li>Puan ve seviye sistemi</li>
+                <li>Rozetler ve başarılar</li>
+                <li>Seri (streak) takibi</li>
+              </ul>
+              <div className="mt-6">
+                <a href="/ogretmen/gamification" className="btn-link">Gamification yönetimi</a>
+              </div>
+            </div>
+            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.2s'}}>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Sosyal Öğrenme</h3>
+              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
+                <li>Topluluk gönderileri ve tartışmalar</li>
+                <li>Çalışma grupları ve kaynak paylaşımı</li>
+                <li>Beğeni ve yorum etkileşimi</li>
+              </ul>
+              <div className="mt-6">
+                <a href="/ogretmen/sosyal-öğrenme" className="btn-link">Topluluğa göz at</a>
+              </div>
+            </div>
+            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.25s'}}>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Mobil & Veli</h3>
+              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
+                <li>Öğrenci ve veli bildirimleri</li>
+                <li>Veli rapor ve özetler</li>
+                <li>Mobil duyuru yönetimi</li>
+              </ul>
+              <div className="mt-6 space-x-4">
+                <a href="/ogretmen/mobil" className="btn-link">Mobil bildirimler</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24 bg-secondary-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 animate-fade-in">
+            <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 mb-6">
+              Bizi Kullananların Görüşleri
+            </h2>
+            <p className="text-xl text-secondary-600 max-w-3xl mx-auto leading-relaxed">
+              Öğretmenler, öğrenciler ve veliler Hedefly ile neler başardı?
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="card p-8 animate-slide-up">
+              <div className="text-secondary-900 font-semibold mb-2">Ayşe K. • Matematik Öğretmeni</div>
+              <p className="text-secondary-700 leading-relaxed">
+                AI koçluk önerileriyle öğrencilerimin odak alanlarını haftalık planlara dönüştürmek çok kolaylaştı. Not ortalamamız yükseldi.
+              </p>
+            </div>
+            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
+              <div className="text-secondary-900 font-semibold mb-2">Mehmet D. • 11. Sınıf Öğrencisi</div>
+              <p className="text-secondary-700 leading-relaxed">
+                Rozet ve puan sistemi beni motive etti. Video koçluk oturumlarıyla konuları daha hızlı kavradım.
+              </p>
+            </div>
+            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.2s'}}>
+              <div className="text-secondary-900 font-semibold mb-2">Zeynep Y. • Veli</div>
+              <p className="text-secondary-700 leading-relaxed">
+                Bildirimler sayesinde çocuğumun ödev ve hedef durumundan anında haberdar oluyorum. Raporlar çok anlaşılır.
+              </p>
             </div>
           </div>
         </div>

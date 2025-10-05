@@ -6,6 +6,8 @@ export { default as AssignmentSubmission } from './AssignmentSubmission';
 export { default as Goal } from './Goal';
 export { default as Plan } from './Plan';
 export { default as Report } from './Report';
+export { AIRecommendation } from './AIRecommendation';
+export type { IAIRecommendation } from './AIRecommendation';
 
 // New models for v3.4 features
 export { 

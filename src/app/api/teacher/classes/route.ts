@@ -103,8 +103,15 @@ export async function POST(request: NextRequest) {
 
     console.log('Validation passed, connecting to MongoDB...');
     
-    // Connect to MongoDB
-    await connectDB();
+    // Connect to MongoDB with better error handling
+    const connection = await connectDB();
+    if (!connection) {
+      console.error('MongoDB connection failed');
+      return NextResponse.json(
+        { error: 'Veritabanı bağlantısı kurulamadı' },
+        { status: 500 }
+      );
+    }
     console.log('MongoDB connected successfully');
 
     // Check for existing class
