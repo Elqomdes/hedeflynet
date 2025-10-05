@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
+import { GamificationService } from '@/lib/services/gamificationService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,28 +17,22 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Öğrencileri getir
-    const students = await User.find({ role: 'student' }).lean();
-
-    // Simüle edilmiş liderlik tablosu
-    const leaderboard = students.map((student, index) => ({
-      rank: index + 1,
-      studentId: student._id.toString(),
-      studentName: `${student.firstName} ${student.lastName}`,
-      points: Math.floor(Math.random() * 2000) + 500, // 500-2500 arası puan
-      level: Math.floor(Math.random() * 20) + 5, // 5-25 arası seviye
-      badges: Math.floor(Math.random() * 8) + 1 // 1-8 arası rozet
+    const gamificationService = GamificationService.getInstance();
+    
+    // Get real leaderboard data
+    const leaderboard = await gamificationService.getLeaderboard('experience', 50);
+    
+    // Transform to match expected format
+    const formattedLeaderboard = leaderboard.map((entry, index) => ({
+      rank: entry.rank,
+      studentId: entry.userId,
+      studentName: entry.displayName,
+      points: entry.score,
+      level: entry.level,
+      badges: 0 // Will be calculated from actual achievements
     }));
 
-    // Puanlara göre sırala
-    leaderboard.sort((a, b) => b.points - a.points);
-
-    // Sıralamayı güncelle
-    leaderboard.forEach((entry, index) => {
-      entry.rank = index + 1;
-    });
-
-    return NextResponse.json({ data: leaderboard });
+    return NextResponse.json({ data: formattedLeaderboard });
 
   } catch (error) {
     console.error('Get gamification leaderboard error:', error);

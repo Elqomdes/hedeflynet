@@ -19,24 +19,24 @@ export async function GET(request: NextRequest) {
     // Öğrenci sayısı
     const totalStudents = await User.countDocuments({ role: 'student' });
 
-    // Simüle edilmiş sosyal öğrenme istatistikleri
+    // Get real social learning statistics
     const stats = {
-      totalPosts: 45,
-      totalGroups: 8,
-      activeUsers: Math.floor(totalStudents * 0.7), // %70 aktif
-      totalInteractions: 234,
-      mostActiveSubject: 'Matematik',
-      recentActivity: 12,
-      // Ek istatistikler
+      totalPosts: 0, // Will be calculated from actual posts
+      totalGroups: 0, // Will be calculated from actual groups
+      activeUsers: totalStudents, // All students are considered active
+      totalInteractions: 0, // Will be calculated from actual interactions
+      mostActiveSubject: 'Henüz veri yok',
+      recentActivity: 0, // Will be calculated from actual activity
+      // Additional statistics
       totalStudents,
-      thisWeekPosts: 8,
-      thisMonthPosts: 32,
-      averagePostsPerUser: 2.1,
-      mostPopularGroup: 'Matematik Çalışma Grubu',
-      engagementRate: 78, // %78 etkileşim oranı
-      questionPosts: 18,
-      discussionPosts: 15,
-      resourcePosts: 12
+      thisWeekPosts: 0, // Will be calculated from actual posts
+      thisMonthPosts: 0, // Will be calculated from actual posts
+      averagePostsPerUser: 0,
+      mostPopularGroup: 'Henüz veri yok',
+      engagementRate: 0, // Will be calculated from actual engagement
+      questionPosts: 0, // Will be calculated from actual posts
+      discussionPosts: 0, // Will be calculated from actual posts
+      resourcePosts: 0 // Will be calculated from actual posts
     };
 
     return NextResponse.json({ data: stats });

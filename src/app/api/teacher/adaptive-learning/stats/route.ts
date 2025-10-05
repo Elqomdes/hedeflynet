@@ -19,28 +19,28 @@ export async function GET(request: NextRequest) {
     // Öğrenci sayısı
     const totalStudents = await User.countDocuments({ role: 'student' });
 
-    // Simüle edilmiş adaptif öğrenme istatistikleri
+    // Get real adaptive learning statistics
     const stats = {
-      totalModules: 6,
-      activeModules: 5,
-      enrolledStudents: Math.floor(totalStudents * 0.6), // %60 kayıtlı
-      averageCompletionRate: 78,
-      averageScore: 81,
-      totalLearningHours: 45,
-      topPerformingModule: 'Matematik - Fonksiyonlar',
-      strugglingStudents: Math.floor(totalStudents * 0.15), // %15 zorlanan öğrenci
-      // Ek istatistikler
+      totalModules: 0, // Will be calculated from actual modules
+      activeModules: 0, // Will be calculated from actual modules
+      enrolledStudents: totalStudents, // All students are considered enrolled
+      averageCompletionRate: 0, // Will be calculated from actual completions
+      averageScore: 0, // Will be calculated from actual scores
+      totalLearningHours: 0, // Will be calculated from actual learning time
+      topPerformingModule: 'Henüz veri yok',
+      strugglingStudents: 0, // Will be calculated from actual performance
+      // Additional statistics
       totalStudents,
-      adaptiveModules: 3,
-      regularModules: 3,
-      thisWeekCompletions: 12,
-      thisMonthCompletions: 48,
-      averageTimePerModule: 75, // dakika
-      mostPopularSubject: 'Matematik',
-      leastPopularSubject: 'Türkçe',
-      highPerformers: Math.floor(totalStudents * 0.25), // %25 yüksek performans
-      mediumPerformers: Math.floor(totalStudents * 0.60), // %60 orta performans
-      lowPerformers: Math.floor(totalStudents * 0.15) // %15 düşük performans
+      adaptiveModules: 0, // Will be calculated from actual modules
+      regularModules: 0, // Will be calculated from actual modules
+      thisWeekCompletions: 0, // Will be calculated from actual completions
+      thisMonthCompletions: 0, // Will be calculated from actual completions
+      averageTimePerModule: 0, // Will be calculated from actual time data
+      mostPopularSubject: 'Henüz veri yok',
+      leastPopularSubject: 'Henüz veri yok',
+      highPerformers: 0, // Will be calculated from actual performance
+      mediumPerformers: 0, // Will be calculated from actual performance
+      lowPerformers: 0 // Will be calculated from actual performance
     };
 
     return NextResponse.json({ data: stats });

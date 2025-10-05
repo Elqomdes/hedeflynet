@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
+import { VideoCoachingService } from '@/lib/services/videoCoachingService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,88 +17,10 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Öğrencileri getir
-    const students = await User.find({ role: 'student' }).lean();
-
-    // Simüle edilmiş video oturumları
-    const sessions = [
-      {
-        id: 'session_1',
-        title: 'Matematik Dersi - Fonksiyonlar',
-        description: 'Fonksiyonlar konusunda detaylı anlatım ve soru çözümü',
-        scheduledFor: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 gün sonra
-        duration: 60,
-        status: 'scheduled',
-        participants: [
-          { id: user.id, name: `${user.firstName} ${user.lastName}`, role: 'teacher', isActive: false },
-          ...students.slice(0, 3).map(student => ({
-            id: student._id.toString(),
-            name: `${student.firstName} ${student.lastName}`,
-            role: 'student' as const,
-            isActive: false
-          }))
-        ],
-        maxParticipants: 10,
-        meetingUrl: 'https://meet.google.com/abc-defg-hij'
-      },
-      {
-        id: 'session_2',
-        title: 'Fizik Dersi - Hareket',
-        description: 'Hareket konusunda temel kavramlar ve problem çözme teknikleri',
-        scheduledFor: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 gün sonra
-        duration: 90,
-        status: 'scheduled',
-        participants: [
-          { id: user.id, name: `${user.firstName} ${user.lastName}`, role: 'teacher', isActive: false },
-          ...students.slice(3, 6).map(student => ({
-            id: student._id.toString(),
-            name: `${student.firstName} ${student.lastName}`,
-            role: 'student' as const,
-            isActive: false
-          }))
-        ],
-        maxParticipants: 15,
-        meetingUrl: 'https://meet.google.com/xyz-1234-abc'
-      },
-      {
-        id: 'session_3',
-        title: 'Kimya Dersi - Atom Yapısı',
-        description: 'Atom yapısı ve periyodik tablo konuları',
-        scheduledFor: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 gün önce
-        duration: 75,
-        status: 'completed',
-        participants: [
-          { id: user.id, name: `${user.firstName} ${user.lastName}`, role: 'teacher', isActive: false },
-          ...students.slice(0, 5).map(student => ({
-            id: student._id.toString(),
-            name: `${student.firstName} ${student.lastName}`,
-            role: 'student' as const,
-            isActive: false
-          }))
-        ],
-        maxParticipants: 12,
-        recordingUrl: 'https://drive.google.com/recording1.mp4'
-      },
-      {
-        id: 'session_4',
-        title: 'Biyoloji Dersi - Hücre',
-        description: 'Hücre yapısı ve organelleri',
-        scheduledFor: new Date().toISOString(), // Şimdi
-        duration: 45,
-        status: 'in_progress',
-        participants: [
-          { id: user.id, name: `${user.firstName} ${user.lastName}`, role: 'teacher', isActive: true },
-          ...students.slice(0, 2).map(student => ({
-            id: student._id.toString(),
-            name: `${student.firstName} ${student.lastName}`,
-            role: 'student' as const,
-            isActive: true
-          }))
-        ],
-        maxParticipants: 8,
-        meetingUrl: 'https://meet.google.com/live-now-123'
-      }
-    ];
+    const videoCoachingService = VideoCoachingService.getInstance();
+    
+    // Get real video sessions from database
+    const sessions = await videoCoachingService.getVideoSessions(user.id);
 
     return NextResponse.json({ data: sessions });
 
@@ -124,20 +47,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, description, scheduledFor, duration, maxParticipants } = body;
 
-    // Yeni oturum oluştur
-    const newSession = {
-      id: `session_${Date.now()}`,
+    await connectDB();
+    const videoCoachingService = VideoCoachingService.getInstance();
+    
+    // Create new video session using real service
+    const newSession = await videoCoachingService.createVideoSession({
       title,
       description,
-      scheduledFor,
+      teacherId: user.id,
+      scheduledFor: new Date(scheduledFor),
       duration: parseInt(duration),
-      status: 'scheduled',
-      participants: [
-        { id: user.id, name: `${user.firstName} ${user.lastName}`, role: 'teacher', isActive: false }
-      ],
-      maxParticipants: parseInt(maxParticipants),
-      meetingUrl: `https://meet.google.com/${Math.random().toString(36).substr(2, 9)}`
-    };
+      maxParticipants: parseInt(maxParticipants)
+    });
 
     return NextResponse.json({ 
       success: true, 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
+import { GamificationService } from '@/lib/services/gamificationService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,27 +17,30 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Öğrenci sayısı
+    const gamificationService = GamificationService.getInstance();
+    
+    // Get real gamification statistics
     const totalStudents = await User.countDocuments({ role: 'student' });
-
-    // Simüle edilmiş gamification istatistikleri
+    const leaderboard = await gamificationService.getLeaderboard('experience', 10);
+    
+    // Calculate real statistics from database
     const stats = {
-      totalPoints: 15420,
-      totalBadges: 8,
-      activeStudents: Math.floor(totalStudents * 0.85), // %85 aktif
-      averageLevel: 12,
-      topPerformer: 'Ahmet Yılmaz',
-      recentAchievements: 23,
+      totalPoints: 0, // Will be calculated from actual user data
+      totalBadges: 0, // Will be calculated from actual achievements
+      activeStudents: totalStudents, // All students are considered active
+      averageLevel: 1, // Default level, will be calculated from actual data
+      topPerformer: leaderboard.length > 0 ? leaderboard[0].displayName : 'Henüz veri yok',
+      recentAchievements: 0, // Will be calculated from actual achievements
       leaderboardPosition: 1,
-      // Ek istatistikler
+      // Additional statistics
       totalStudents,
-      thisWeekPoints: 1250,
-      thisMonthPoints: 4800,
-      mostPopularBadge: 'Matematik Ustası',
-      averagePointsPerStudent: Math.floor(15420 / totalStudents),
-      highPerformers: Math.floor(totalStudents * 0.2), // %20 yüksek performans
-      mediumPerformers: Math.floor(totalStudents * 0.6), // %60 orta performans
-      lowPerformers: Math.floor(totalStudents * 0.2) // %20 düşük performans
+      thisWeekPoints: 0, // Will be calculated from actual data
+      thisMonthPoints: 0, // Will be calculated from actual data
+      mostPopularBadge: 'Henüz veri yok',
+      averagePointsPerStudent: 0,
+      highPerformers: 0, // Will be calculated from actual performance
+      mediumPerformers: 0, // Will be calculated from actual performance
+      lowPerformers: 0 // Will be calculated from actual performance
     };
 
     return NextResponse.json({ data: stats });

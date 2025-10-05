@@ -273,32 +273,50 @@ export class AICoachingService {
       .filter(p => p.averageScore < 70)
       .map(p => p.subject);
     
-    const dailySchedule = [
-      {
+    // Generate personalized schedule based on actual performance
+    const dailySchedule = [];
+    
+    if (weakSubjects.length > 0) {
+      dailySchedule.push({
         time: '09:00-10:00',
-        subject: weakSubjects[0] || 'Matematik',
+        subject: weakSubjects[0],
         duration: 60,
         activity: 'Konu tekrarı ve problem çözme'
-      },
-      {
+      });
+    }
+    
+    if (weakSubjects.length > 1) {
+      dailySchedule.push({
         time: '14:00-15:00',
-        subject: weakSubjects[1] || 'Fen Bilimleri',
+        subject: weakSubjects[1],
         duration: 60,
         activity: 'Deney ve gözlem çalışması'
-      },
-      {
+      });
+    }
+    
+    // Add general study time if there are assignments
+    if (data.assignments.length > 0) {
+      dailySchedule.push({
         time: '19:00-20:00',
         subject: 'Genel Tekrar',
         duration: 60,
         activity: 'Günlük ödevler ve tekrar'
-      }
-    ];
+      });
+    }
 
-    const weeklyGoals = [
-      'Haftalık hedeflerin %80\'ini tamamla',
-      'En az 3 farklı konuda çalış',
-      'Günlük 2 saat düzenli çalışma yap'
-    ];
+    const weeklyGoals = [];
+    
+    if (data.goals.length > 0) {
+      weeklyGoals.push('Haftalık hedeflerin %80\'ini tamamla');
+    }
+    
+    if (weakSubjects.length > 0) {
+      weeklyGoals.push(`En az ${Math.min(weakSubjects.length, 3)} farklı konuda çalış`);
+    }
+    
+    if (data.assignments.length > 0) {
+      weeklyGoals.push('Günlük 2 saat düzenli çalışma yap');
+    }
 
     const tips = [
       'Çalışma sırasında 25 dakika çalış, 5 dakika mola ver',

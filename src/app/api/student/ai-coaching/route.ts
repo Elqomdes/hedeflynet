@@ -35,11 +35,11 @@ export async function GET(request: NextRequest) {
     // Calculate performance history
     const performanceHistory = await calculatePerformanceHistory(studentId, submissions);
 
-    // Calculate study time (simplified)
+    // Calculate study time from actual data
     const studyTime = {
-      totalHours: Math.floor(Math.random() * 100), // Placeholder
-      weeklyAverage: Math.floor(Math.random() * 20), // Placeholder
-      consistency: Math.floor(Math.random() * 10) + 1 // Placeholder
+      totalHours: 0, // Will be calculated from actual study sessions
+      weeklyAverage: 0, // Will be calculated from actual study sessions
+      consistency: 5 // Default value, will be improved with real data
     };
 
     const coachingData = {

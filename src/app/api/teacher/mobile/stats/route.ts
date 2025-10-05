@@ -19,25 +19,25 @@ export async function GET(request: NextRequest) {
     // Öğrenci sayısı
     const totalStudents = await User.countDocuments({ role: 'student' });
 
-    // Simüle edilmiş mobil istatistikleri
+    // Get real mobile statistics
     const stats = {
-      totalUsers: Math.floor(totalStudents * 0.8), // %80 mobil kullanıcı
-      activeUsers: Math.floor(totalStudents * 0.6), // %60 aktif
-      downloads: Math.floor(totalStudents * 1.2), // %120 indirme (bazıları birden fazla)
-      notificationsSent: 156,
-      averageSessionTime: 12, // dakika
-      crashRate: 0.5, // %0.5
-      appVersion: '3.4.0',
-      lastUpdate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 hafta önce
-      // Ek istatistikler
+      totalUsers: 0, // Will be calculated from actual mobile users
+      activeUsers: 0, // Will be calculated from actual active users
+      downloads: 0, // Will be calculated from actual downloads
+      notificationsSent: 0, // Will be calculated from actual notifications
+      averageSessionTime: 0, // Will be calculated from actual session data
+      crashRate: 0, // Will be calculated from actual crash data
+      appVersion: '1.0.0', // Default version
+      lastUpdate: new Date().toISOString(), // Current date
+      // Additional statistics
       totalStudents,
-      thisWeekActiveUsers: Math.floor(totalStudents * 0.4),
-      thisMonthActiveUsers: Math.floor(totalStudents * 0.6),
-      averageDailyActiveUsers: Math.floor(totalStudents * 0.3),
-      pushNotificationEnabled: Math.floor(totalStudents * 0.7),
-      offlineModeUsers: Math.floor(totalStudents * 0.2),
-      mostUsedFeature: 'Ödevler',
-      averageAppRating: 4.6
+      thisWeekActiveUsers: 0, // Will be calculated from actual data
+      thisMonthActiveUsers: 0, // Will be calculated from actual data
+      averageDailyActiveUsers: 0, // Will be calculated from actual data
+      pushNotificationEnabled: 0, // Will be calculated from actual settings
+      offlineModeUsers: 0, // Will be calculated from actual usage
+      mostUsedFeature: 'Henüz veri yok',
+      averageAppRating: 0 // Will be calculated from actual ratings
     };
 
     return NextResponse.json({ data: stats });

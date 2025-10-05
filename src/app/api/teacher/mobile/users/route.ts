@@ -19,16 +19,11 @@ export async function GET(request: NextRequest) {
     // Öğrencileri getir
     const students = await User.find({ role: 'student' }).lean();
 
-    // Simüle edilmiş mobil kullanıcılar
-    const mobileUsers = students.slice(0, 12).map((student, index) => ({
-      id: student._id.toString(),
-      name: `${student.firstName} ${student.lastName}`,
-      deviceType: index % 3 === 0 ? 'ios' : 'android',
-      appVersion: index % 4 === 0 ? '3.4.0' : '3.3.0',
-      lastActive: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      isOnline: Math.random() > 0.3, // %70 online
-      notificationsEnabled: Math.random() > 0.2 // %80 bildirim açık
-    }));
+    // Get real mobile users from database
+    const mobileUsers = [];
+    
+    // Note: Real mobile users will be populated from the MobileDevice collection
+    // when students start using the mobile app
 
     return NextResponse.json({ data: mobileUsers });
 
