@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Brain, Users, TrendingUp, Target, Lightbulb, BarChart3, Clock, Star } from 'lucide-react';
 
 interface AIRecommendation {
@@ -109,10 +109,12 @@ export default function AICoachingPage() {
     }
   };
 
-  const filteredRecommendations = (recommendations || []).filter(rec => {
-    if (selectedFilter === 'all') return true;
-    return rec.status === selectedFilter;
-  });
+  const filteredRecommendations = useMemo(() => {
+    return (recommendations || []).filter(rec => {
+      if (selectedFilter === 'all') return true;
+      return rec.status === selectedFilter;
+    });
+  }, [recommendations, selectedFilter]);
 
   if (loading) {
     return (

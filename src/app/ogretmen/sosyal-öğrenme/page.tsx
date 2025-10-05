@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MessageSquare, Users, Calendar, BookOpen, Plus, Settings, Heart, MessageCircle } from 'lucide-react';
 
 interface SocialPost {
@@ -114,10 +114,12 @@ export default function SocialLearningPage() {
     }
   };
 
-  const filteredPosts = (posts || []).filter(post => {
-    if (selectedFilter === 'all') return true;
-    return post.type === selectedFilter;
-  });
+  const filteredPosts = useMemo(() => {
+    return (posts || []).filter(post => {
+      if (selectedFilter === 'all') return true;
+      return post.type === selectedFilter;
+    });
+  }, [posts, selectedFilter]);
 
   if (loading) {
     return (

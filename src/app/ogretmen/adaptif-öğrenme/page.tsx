@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { BarChart3, Users, Target, TrendingUp, BookOpen, Clock, Star, Plus, Settings } from 'lucide-react';
 
 interface LearningModule {
@@ -105,18 +105,22 @@ export default function AdaptiveLearningPage() {
     ));
   };
 
-  const filteredModules = (modules || []).filter(module => {
-    const filterMatch = selectedFilter === 'all' || 
-      (selectedFilter === 'active' && module.isActive) ||
-      (selectedFilter === 'inactive' && !module.isActive) ||
-      (selectedFilter === 'adaptive' && module.isAdaptive);
-    
-    const subjectMatch = selectedSubject === 'all' || module.subject === selectedSubject;
-    
-    return filterMatch && subjectMatch;
-  });
+  const filteredModules = useMemo(() => {
+    return (modules || []).filter(module => {
+      const filterMatch = selectedFilter === 'all' || 
+        (selectedFilter === 'active' && module.isActive) ||
+        (selectedFilter === 'inactive' && !module.isActive) ||
+        (selectedFilter === 'adaptive' && module.isAdaptive);
+      
+      const subjectMatch = selectedSubject === 'all' || module.subject === selectedSubject;
+      
+      return filterMatch && subjectMatch;
+    });
+  }, [modules, selectedFilter, selectedSubject]);
 
-  const subjects = modules && modules.length > 0 ? [...new Set(modules.map(m => m.subject))] : [];
+  const subjects = useMemo(() => {
+    return modules && modules.length > 0 ? [...new Set(modules.map(m => m.subject))] : [];
+  }, [modules]);
 
   if (loading) {
     return (

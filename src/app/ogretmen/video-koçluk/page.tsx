@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Video, Users, Clock, Calendar, Play, Plus, Settings, Mic, MicOff, Camera, CameraOff } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Video, Users, Clock, Calendar, Play, Plus, Settings } from 'lucide-react';
 
 interface VideoSession {
   id: string;
@@ -107,10 +107,12 @@ export default function VideoCoachingPage() {
     }
   };
 
-  const filteredSessions = (sessions || []).filter(session => {
-    if (selectedFilter === 'all') return true;
-    return session.status === selectedFilter;
-  });
+  const filteredSessions = useMemo(() => {
+    return (sessions || []).filter(session => {
+      if (selectedFilter === 'all') return true;
+      return session.status === selectedFilter;
+    });
+  }, [sessions, selectedFilter]);
 
   if (loading) {
     return (

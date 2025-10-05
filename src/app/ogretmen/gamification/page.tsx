@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Award, Trophy, Star, Target, Users, TrendingUp, Plus, Settings } from 'lucide-react';
+import { Award, Trophy, Star, Users, TrendingUp, Plus, Settings } from 'lucide-react';
 
 interface GamificationStats {
   totalPoints: number;

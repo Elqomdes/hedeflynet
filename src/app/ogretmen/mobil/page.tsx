@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Smartphone, Download, Users, Bell, Settings, Wifi, Battery, Shield, Plus } from 'lucide-react';
+import { Smartphone, Download, Users, Bell, Settings, Wifi, Shield, Plus } from 'lucide-react';
 
 interface MobileStats {
   totalUsers: number;
