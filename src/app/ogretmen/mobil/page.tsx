@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Smartphone, Download, Users, Bell, Settings, Wifi, Shield, Plus } from 'lucide-react';
 
 interface MobileStats {
@@ -49,17 +49,13 @@ export default function MobilePage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchMobileData();
-  }, []);
-
-  const fetchMobileData = async () => {
+  const fetchMobileData = useCallback(async () => {
     try {
       // Mobil istatistiklerini getir
       const statsResponse = await fetch('/api/teacher/mobile/stats');
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
-        setStats(statsData.data || stats);
+        setStats(prevStats => statsData.data || prevStats);
       }
 
       // Mobil kullanıcıları getir
@@ -80,7 +76,11 @@ export default function MobilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchMobileData();
+  }, [fetchMobileData]);
 
   const getDeviceIcon = (deviceType: string) => {
     return <Smartphone className="w-5 h-5" />;

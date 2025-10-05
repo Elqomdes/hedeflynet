@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Video, Users, Clock, Calendar, Play, Plus, Settings } from 'lucide-react';
 
 interface VideoSession {
@@ -44,11 +44,7 @@ export default function VideoCoachingPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'scheduled' | 'in_progress' | 'completed'>('all');
 
-  useEffect(() => {
-    fetchVideoData();
-  }, []);
-
-  const fetchVideoData = async () => {
+  const fetchVideoData = useCallback(async () => {
     try {
       // Video oturumlarını getir
       const sessionsResponse = await fetch('/api/teacher/video-coaching/sessions');
@@ -61,14 +57,18 @@ export default function VideoCoachingPage() {
       const statsResponse = await fetch('/api/teacher/video-coaching/stats');
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
-        setStats(statsData.data || stats);
+        setStats(prevStats => statsData.data || prevStats);
       }
     } catch (error) {
       console.error('Video data fetch error:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchVideoData();
+  }, [fetchVideoData]);
 
   const handleJoinSession = async (sessionId: string) => {
     try {

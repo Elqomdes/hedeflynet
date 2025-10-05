@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { BarChart3, Users, Target, TrendingUp, BookOpen, Clock, Star, Plus, Settings } from 'lucide-react';
 
 interface LearningModule {
@@ -51,11 +51,7 @@ export default function AdaptiveLearningPage() {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'inactive' | 'adaptive'>('all');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
 
-  useEffect(() => {
-    fetchAdaptiveData();
-  }, []);
-
-  const fetchAdaptiveData = async () => {
+  const fetchAdaptiveData = useCallback(async () => {
     try {
       // Öğrenme modüllerini getir
       const modulesResponse = await fetch('/api/teacher/adaptive-learning/modules');
@@ -68,14 +64,18 @@ export default function AdaptiveLearningPage() {
       const statsResponse = await fetch('/api/teacher/adaptive-learning/stats');
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
-        setStats(statsData.data || stats);
+        setStats(prevStats => statsData.data || prevStats);
       }
     } catch (error) {
       console.error('Adaptive learning data fetch error:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAdaptiveData();
+  }, [fetchAdaptiveData]);
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -119,7 +119,7 @@ export default function AdaptiveLearningPage() {
   }, [modules, selectedFilter, selectedSubject]);
 
   const subjects = useMemo(() => {
-    return modules && modules.length > 0 ? [...new Set(modules.map(m => m.subject))] : [];
+    return modules && modules.length > 0 ? Array.from(new Set(modules.map(m => m.subject))) : [];
   }, [modules]);
 
   if (loading) {

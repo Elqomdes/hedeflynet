@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Brain, Users, TrendingUp, Target, Lightbulb, BarChart3, Clock, Star } from 'lucide-react';
 
 interface AIRecommendation {
@@ -37,11 +37,7 @@ export default function AICoachingPage() {
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'pending' | 'applied' | 'dismissed'>('all');
 
-  useEffect(() => {
-    fetchAIData();
-  }, []);
-
-  const fetchAIData = async () => {
+  const fetchAIData = useCallback(async () => {
     try {
       // AI önerilerini getir
       const recommendationsResponse = await fetch('/api/teacher/ai-coaching/recommendations');
@@ -54,14 +50,18 @@ export default function AICoachingPage() {
       const statsResponse = await fetch('/api/teacher/ai-coaching/stats');
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
-        setStats(statsData.data || stats);
+        setStats(prevStats => statsData.data || prevStats);
       }
     } catch (error) {
       console.error('AI data fetch error:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAIData();
+  }, [fetchAIData]);
 
   const handleRecommendationAction = async (recommendationId: string, action: 'apply' | 'dismiss') => {
     try {

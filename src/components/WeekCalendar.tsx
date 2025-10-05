@@ -39,8 +39,10 @@ function getWeekDays(reference: Date): Date[] {
 }
 
 export default function WeekCalendar({ referenceDate, items, onSelectDate, readOnly, emptyText }: WeekCalendarProps) {
-  const now = referenceDate || new Date();
-  const days = useMemo(() => getWeekDays(now), [now]);
+  const days = useMemo(() => {
+    const now = referenceDate || new Date();
+    return getWeekDays(now);
+  }, [referenceDate]);
 
   const grouped = useMemo(() => {
     const map: Record<string, CalendarGoal[]> = {};

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { MessageSquare, Users, Calendar, BookOpen, Plus, Settings, Heart, MessageCircle } from 'lucide-react';
 
 interface SocialPost {
@@ -49,19 +49,15 @@ export default function SocialLearningPage() {
     recentActivity: 0
   });
   const [loading, setLoading] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'questions' | 'discussions' | 'resources'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'question' | 'discussion' | 'resource' | 'announcement'>('all');
 
-  useEffect(() => {
-    fetchSocialData();
-  }, []);
-
-  const fetchSocialData = async () => {
+  const fetchSocialData = useCallback(async () => {
     try {
       // Sosyal öğrenme istatistiklerini getir
       const statsResponse = await fetch('/api/teacher/social-learning/stats');
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
-        setStats(statsData.data || stats);
+        setStats(prevStats => statsData.data || prevStats);
       }
 
       // Gönderileri getir
@@ -82,7 +78,11 @@ export default function SocialLearningPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSocialData();
+  }, [fetchSocialData]);
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -204,14 +204,15 @@ export default function SocialLearningPage() {
           <div className="mb-6">
             <div className="flex space-x-1 bg-secondary-100 p-1 rounded-lg w-fit">
               {[
-                { key: 'all', label: 'Tümü' },
-                { key: 'questions', label: 'Sorular' },
-                { key: 'discussions', label: 'Tartışmalar' },
-                { key: 'resources', label: 'Kaynaklar' },
+                { key: 'all' as const, label: 'Tümü' },
+                { key: 'question' as const, label: 'Sorular' },
+                { key: 'discussion' as const, label: 'Tartışmalar' },
+                { key: 'resource' as const, label: 'Kaynaklar' },
+                { key: 'announcement' as const, label: 'Duyurular' },
               ].map((filter) => (
                 <button
                   key={filter.key}
-                  onClick={() => setSelectedFilter(filter.key as any)}
+                  onClick={() => setSelectedFilter(filter.key)}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     selectedFilter === filter.key
                       ? 'bg-white text-primary-600 shadow-sm'

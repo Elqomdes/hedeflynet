@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Award, Trophy, Star, Users, TrendingUp, Plus, Settings } from 'lucide-react';
 
 interface GamificationStats {
@@ -47,17 +47,13 @@ export default function GamificationPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchGamificationData();
-  }, []);
-
-  const fetchGamificationData = async () => {
+  const fetchGamificationData = useCallback(async () => {
     try {
       // Gamification istatistiklerini getir
       const statsResponse = await fetch('/api/teacher/gamification/stats');
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
-        setStats(statsData.data || stats);
+        setStats(prevStats => statsData.data || prevStats);
       }
 
       // Rozetleri getir
@@ -78,7 +74,11 @@ export default function GamificationPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchGamificationData();
+  }, [fetchGamificationData]);
 
   const getCategoryColor = (category: string) => {
     switch (category) {
