@@ -31,23 +31,25 @@ export async function GET(request: NextRequest) {
         .lean();
     }
 
-    // Önerileri frontend formatına dönüştür
-    const formattedRecommendations = recommendations.map(rec => ({
-      id: rec._id.toString(),
-      studentId: rec.studentId._id.toString(),
-      studentName: `${rec.studentId.firstName} ${rec.studentId.lastName}`,
-      type: rec.type,
-      title: rec.title,
-      description: rec.description,
-      priority: rec.priority,
-      createdAt: rec.createdAt.toISOString(),
-      status: rec.status,
-      category: rec.category,
-      estimatedImpact: rec.estimatedImpact,
-      actionRequired: rec.actionRequired,
-      appliedAt: rec.appliedAt?.toISOString(),
-      dismissedAt: rec.dismissedAt?.toISOString()
-    }));
+    // Önerileri frontend formatına dönüştür - null check ile
+    const formattedRecommendations = recommendations
+      .filter(rec => rec.studentId && rec.studentId._id) // Null check
+      .map(rec => ({
+        id: rec._id.toString(),
+        studentId: rec.studentId._id.toString(),
+        studentName: `${rec.studentId.firstName || 'Bilinmeyen'} ${rec.studentId.lastName || 'Öğrenci'}`,
+        type: rec.type,
+        title: rec.title,
+        description: rec.description,
+        priority: rec.priority,
+        createdAt: rec.createdAt.toISOString(),
+        status: rec.status,
+        category: rec.category,
+        estimatedImpact: rec.estimatedImpact,
+        actionRequired: rec.actionRequired,
+        appliedAt: rec.appliedAt?.toISOString(),
+        dismissedAt: rec.dismissedAt?.toISOString()
+      }));
 
     return NextResponse.json({ data: formattedRecommendations });
 
@@ -65,6 +67,11 @@ async function generateAIRecommendations() {
   try {
     // Öğretmenin öğrencilerini getir
     const students = await User.find({ role: 'student' }).lean();
+    
+    if (!students || students.length === 0) {
+      console.log('No students found for AI recommendations');
+      return;
+    }
     
     for (const student of students) {
       const assignments = await Assignment.find({ student: student._id }).lean();
@@ -87,82 +94,98 @@ async function generateAIRecommendations() {
 
       // AI önerileri oluştur ve veritabanına kaydet
       if (completionRate < 70) {
-        const recommendation = new AIRecommendation({
-          studentId: student._id,
-          type: 'study_plan',
-          title: 'Ödev Tamamlama Oranı Düşük',
-          description: `${student.firstName} için ödev tamamlama oranı %${Math.round(completionRate)}. Daha düzenli çalışma planı önerilir.`,
-          priority: completionRate < 50 ? 'high' : 'medium',
-          category: 'Çalışma Planı',
-          estimatedImpact: completionRate < 50 ? 8 : 6,
-          actionRequired: true,
-          reason: `Ödev tamamlama oranı %${Math.round(completionRate)} ile düşük seviyede`,
-          confidence: 85,
-          relatedData: {
-            assignments: assignments.map(a => a._id),
-            submissions: submissions.map(s => s._id)
-          }
-        });
-        await recommendation.save();
+        try {
+          const recommendation = new AIRecommendation({
+            studentId: student._id,
+            type: 'study_plan',
+            title: 'Ödev Tamamlama Oranı Düşük',
+            description: `${student.firstName || 'Öğrenci'} için ödev tamamlama oranı %${Math.round(completionRate)}. Daha düzenli çalışma planı önerilir.`,
+            priority: completionRate < 50 ? 'high' : 'medium',
+            category: 'Çalışma Planı',
+            estimatedImpact: completionRate < 50 ? 8 : 6,
+            actionRequired: true,
+            reason: `Ödev tamamlama oranı %${Math.round(completionRate)} ile düşük seviyede`,
+            confidence: 85,
+            relatedData: {
+              assignments: assignments.map(a => a._id),
+              submissions: submissions.map(s => s._id)
+            }
+          });
+          await recommendation.save();
+        } catch (saveError) {
+          console.error('Error saving study_plan recommendation:', saveError);
+        }
       }
 
       if (averageGrade < 60 && gradedSubmissions.length > 0) {
-        const recommendation = new AIRecommendation({
-          studentId: student._id,
-          type: 'difficulty',
-          title: 'Not Ortalaması Düşük',
-          description: `${student.firstName}'in ortalama notu ${Math.round(averageGrade)}. Ek destek ve zorluk seviyesi ayarlaması gerekebilir.`,
-          priority: averageGrade < 40 ? 'high' : 'medium',
-          category: 'Zorluk Seviyesi',
-          estimatedImpact: averageGrade < 40 ? 9 : 7,
-          actionRequired: true,
-          reason: `Ortalama not ${Math.round(averageGrade)} ile düşük seviyede`,
-          confidence: 90,
-          relatedData: {
-            submissions: gradedSubmissions.map(s => s._id)
-          }
-        });
-        await recommendation.save();
+        try {
+          const recommendation = new AIRecommendation({
+            studentId: student._id,
+            type: 'difficulty',
+            title: 'Not Ortalaması Düşük',
+            description: `${student.firstName || 'Öğrenci'}'in ortalama notu ${Math.round(averageGrade)}. Ek destek ve zorluk seviyesi ayarlaması gerekebilir.`,
+            priority: averageGrade < 40 ? 'high' : 'medium',
+            category: 'Zorluk Seviyesi',
+            estimatedImpact: averageGrade < 40 ? 9 : 7,
+            actionRequired: true,
+            reason: `Ortalama not ${Math.round(averageGrade)} ile düşük seviyede`,
+            confidence: 90,
+            relatedData: {
+              submissions: gradedSubmissions.map(s => s._id)
+            }
+          });
+          await recommendation.save();
+        } catch (saveError) {
+          console.error('Error saving difficulty recommendation:', saveError);
+        }
       }
 
       if (goalProgress < 50 && goals.length > 0) {
-        const recommendation = new AIRecommendation({
-          studentId: student._id,
-          type: 'motivation',
-          title: 'Hedef İlerlemesi Yavaş',
-          description: `${student.firstName} için hedef ilerlemesi %${Math.round(goalProgress)}. Motivasyon artırıcı aktiviteler önerilir.`,
-          priority: 'medium',
-          category: 'Motivasyon',
-          estimatedImpact: 6,
-          actionRequired: true,
-          reason: `Hedef ilerlemesi %${Math.round(goalProgress)} ile yavaş`,
-          confidence: 75,
-          relatedData: {
-            goals: goals.map(g => g._id)
-          }
-        });
-        await recommendation.save();
+        try {
+          const recommendation = new AIRecommendation({
+            studentId: student._id,
+            type: 'motivation',
+            title: 'Hedef İlerlemesi Yavaş',
+            description: `${student.firstName || 'Öğrenci'} için hedef ilerlemesi %${Math.round(goalProgress)}. Motivasyon artırıcı aktiviteler önerilir.`,
+            priority: 'medium',
+            category: 'Motivasyon',
+            estimatedImpact: 6,
+            actionRequired: true,
+            reason: `Hedef ilerlemesi %${Math.round(goalProgress)} ile yavaş`,
+            confidence: 75,
+            relatedData: {
+              goals: goals.map(g => g._id)
+            }
+          });
+          await recommendation.save();
+        } catch (saveError) {
+          console.error('Error saving motivation recommendation:', saveError);
+        }
       }
 
       // Başarılı öğrenciler için pozitif öneriler
       if (completionRate > 90 && averageGrade > 80) {
-        const recommendation = new AIRecommendation({
-          studentId: student._id,
-          type: 'schedule',
-          title: 'Gelişmiş İçerik Önerisi',
-          description: `${student.firstName} mükemmel performans gösteriyor. Daha zorlu içerikler ve projeler önerilir.`,
-          priority: 'low',
-          category: 'Gelişim',
-          estimatedImpact: 5,
-          actionRequired: false,
-          reason: `Mükemmel performans: %${Math.round(completionRate)} tamamlama, ${Math.round(averageGrade)} ortalama`,
-          confidence: 80,
-          relatedData: {
-            assignments: assignments.map(a => a._id),
-            goals: goals.map(g => g._id)
-          }
-        });
-        await recommendation.save();
+        try {
+          const recommendation = new AIRecommendation({
+            studentId: student._id,
+            type: 'schedule',
+            title: 'Gelişmiş İçerik Önerisi',
+            description: `${student.firstName || 'Öğrenci'} mükemmel performans gösteriyor. Daha zorlu içerikler ve projeler önerilir.`,
+            priority: 'low',
+            category: 'Gelişim',
+            estimatedImpact: 5,
+            actionRequired: false,
+            reason: `Mükemmel performans: %${Math.round(completionRate)} tamamlama, ${Math.round(averageGrade)} ortalama`,
+            confidence: 80,
+            relatedData: {
+              assignments: assignments.map(a => a._id),
+              goals: goals.map(g => g._id)
+            }
+          });
+          await recommendation.save();
+        } catch (saveError) {
+          console.error('Error saving schedule recommendation:', saveError);
+        }
       }
     }
   } catch (error) {
