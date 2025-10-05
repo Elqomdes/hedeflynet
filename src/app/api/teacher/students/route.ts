@@ -17,35 +17,11 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Collect all student ids that belong to classes of this teacher
-    const teacherId = authResult._id;
-
-    const classes = await Class.find({
-      $or: [
-        { teacherId },
-        { coTeachers: teacherId }
-      ]
-    }).select('students').lean();
-
-    const studentIdSet = new Set<string>();
-    for (const cls of classes) {
-      if (Array.isArray((cls as any).students)) {
-        for (const sid of (cls as any).students) {
-          studentIdSet.add(String(sid));
-        }
-      }
-    }
-
-    // If no students assigned, return empty list
-    if (studentIdSet.size === 0) {
-      return NextResponse.json([]);
-    }
-
-    const studentIds = Array.from(studentIdSet);
-
+    // Get all students (not just those assigned to classes)
+    // This allows teachers to see all students and assign them to classes
     const students = await User.find({
       role: 'student',
-      _id: { $in: studentIds }
+      isActive: true
     })
       .select('-password')
       .sort({ createdAt: -1 })
