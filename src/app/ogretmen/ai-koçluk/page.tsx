@@ -186,10 +186,10 @@ export default function AICoachingPage() {
       <div className="mb-6">
         <div className="flex space-x-1 bg-secondary-100 p-1 rounded-lg w-fit">
           {[
-            { key: 'all', label: 'Tümü', count: recommendations.length },
-            { key: 'pending', label: 'Bekleyen', count: recommendations.filter(r => r.status === 'pending').length },
-            { key: 'applied', label: 'Uygulanan', count: recommendations.filter(r => r.status === 'applied').length },
-            { key: 'dismissed', label: 'Reddedilen', count: recommendations.filter(r => r.status === 'dismissed').length },
+            { key: 'all', label: 'Tümü', count: (recommendations || []).length },
+            { key: 'pending', label: 'Bekleyen', count: (recommendations || []).filter(r => r.status === 'pending').length },
+            { key: 'applied', label: 'Uygulanan', count: (recommendations || []).filter(r => r.status === 'applied').length },
+            { key: 'dismissed', label: 'Reddedilen', count: (recommendations || []).filter(r => r.status === 'dismissed').length },
           ].map((filter) => (
             <button
               key={filter.key}

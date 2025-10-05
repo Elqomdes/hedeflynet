@@ -116,7 +116,7 @@ export default function AdaptiveLearningPage() {
     return filterMatch && subjectMatch;
   });
 
-  const subjects = [...new Set(modules?.map(m => m.subject) || [])];
+  const subjects = modules && modules.length > 0 ? [...new Set(modules.map(m => m.subject))] : [];
 
   if (loading) {
     return (
