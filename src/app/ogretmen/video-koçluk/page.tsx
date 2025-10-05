@@ -42,6 +42,13 @@ export default function VideoCoachingPage() {
   });
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    description: '',
+    scheduledFor: '',
+    duration: 60,
+    maxParticipants: 10
+  });
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'scheduled' | 'in_progress' | 'completed'>('all');
 
   const fetchVideoData = useCallback(async () => {
@@ -84,6 +91,36 @@ export default function VideoCoachingPage() {
       }
     } catch (error) {
       console.error('Join session error:', error);
+    }
+  };
+
+  const handleCreateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/teacher/video-coaching/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(createForm),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setShowCreateModal(false);
+          setCreateForm({
+            title: '',
+            description: '',
+            scheduledFor: '',
+            duration: 60,
+            maxParticipants: 10
+          });
+          fetchVideoData(); // Refresh data
+        }
+      }
+    } catch (error) {
+      console.error('Create session error:', error);
     }
   };
 
@@ -309,21 +346,27 @@ export default function VideoCoachingPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold text-secondary-900 mb-4">Yeni Video Oturumu</h3>
-            <form className="space-y-4">
+            <form onSubmit={handleCreateSession} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">Başlık</label>
                 <input
                   type="text"
+                  value={createForm.title}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, title: e.target.value }))}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Oturum başlığı"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">Açıklama</label>
                 <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, description: e.target.value }))}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   rows={3}
                   placeholder="Oturum açıklaması"
+                  required
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -331,15 +374,23 @@ export default function VideoCoachingPage() {
                   <label className="block text-sm font-medium text-secondary-700 mb-2">Tarih</label>
                   <input
                     type="datetime-local"
+                    value={createForm.scheduledFor}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, scheduledFor: e.target.value }))}
                     className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-2">Süre (dakika)</label>
                   <input
                     type="number"
+                    value={createForm.duration}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
                     className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="60"
+                    min="15"
+                    max="240"
+                    required
                   />
                 </div>
               </div>
@@ -347,8 +398,13 @@ export default function VideoCoachingPage() {
                 <label className="block text-sm font-medium text-secondary-700 mb-2">Maksimum Katılımcı</label>
                 <input
                   type="number"
+                  value={createForm.maxParticipants}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, maxParticipants: parseInt(e.target.value) }))}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="10"
+                  min="2"
+                  max="50"
+                  required
                 />
               </div>
               <div className="flex space-x-3 pt-4">

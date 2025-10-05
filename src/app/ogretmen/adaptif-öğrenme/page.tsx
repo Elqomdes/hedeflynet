@@ -50,6 +50,17 @@ export default function AdaptiveLearningPage() {
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'inactive' | 'adaptive'>('all');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    description: '',
+    subject: '',
+    level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
+    type: 'interactive' as 'video' | 'interactive' | 'assessment' | 'project',
+    estimatedTime: 60,
+    difficulty: 3,
+    isAdaptive: true
+  });
 
   const fetchAdaptiveData = useCallback(async () => {
     try {
@@ -105,6 +116,39 @@ export default function AdaptiveLearningPage() {
     ));
   };
 
+  const handleCreateModule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/teacher/adaptive-learning/modules', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(createForm),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setShowCreateModal(false);
+          setCreateForm({
+            title: '',
+            description: '',
+            subject: '',
+            level: 'beginner',
+            type: 'interactive',
+            estimatedTime: 60,
+            difficulty: 3,
+            isAdaptive: true
+          });
+          fetchAdaptiveData(); // Refresh data
+        }
+      }
+    } catch (error) {
+      console.error('Create module error:', error);
+    }
+  };
+
   const filteredModules = useMemo(() => {
     return (modules || []).filter(module => {
       const filterMatch = selectedFilter === 'all' || 
@@ -140,7 +184,10 @@ export default function AdaptiveLearningPage() {
               Kişiselleştirilmiş öğrenme modülleri ve adaptif içerik
             </p>
           </div>
-          <button className="btn-primary flex items-center space-x-2">
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="btn-primary flex items-center space-x-2"
+          >
             <Plus className="w-5 h-5" />
             <span>Yeni Modül</span>
           </button>
@@ -337,6 +384,144 @@ export default function AdaptiveLearningPage() {
           ))
         )}
       </div>
+
+      {/* Create Module Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-secondary-900 mb-4">Yeni Öğrenme Modülü</h3>
+            <form onSubmit={handleCreateModule} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Başlık</label>
+                <input
+                  type="text"
+                  value={createForm.title}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Modül başlığı"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Açıklama</label>
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  rows={3}
+                  placeholder="Modül açıklaması"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">Ders</label>
+                  <select
+                    value={createForm.subject}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, subject: e.target.value }))}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  >
+                    <option value="">Ders Seçin</option>
+                    <option value="Matematik">Matematik</option>
+                    <option value="Fizik">Fizik</option>
+                    <option value="Kimya">Kimya</option>
+                    <option value="Biyoloji">Biyoloji</option>
+                    <option value="Türkçe">Türkçe</option>
+                    <option value="Tarih">Tarih</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">Seviye</label>
+                  <select
+                    value={createForm.level}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, level: e.target.value as any }))}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  >
+                    <option value="beginner">Başlangıç</option>
+                    <option value="intermediate">Orta</option>
+                    <option value="advanced">İleri</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">Tür</label>
+                  <select
+                    value={createForm.type}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, type: e.target.value as any }))}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    required
+                  >
+                    <option value="video">Video</option>
+                    <option value="interactive">İnteraktif</option>
+                    <option value="assessment">Değerlendirme</option>
+                    <option value="project">Proje</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">Süre (dakika)</label>
+                  <input
+                    type="number"
+                    value={createForm.estimatedTime}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, estimatedTime: parseInt(e.target.value) }))}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    min="15"
+                    max="300"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Zorluk (1-5)</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="5"
+                  value={createForm.difficulty}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, difficulty: parseInt(e.target.value) }))}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-secondary-500 mt-1">
+                  <span>1</span>
+                  <span>2</span>
+                  <span>3</span>
+                  <span>4</span>
+                  <span>5</span>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isAdaptive"
+                  checked={createForm.isAdaptive}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, isAdaptive: e.target.checked }))}
+                  className="mr-2"
+                />
+                <label htmlFor="isAdaptive" className="text-sm text-secondary-700">
+                  Adaptif öğrenme modülü
+                </label>
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-2 border border-secondary-300 text-secondary-700 rounded-md hover:bg-secondary-50 transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                >
+                  Oluştur
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

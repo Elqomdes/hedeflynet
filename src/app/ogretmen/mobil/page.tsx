@@ -48,6 +48,13 @@ export default function MobilePage() {
   const [users, setUsers] = useState<MobileUser[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    body: '',
+    type: 'general' as 'general' | 'assignment' | 'goal' | 'achievement',
+    priority: 'normal' as 'high' | 'normal' | 'low'
+  });
 
   const fetchMobileData = useCallback(async () => {
     try {
@@ -97,6 +104,35 @@ export default function MobilePage() {
       case 'achievement': return <Shield className="w-4 h-4" />;
       case 'general': return <Settings className="w-4 h-4" />;
       default: return <Bell className="w-4 h-4" />;
+    }
+  };
+
+  const handleCreateNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/teacher/mobile/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(createForm),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setShowCreateModal(false);
+          setCreateForm({
+            title: '',
+            body: '',
+            type: 'general',
+            priority: 'normal'
+          });
+          fetchMobileData(); // Refresh data
+        }
+      }
+    } catch (error) {
+      console.error('Create notification error:', error);
     }
   };
 

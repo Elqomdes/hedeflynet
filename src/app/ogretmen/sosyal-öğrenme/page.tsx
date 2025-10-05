@@ -50,6 +50,13 @@ export default function SocialLearningPage() {
   });
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'question' | 'discussion' | 'resource' | 'announcement'>('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    content: '',
+    type: 'question' as 'question' | 'discussion' | 'resource' | 'announcement',
+    tags: ''
+  });
 
   const fetchSocialData = useCallback(async () => {
     try {
@@ -111,6 +118,38 @@ export default function SocialLearningPage() {
       case 'resource': return 'Kaynak';
       case 'announcement': return 'Duyuru';
       default: return 'Gönderi';
+    }
+  };
+
+  const handleCreatePost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/teacher/social-learning/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...createForm,
+          tags: createForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setShowCreateModal(false);
+          setCreateForm({
+            title: '',
+            content: '',
+            type: 'question',
+            tags: ''
+          });
+          fetchSocialData(); // Refresh data
+        }
+      }
+    } catch (error) {
+      console.error('Create post error:', error);
     }
   };
 
@@ -194,7 +233,10 @@ export default function SocialLearningPage() {
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-secondary-900">Topluluk Gönderileri</h2>
-            <button className="btn-primary flex items-center space-x-2">
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              className="btn-primary flex items-center space-x-2"
+            >
               <Plus className="w-4 h-4" />
               <span>Yeni Gönderi</span>
             </button>
@@ -325,6 +367,78 @@ export default function SocialLearningPage() {
           </div>
         </div>
       </div>
+
+      {/* Create Post Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-secondary-900 mb-4">Yeni Gönderi</h3>
+            <form onSubmit={handleCreatePost} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Başlık</label>
+                <input
+                  type="text"
+                  value={createForm.title}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Gönderi başlığı"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Tür</label>
+                <select
+                  value={createForm.type}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, type: e.target.value as any }))}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
+                >
+                  <option value="question">Soru</option>
+                  <option value="discussion">Tartışma</option>
+                  <option value="resource">Kaynak</option>
+                  <option value="announcement">Duyuru</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">İçerik</label>
+                <textarea
+                  value={createForm.content}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, content: e.target.value }))}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  rows={4}
+                  placeholder="Gönderi içeriği"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Etiketler (virgülle ayırın)</label>
+                <input
+                  type="text"
+                  value={createForm.tags}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, tags: e.target.value }))}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="matematik, geometri, soru"
+                />
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-2 border border-secondary-300 text-secondary-700 rounded-md hover:bg-secondary-50 transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                >
+                  Paylaş
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
