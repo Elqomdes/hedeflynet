@@ -114,7 +114,7 @@ export default function SocialLearningPage() {
     }
   };
 
-  const filteredPosts = posts.filter(post => {
+  const filteredPosts = (posts || []).filter(post => {
     if (selectedFilter === 'all') return true;
     return post.type === selectedFilter;
   });
@@ -296,7 +296,7 @@ export default function SocialLearningPage() {
                 <p className="text-secondary-600 text-sm">İlk çalışma grubunu oluşturun.</p>
               </div>
             ) : (
-              groups.map((group, index) => (
+              (groups || []).map((group, index) => (
                 <div key={group.id} className="card card-hover animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-3">

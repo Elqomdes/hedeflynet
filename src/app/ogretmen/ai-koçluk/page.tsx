@@ -109,7 +109,7 @@ export default function AICoachingPage() {
     }
   };
 
-  const filteredRecommendations = recommendations.filter(rec => {
+  const filteredRecommendations = (recommendations || []).filter(rec => {
     if (selectedFilter === 'all') return true;
     return rec.status === selectedFilter;
   });

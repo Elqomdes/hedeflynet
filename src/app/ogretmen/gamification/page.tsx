@@ -178,7 +178,7 @@ export default function GamificationPage() {
             </h3>
           </div>
           <div className="space-y-4">
-            {leaderboard.slice(0, 10).map((entry, index) => (
+            {(leaderboard || []).slice(0, 10).map((entry, index) => (
               <div key={entry.studentId} className="flex items-center justify-between p-3 bg-secondary-50 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -232,7 +232,7 @@ export default function GamificationPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {badges.map((badge, index) => (
+          {(badges || []).map((badge, index) => (
             <div key={badge.id} className="card card-hover animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
               <div className="p-6 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">

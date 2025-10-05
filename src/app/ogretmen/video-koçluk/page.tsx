@@ -107,7 +107,7 @@ export default function VideoCoachingPage() {
     }
   };
 
-  const filteredSessions = sessions.filter(session => {
+  const filteredSessions = (sessions || []).filter(session => {
     if (selectedFilter === 'all') return true;
     return session.status === selectedFilter;
   });
@@ -195,10 +195,10 @@ export default function VideoCoachingPage() {
       <div className="mb-6">
         <div className="flex space-x-1 bg-secondary-100 p-1 rounded-lg w-fit">
           {[
-            { key: 'all', label: 'Tümü', count: sessions.length },
-            { key: 'scheduled', label: 'Planlanan', count: sessions.filter(s => s.status === 'scheduled').length },
-            { key: 'in_progress', label: 'Devam Eden', count: sessions.filter(s => s.status === 'in_progress').length },
-            { key: 'completed', label: 'Tamamlanan', count: sessions.filter(s => s.status === 'completed').length },
+            { key: 'all', label: 'Tümü', count: (sessions || []).length },
+            { key: 'scheduled', label: 'Planlanan', count: (sessions || []).filter(s => s.status === 'scheduled').length },
+            { key: 'in_progress', label: 'Devam Eden', count: (sessions || []).filter(s => s.status === 'in_progress').length },
+            { key: 'completed', label: 'Tamamlanan', count: (sessions || []).filter(s => s.status === 'completed').length },
           ].map((filter) => (
             <button
               key={filter.key}

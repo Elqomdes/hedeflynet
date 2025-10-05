@@ -105,7 +105,7 @@ export default function AdaptiveLearningPage() {
     ));
   };
 
-  const filteredModules = modules.filter(module => {
+  const filteredModules = (modules || []).filter(module => {
     const filterMatch = selectedFilter === 'all' || 
       (selectedFilter === 'active' && module.isActive) ||
       (selectedFilter === 'inactive' && !module.isActive) ||
@@ -116,7 +116,7 @@ export default function AdaptiveLearningPage() {
     return filterMatch && subjectMatch;
   });
 
-  const subjects = [...new Set(modules.map(m => m.subject))];
+  const subjects = [...new Set(modules?.map(m => m.subject) || [])];
 
   if (loading) {
     return (
