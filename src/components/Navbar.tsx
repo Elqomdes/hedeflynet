@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, User, LogOut } from 'lucide-react';
+import { useDataFetching } from '@/hooks/useDataFetching';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,77 +19,35 @@ export default function Navbar() {
     phone?: string;
   }
 
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include', // Ensure cookies are sent
-          headers: {
-            'Cache-Control': 'no-cache',
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (isMounted && data.user) {
-            setUser(data.user);
-          }
-        } else {
-          // Clear user state on auth failure
-          if (isMounted) {
-            setUser(null);
-          }
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        if (isMounted) {
-          setUser(null);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
+  // Use optimized data fetching for auth with periodic refresh
+  const { 
+    data: authData, 
+    loading, 
+    error: authError 
+  } = useDataFetching<{ user: User }>('/api/auth/me', {
+    enabled: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    cacheTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+  });
 
-    checkAuth();
-
-    // Refresh auth state every 5 minutes
-    const interval = setInterval(() => {
-      if (isMounted) {
-        checkAuth();
-      }
-    }, 5 * 60 * 1000);
-
-    // Cleanup function
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, []);
+  const user = authData?.user || null;
 
   const handleLogout = async () => {
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST' });
       if (response.ok) {
-        setUser(null);
         router.push('/');
       } else {
         console.error('Logout failed:', await response.text());
         // Force logout even if API fails
-        setUser(null);
         router.push('/');
       }
     } catch (error) {
       console.error('Logout failed:', error);
       // Force logout even if API fails
-      setUser(null);
       router.push('/');
     }
   };

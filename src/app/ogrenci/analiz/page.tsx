@@ -204,30 +204,56 @@ export default function StudentAnalysisPage() {
             Başlığa Göre Ödev Dağılımı
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={(analysisData.assignmentTitleCounts || []).map(i => ({ 
-                  title: i.title.length > 20 ? i.title.slice(0, 20) + '…' : i.title, 
-                  count: i.count 
-                }))}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="title" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  interval={0}
-                />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
-                  labelFormatter={(label) => `Başlık: ${label}`}
-                />
-                <Bar dataKey="count" fill="#3B82F6" name="Ödev Adedi" />
-              </BarChart>
-            </ResponsiveContainer>
+            {analysisData.assignmentTitleCounts && analysisData.assignmentTitleCounts.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={analysisData.assignmentTitleCounts.map((item, index) => ({ 
+                    title: item.title.length > 15 ? item.title.slice(0, 15) + '...' : item.title, 
+                    fullTitle: item.title,
+                    count: item.count,
+                    index: index
+                  }))}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="title" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                    interval={0}
+                    fontSize={12}
+                  />
+                  <YAxis />
+                  <Tooltip 
+                    formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
+                    labelFormatter={(label, payload) => {
+                      if (payload && payload[0] && payload[0].payload) {
+                        return `Başlık: ${payload[0].payload.fullTitle}`;
+                      }
+                      return `Başlık: ${label}`;
+                    }}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#3B82F6" name="Ödev Adedi" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <FileText className="mx-auto h-12 w-12 text-secondary-400 mb-4" />
+                  <h3 className="text-sm font-medium text-secondary-900 mb-2">Veri Bulunamadı</h3>
+                  <p className="text-sm text-secondary-500">
+                    Ödev başlığı verisi mevcut değil.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

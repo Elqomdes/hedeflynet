@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -19,12 +20,12 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   );
 
   return (
-    <>
+    <ErrorBoundary>
       {!isDashboardPage && <Navbar />}
       <main className={isDashboardPage ? "" : "min-h-screen"}>
         {children}
       </main>
       {!isDashboardPage && <Footer />}
-    </>
+    </ErrorBoundary>
   );
 }

@@ -81,9 +81,10 @@ export default function StudentAnalysisPage() {
     
     setGeneratingReport(true);
     try {
-      console.log('Generating report for student:', studentId);
+      console.log('Generating reliable report for student:', studentId);
       
-      const response = await fetch(`/api/teacher/students/${studentId}/report?format=pdf`, {
+      // Try new reliable API first
+      let response = await fetch(`/api/teacher/students/${studentId}/report/reliable`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +95,24 @@ export default function StudentAnalysisPage() {
         }),
       });
 
-      console.log('Report response status:', response.status);
+      console.log('Reliable report response status:', response.status);
+      
+      if (!response.ok) {
+        // If reliable API fails, try fallback
+        console.log('Reliable API failed, trying fallback API');
+        response = await fetch(`/api/teacher/students/${studentId}/report?format=pdf`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+            endDate: new Date().toISOString()
+          }),
+        });
+        console.log('Fallback report response status:', response.status);
+      }
+      
       const contentType = response.headers.get('content-type') || '';
       
       if (response.ok) {
@@ -156,14 +174,7 @@ export default function StudentAnalysisPage() {
         } else if (errorMessage.includes('Geçersiz')) {
           alert('Geçersiz öğrenci ID. Lütfen sayfayı yenileyin.');
         } else if (errorMessage.includes('PDF oluşturulamadı')) {
-          // Try to open the report in browser instead
-          const data = await response.json().catch(() => ({}));
-          if (data.url) {
-            window.open(`${window.location.origin}${data.url}`, '_blank');
-            alert('PDF oluşturulamadı, rapor tarayıcıda açılıyor.');
-          } else {
-            alert('PDF oluşturulamadı. Lütfen daha sonra tekrar deneyin.');
-          }
+          alert('PDF oluşturulamadı. Lütfen daha sonra tekrar deneyin.');
         } else {
           const finalMessage = details ? `${errorMessage}\n\nDetay: ${details}` : errorMessage;
           alert(`Rapor oluşturulurken hata oluştu:\n\n${finalMessage}`);
@@ -351,30 +362,56 @@ export default function StudentAnalysisPage() {
             Başlığa Göre Ödev Dağılımı
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={(analysisData.assignmentTitleCounts || []).map(i => ({ 
-                  title: i.title.length > 20 ? i.title.slice(0, 20) + '…' : i.title, 
-                  count: i.count 
-                }))}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="title" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  interval={0}
-                />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
-                  labelFormatter={(label) => `Başlık: ${label}`}
-                />
-                <Bar dataKey="count" fill="#3B82F6" name="Ödev Adedi" />
-              </BarChart>
-            </ResponsiveContainer>
+            {analysisData.assignmentTitleCounts && analysisData.assignmentTitleCounts.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={analysisData.assignmentTitleCounts.map((item, index) => ({ 
+                    title: item.title.length > 15 ? item.title.slice(0, 15) + '...' : item.title, 
+                    fullTitle: item.title,
+                    count: item.count,
+                    index: index
+                  }))}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="title" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                    interval={0}
+                    fontSize={12}
+                  />
+                  <YAxis />
+                  <Tooltip 
+                    formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
+                    labelFormatter={(label, payload) => {
+                      if (payload && payload[0] && payload[0].payload) {
+                        return `Başlık: ${payload[0].payload.fullTitle}`;
+                      }
+                      return `Başlık: ${label}`;
+                    }}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#3B82F6" name="Ödev Adedi" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <FileText className="mx-auto h-12 w-12 text-secondary-400 mb-4" />
+                  <h3 className="text-sm font-medium text-secondary-900 mb-2">Veri Bulunamadı</h3>
+                  <p className="text-sm text-secondary-500">
+                    Bu öğrenci için ödev başlığı verisi mevcut değil.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

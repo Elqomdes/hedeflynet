@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User, Class } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import { apiCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,11 +16,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const teacherId = authResult._id;
+    const cacheKey = apiCache.generateKey('teacher-students', { teacherId });
+
+    // Check cache first
+    const cached = apiCache.get(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     await connectDB();
 
     // Get teacher's classes to find their students
-    const teacherId = authResult._id;
-
     const classes = await Class.find({
       $or: [
         { teacherId },
@@ -38,7 +46,9 @@ export async function GET(request: NextRequest) {
 
     // If no students assigned to teacher's classes, return empty list
     if (studentIdSet.size === 0) {
-      return NextResponse.json([]);
+      const emptyResult: any[] = [];
+      apiCache.set(cacheKey, emptyResult, 2 * 60 * 1000); // Cache for 2 minutes
+      return NextResponse.json(emptyResult);
     }
 
     const studentIds = Array.from(studentIdSet);
@@ -51,6 +61,9 @@ export async function GET(request: NextRequest) {
       .select('-password')
       .sort({ createdAt: -1 })
       .lean();
+
+    // Cache the result for 2 minutes
+    apiCache.set(cacheKey, students, 2 * 60 * 1000);
 
     return NextResponse.json(students);
   } catch (error) {

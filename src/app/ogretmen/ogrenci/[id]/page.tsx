@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { User, FileText, Target, BarChart3, Mail, Phone, Calendar, Download } from 'lucide-react';
 import Link from 'next/link';
+import { useDataFetching } from '@/hooks/useDataFetching';
+import LoadingSpinner, { CardSkeleton } from '@/components/LoadingSpinner';
+import { apiClient } from '@/lib/apiClient';
 
 interface Student {
   _id: string;
@@ -27,65 +30,57 @@ export default function StudentDetailPage() {
   const params = useParams();
   const studentId = params.id as string;
   
-  const [student, setStudent] = useState<Student | null>(null);
-  const [stats, setStats] = useState<StudentStats | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [reports, setReports] = useState<{ _id: string; title: string; createdAt: string; isPublic: boolean }[]>([]);
 
-  const fetchStudentData = useCallback(async () => {
-    try {
-      const [studentResponse, statsResponse, reportsResponse] = await Promise.all([
-        fetch(`/api/teacher/students/${studentId}`),
-        fetch(`/api/teacher/students/${studentId}/stats`),
-        fetch(`/api/teacher/students/${studentId}/report`)
-      ]);
+  // Use optimized data fetching hooks
+  const { 
+    data: student, 
+    loading: studentLoading, 
+    error: studentError,
+    refetch: refetchStudent 
+  } = useDataFetching<Student>(`/api/teacher/students/${studentId}`, {
+    enabled: !!studentId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
 
-      if (studentResponse.ok) {
-        const studentData = await studentResponse.json();
-        setStudent(studentData);
-      }
+  const { 
+    data: stats, 
+    loading: statsLoading, 
+    error: statsError,
+    refetch: refetchStats 
+  } = useDataFetching<StudentStats>(`/api/teacher/students/${studentId}/stats`, {
+    enabled: !!studentId,
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
 
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
-        setStats(statsData);
-      }
+  const { 
+    data: reports, 
+    loading: reportsLoading, 
+    error: reportsError,
+    refetch: refetchReports 
+  } = useDataFetching<{ _id: string; title: string; createdAt: string; isPublic: boolean }[]>(`/api/teacher/students/${studentId}/report`, {
+    enabled: !!studentId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-      if (reportsResponse.ok) {
-        const list = await reportsResponse.json();
-        setReports(list);
-      }
-    } catch (error) {
-      console.error('Student data fetch error:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [studentId]);
+  const loading = studentLoading || statsLoading || reportsLoading;
+  const error = studentError || statsError || reportsError;
 
-  useEffect(() => {
-    if (studentId) {
-      fetchStudentData();
-    }
-  }, [studentId, fetchStudentData]);
+  const refetchAll = useCallback(async () => {
+    await Promise.all([refetchStudent(), refetchStats(), refetchReports()]);
+  }, [refetchStudent, refetchStats, refetchReports]);
 
   const handleGenerateReport = async () => {
     if (!studentId) return;
     try {
       setIsGenerating(true);
       // Send minimal data; API fills defaults
-      const res = await fetch(`/api/teacher/students/${studentId}/report`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({})
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Rapor oluşturma başarısız');
+      const res = await apiClient.post(`/api/teacher/students/${studentId}/report`, {});
+      if (res) {
+        // Refresh reports list
+        await refetchReports();
+        alert('Rapor oluşturuldu');
       }
-      // Refresh list
-      await fetchStudentData();
-      alert('Rapor oluşturuldu');
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : 'Hata');
@@ -97,12 +92,27 @@ export default function StudentDetailPage() {
   const handleDownloadPdf = async () => {
     if (!studentId) return;
     try {
-      const res = await fetch(`/api/teacher/students/${studentId}/report?format=pdf`, {
+      // Try new reliable API first
+      let res = await fetch(`/api/teacher/students/${studentId}/report/reliable`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({})
+        body: JSON.stringify({
+          startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(), // Son 3 ay
+          endDate: new Date().toISOString()
+        })
       });
+      
+      if (!res.ok) {
+        // If reliable API fails, try fallback
+        console.log('Reliable API failed, trying fallback API');
+        res = await fetch(`/api/teacher/students/${studentId}/report?format=pdf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({})
+        });
+      }
       
       const contentType = res.headers.get('content-type') || '';
       
@@ -116,7 +126,7 @@ export default function StudentDetailPage() {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${student?.firstName || 'ogrenci'}_${student?.lastName || 'raporu'}.pdf`;
+          a.download = `${student?.firstName || 'ogrenci'}_${student?.lastName || 'raporu'}_${new Date().toISOString().split('T')[0]}.pdf`;
           document.body.appendChild(a);
           a.click();
           window.URL.revokeObjectURL(url);
@@ -145,8 +155,45 @@ export default function StudentDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 bg-secondary-200 rounded w-64 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-secondary-200 rounded w-48 animate-pulse"></div>
+          </div>
+          <div className="h-10 bg-secondary-200 rounded w-32 animate-pulse"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <CardSkeleton />
+          </div>
+          <CardSkeleton />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <User className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-sm font-medium text-secondary-900">Veri yüklenirken hata oluştu</h3>
+        <p className="mt-1 text-sm text-secondary-500">
+          {error}
+        </p>
+        <button 
+          onClick={refetchAll}
+          className="mt-4 btn-primary"
+        >
+          Tekrar Dene
+        </button>
       </div>
     );
   }
@@ -347,10 +394,10 @@ export default function StudentDetailPage() {
             </button>
           </div>
           <div className="space-y-2">
-            {reports.length === 0 && (
+            {(!reports || reports.length === 0) && (
               <p className="text-sm text-secondary-600">Henüz rapor yok</p>
             )}
-            {reports.map((r) => (
+            {reports && reports.map((r) => (
               <div key={r._id} className="flex items-center justify-between">
                 <Link href={`/rapor/${r._id}`} className="text-primary-600 hover:text-primary-800 text-sm">
                   {r.title}

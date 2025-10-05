@@ -6,11 +6,28 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ['mongoose'],
+    optimizePackageImports: ['lucide-react'],
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals.push('mongoose');
     }
+    
+    // Optimize bundle size
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
+      },
+    };
+    
     return config;
   },
   typescript: {
@@ -21,10 +38,17 @@ const nextConfig = {
   },
   compress: true,
   poweredByHeader: false,
-  generateEtags: false,
+  generateEtags: true,
   httpAgentOptions: {
     keepAlive: true,
   },
+  // Performance optimizations
+  swcMinify: true,
+  reactStrictMode: true,
+  // Enable static optimization where possible
+  trailingSlash: false,
+  // Optimize fonts
+  optimizeFonts: true,
 }
 
 module.exports = nextConfig

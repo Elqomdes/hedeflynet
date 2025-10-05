@@ -174,6 +174,14 @@ export async function GET(request: NextRequest) {
       { $limit: 10 }
     ]);
 
+    // Ensure we have valid title data
+    const assignmentTitleCounts = titleGroups
+      .filter(item => item._id && item._id.trim().length > 0)
+      .map(item => ({ 
+        title: item._id.trim(), 
+        count: item.count 
+      }));
+
     return NextResponse.json({
       assignmentCompletion,
       submittedAssignments,
@@ -184,7 +192,7 @@ export async function GET(request: NextRequest) {
       goalsProgress,
       overallPerformance,
       monthlyProgress,
-      assignmentTitleCounts: titleGroups.map(t => ({ title: t._id, count: t.count }))
+      assignmentTitleCounts
     });
   } catch (error) {
     console.error('Student analysis error:', error);

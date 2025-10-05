@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, Users, Target, BarChart3, BookOpen, CheckCircle } from 'lucide-react';
+import { useDataFetching } from '@/hooks/useDataFetching';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface User {
   id: string;
@@ -16,59 +18,27 @@ interface User {
 }
 
 export default function HomePage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        console.log('Checking auth...');
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include',
-          headers: {
-            'Cache-Control': 'no-cache',
-          }
-        });
+  // Use optimized data fetching for auth
+  const { 
+    data: authData, 
+    loading, 
+    error: authError 
+  } = useDataFetching<{ user: User }>('/api/auth/me', {
+    enabled: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    cacheTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-        console.log('Auth response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Auth data:', data);
-          
-          if (data.user) {
-            setUser(data.user);
-            console.log('User found, staying on homepage');
-          } else {
-            console.log('No user data found');
-            setUser(null);
-          }
-        } else {
-          console.log('Auth failed, user not logged in');
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setUser(null);
-      } finally {
-        console.log('Setting loading to false');
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
+  const user = authData?.user || null;
 
 
   // Show loading spinner while checking auth
   if (loading) {
     return (
       <div className="min-h-screen bg-secondary-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-secondary-600">Yükleniyor...</p>
-        </div>
+        <LoadingSpinner size="lg" text="Yükleniyor..." />
       </div>
     );
   }
