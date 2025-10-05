@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Mock create result (real impl would store in DB)
-    const module = {
+    const createdModule = {
       id: `module_${Date.now()}`,
       title,
       description,
@@ -229,7 +229,7 @@ export async function POST(request: NextRequest) {
       console.error('Mobile notification on create module error:', e);
     }
 
-    return NextResponse.json({ success: true, data: module });
+    return NextResponse.json({ success: true, data: createdModule });
   } catch (error) {
     console.error('Create adaptive module error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
