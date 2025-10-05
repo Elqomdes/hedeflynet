@@ -197,7 +197,7 @@ export class AdaptiveLearningService {
         performanceMetrics: profile.performanceMetrics
       },
       recommendations: recommendations.map(rec => ({
-        id: rec._id.toString(),
+        id: (rec._id as any).toString(),
         type: rec.type,
         title: rec.title,
         description: rec.description,

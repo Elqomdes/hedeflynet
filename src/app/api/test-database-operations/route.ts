@@ -18,7 +18,14 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    const results = {
+    const results: {
+      connection: string;
+      userOperations: any;
+      classOperations: any;
+      assignmentOperations: any;
+      errors: string[];
+      recentUsers?: any[];
+    } = {
       connection: 'success',
       userOperations: {},
       classOperations: {},

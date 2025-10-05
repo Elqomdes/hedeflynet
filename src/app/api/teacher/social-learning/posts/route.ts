@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
       title,
       content,
       author: `${user.firstName || 'Öğretmen'} ${user.lastName || ''}`.trim(),
-      authorId: user._id.toString(),
+      authorId: (user._id as any).toString(),
       type,
       subject: 'Genel',
       likes: 0,
@@ -182,14 +182,14 @@ export async function POST(request: NextRequest) {
     // Cross-feature integrations (non-blocking)
     try {
       const gamification = GamificationService.getInstance();
-      await gamification.addExperience(user._id.toString(), 5, 'social_post');
+      await gamification.addExperience((user._id as any).toString(), 5, 'social_post');
     } catch (e) {
       console.error('Gamification on create_post error:', e);
     }
 
     try {
       const mobile = MobileService.getInstance();
-      await mobile.sendPushNotification(user._id.toString(), {
+      await mobile.sendPushNotification((user._id as any).toString(), {
         title: 'Gönderiniz Yayınlandı',
         body: 'Toplulukta yeni gönderiniz başarıyla paylaşıldı.',
         data: { type: 'social_post' },

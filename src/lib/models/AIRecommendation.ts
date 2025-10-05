@@ -34,13 +34,11 @@ const AIRecommendationSchema = new Schema<IAIRecommendation>({
   studentId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   teacherId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
-    index: true
+    ref: 'User'
   },
   type: {
     type: String,
@@ -69,8 +67,7 @@ const AIRecommendationSchema = new Schema<IAIRecommendation>({
     type: String,
     enum: ['pending', 'applied', 'dismissed'],
     required: true,
-    default: 'pending',
-    index: true
+    default: 'pending'
   },
   category: {
     type: String,

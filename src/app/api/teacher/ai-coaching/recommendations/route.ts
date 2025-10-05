@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const formattedRecommendations = recommendations
       .filter(rec => rec.studentId && rec.studentId._id) // Null check
       .map(rec => ({
-        id: rec._id.toString(),
+        id: (rec._id as any).toString(),
         studentId: rec.studentId._id.toString(),
         studentName: `${rec.studentId.firstName || 'Bilinmeyen'} ${rec.studentId.lastName || 'Öğrenci'}`,
         type: rec.type,
