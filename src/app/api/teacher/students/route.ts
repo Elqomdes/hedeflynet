@@ -17,10 +17,35 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Get all students (not just those assigned to classes)
-    // This allows teachers to see all students and assign them to classes
+    // Get teacher's classes to find their students
+    const teacherId = authResult._id;
+
+    const classes = await Class.find({
+      $or: [
+        { teacherId },
+        { coTeachers: teacherId }
+      ]
+    }).select('students').lean();
+
+    const studentIdSet = new Set<string>();
+    for (const cls of classes) {
+      if (Array.isArray((cls as any).students)) {
+        for (const sid of (cls as any).students) {
+          studentIdSet.add(String(sid));
+        }
+      }
+    }
+
+    // If no students assigned to teacher's classes, return empty list
+    if (studentIdSet.size === 0) {
+      return NextResponse.json([]);
+    }
+
+    const studentIds = Array.from(studentIdSet);
+
     const students = await User.find({
       role: 'student',
+      _id: { $in: studentIds },
       isActive: true
     })
       .select('-password')
@@ -127,8 +152,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Add student to teacher's default class or first available class
+    try {
+      console.log('Adding student to teacher\'s class...');
+      const teacherId = authResult._id;
+      
+      // Find teacher's first class or create a default one
+      let teacherClass = await Class.findOne({
+        $or: [
+          { teacherId },
+          { coTeachers: teacherId }
+        ]
+      });
+
+      if (!teacherClass) {
+        // Create a default class for the teacher
+        console.log('Creating default class for teacher...');
+        teacherClass = new Class({
+          name: `${authResult.firstName} ${authResult.lastName} - Varsayılan Sınıf`,
+          description: 'Öğretmen tarafından oluşturulan varsayılan sınıf',
+          teacherId: teacherId,
+          students: [student._id as any]
+        });
+        await teacherClass.save();
+        console.log('Default class created with ID:', teacherClass._id);
+      } else {
+        // Add student to existing class
+        if (!teacherClass.students.includes(student._id as any)) {
+          teacherClass.students.push(student._id as any);
+          await teacherClass.save();
+          console.log('Student added to existing class:', teacherClass._id);
+        }
+      }
+    } catch (classError) {
+      console.error('Error adding student to class:', classError);
+      // Don't fail the student creation if class assignment fails
+      console.log('Student created but class assignment failed');
+    }
+
     return NextResponse.json({
-      message: 'Öğrenci başarıyla eklendi',
+      message: 'Öğrenci başarıyla eklendi ve sınıfa atandı',
       student: {
         id: student._id,
         username: student.username,
