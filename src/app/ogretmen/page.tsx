@@ -50,31 +50,43 @@ export default function TeacherDashboard() {
       name: 'Toplam Öğrenci',
       value: stats.totalStudents,
       icon: Users,
-      color: 'bg-blue-500',
-      href: '/ogretmen/ogrenciler'
+      color: 'from-blue-500 to-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      href: '/ogretmen/ogrenciler',
+      description: 'Kayıtlı öğrenci sayısı'
     },
     {
       name: 'Toplam Sınıf',
       value: stats.totalClasses,
       icon: BookOpen,
-      color: 'bg-green-500',
-      href: '/ogretmen/siniflar'
+      color: 'from-green-500 to-green-600',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200',
+      href: '/ogretmen/siniflar',
+      description: 'Aktif sınıf sayısı'
     },
     {
       name: 'Toplam Ödev',
       value: stats.totalAssignments,
       icon: FileText,
-      color: 'bg-yellow-500',
+      color: 'from-yellow-500 to-yellow-600',
+      bgColor: 'bg-yellow-50',
+      borderColor: 'border-yellow-200',
       href: '/ogretmen/odevler',
-      subtitle: `${stats.submittedAssignments} teslim edildi`
+      subtitle: `${stats.submittedAssignments} teslim edildi`,
+      description: 'Oluşturulan ödev sayısı'
     },
     {
       name: 'Değerlendirme Oranı',
       value: `%${stats.gradingRate}`,
       icon: CheckCircle,
-      color: 'bg-purple-500',
+      color: 'from-purple-500 to-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-200',
       href: '/ogretmen/odevler',
-      subtitle: `${stats.gradedAssignments} değerlendirildi`
+      subtitle: `${stats.gradedAssignments} değerlendirildi`,
+      description: 'Tamamlanan değerlendirme oranı'
     }
   ];
 
@@ -88,116 +100,178 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {statCards.map((stat, index) => (
-          <Link key={stat.name} href={stat.href} className="card card-hover group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
-            <div className="flex items-center">
-              <div className={`p-4 rounded-2xl ${stat.color} shadow-lg group-hover:shadow-glow transition-all duration-300`}>
-                <stat.icon className="h-8 w-8 text-white" />
+          <Link key={stat.name} href={stat.href} className="group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
+            <div className={`relative overflow-hidden rounded-2xl ${stat.bgColor} border ${stat.borderColor} p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:border-opacity-50`}>
+              <div className="flex items-center justify-between mb-4">
+                <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:shadow-glow transition-all duration-300`}>
+                  <stat.icon className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-secondary-900 group-hover:text-primary-600 transition-colors duration-300">
+                    {stat.value}
+                  </p>
+                  {stat.subtitle && (
+                    <p className="text-sm text-secondary-500 mt-1">{stat.subtitle}</p>
+                  )}
+                </div>
               </div>
-              <div className="ml-6">
-                <p className="text-sm font-semibold text-secondary-600 mb-1">{stat.name}</p>
-                <p className="text-3xl font-bold text-secondary-900 mb-1">{stat.value}</p>
-                {stat.subtitle && (
-                  <p className="text-sm text-secondary-500">{stat.subtitle}</p>
-                )}
+              <div>
+                <h3 className="text-lg font-semibold text-secondary-900 mb-1 group-hover:text-primary-600 transition-colors duration-300">
+                  {stat.name}
+                </h3>
+                <p className="text-sm text-secondary-600">{stat.description}</p>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"></div>
             </div>
           </Link>
         ))}
       </div>
 
       {/* Assignment Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-        <div className="card card-hover animate-slide-up">
-          <div className="card-header">
-            <h3 className="card-title">
-              Ödev Durumu
-            </h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-slide-up">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-secondary-900">Ödev Durumu</h3>
+            <div className="p-2 bg-primary-50 rounded-lg">
+              <FileText className="h-5 w-5 text-primary-600" />
+            </div>
           </div>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-warning-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-warning-50 to-warning-100 rounded-xl border border-warning-200 hover:shadow-md transition-all duration-300">
               <div className="flex items-center">
-                <Clock className="h-6 w-6 text-warning-600 mr-3" />
-                <span className="text-secondary-700 font-medium">Bekleyen Değerlendirme</span>
+                <div className="p-2 bg-warning-500 rounded-lg mr-3">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-secondary-700 font-semibold">Bekleyen Değerlendirme</span>
+                  <p className="text-sm text-secondary-500">Değerlendirme bekleyen ödevler</p>
+                </div>
               </div>
               <span className="text-2xl font-bold text-warning-600">{stats.pendingGrading}</span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-success-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-success-50 to-success-100 rounded-xl border border-success-200 hover:shadow-md transition-all duration-300">
               <div className="flex items-center">
-                <CheckCircle className="h-6 w-6 text-success-600 mr-3" />
-                <span className="text-secondary-700 font-medium">Değerlendirildi</span>
+                <div className="p-2 bg-success-500 rounded-lg mr-3">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-secondary-700 font-semibold">Değerlendirildi</span>
+                  <p className="text-sm text-secondary-500">Tamamlanan değerlendirmeler</p>
+                </div>
               </div>
               <span className="text-2xl font-bold text-success-600">{stats.gradedAssignments}</span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-primary-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border border-primary-200 hover:shadow-md transition-all duration-300">
               <div className="flex items-center">
-                <FileText className="h-6 w-6 text-primary-600 mr-3" />
-                <span className="text-secondary-700 font-medium">Toplam Teslim</span>
+                <div className="p-2 bg-primary-500 rounded-lg mr-3">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-secondary-700 font-semibold">Toplam Teslim</span>
+                  <p className="text-sm text-secondary-500">Teslim edilen ödevler</p>
+                </div>
               </div>
               <span className="text-2xl font-bold text-primary-600">{stats.submittedAssignments}</span>
             </div>
           </div>
         </div>
 
-        <div className="card card-hover animate-slide-up" style={{animationDelay: '0.1s'}}>
-          <div className="card-header">
-            <h3 className="card-title">
-              Değerlendirme İlerlemesi
-            </h3>
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.1s'}}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-secondary-900">Değerlendirme İlerlemesi</h3>
+            <div className="p-2 bg-success-50 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-success-600" />
+            </div>
           </div>
-          <div className="flex items-center">
-            <div className="flex-1">
-              <div className="flex justify-between text-sm text-secondary-600 mb-3">
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary-600 mb-2">%{stats.gradingRate}</div>
+              <p className="text-secondary-600">Tamamlanan Değerlendirme</p>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm text-secondary-600">
                 <span>Değerlendirilen</span>
                 <span className="font-semibold">{stats.gradedAssignments}/{stats.submittedAssignments}</span>
               </div>
-              <div className="progress-bar">
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div 
-                  className="progress-fill progress-primary"
+                  className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000 ease-out"
                   style={{ width: `${stats.gradingRate}%` }}
                 ></div>
               </div>
-              <p className="text-sm text-secondary-600 mt-3">
-                %{stats.gradingRate} tamamlandı
-              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-success-600">{stats.gradedAssignments}</div>
+                <p className="text-sm text-secondary-500">Tamamlandı</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-warning-600">{stats.pendingGrading}</div>
+                <p className="text-sm text-secondary-500">Bekliyor</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="card card-hover animate-slide-up" style={{animationDelay: '0.2s'}}>
-          <div className="card-header">
-            <h3 className="card-title">
-              Hızlı Erişim
-            </h3>
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.2s'}}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-secondary-900">Hızlı Erişim</h3>
+            <div className="p-2 bg-primary-50 rounded-lg">
+              <BarChart3 className="h-5 w-5 text-primary-600" />
+            </div>
           </div>
           <div className="space-y-4">
             <Link
               href="/ogretmen/odevler"
-              className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 group"
+              className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 hover:shadow-md transition-all duration-300 group"
             >
-              <div className="p-3 bg-primary-500 rounded-xl group-hover:bg-primary-600 transition-colors duration-300">
+              <div className="p-3 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl group-hover:from-primary-600 group-hover:to-primary-700 transition-all duration-300 shadow-lg">
                 <FileText className="h-6 w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="font-semibold text-secondary-900">Ödevleri Yönet</p>
+              <div className="ml-4 flex-1">
+                <p className="font-semibold text-secondary-900 group-hover:text-primary-600 transition-colors duration-300">Ödevleri Yönet</p>
                 <p className="text-sm text-secondary-600">
-                  {stats.totalAssignments} ödev
+                  {stats.totalAssignments} ödev • Değerlendirme ve takip
                 </p>
+              </div>
+              <div className="text-primary-600 group-hover:translate-x-1 transition-transform duration-300">
+                →
               </div>
             </Link>
             <Link
               href="/ogretmen/ogrenciler"
-              className="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 group"
+              className="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 hover:shadow-md transition-all duration-300 group"
             >
-              <div className="p-3 bg-success-500 rounded-xl group-hover:bg-success-600 transition-colors duration-300">
+              <div className="p-3 bg-gradient-to-r from-success-500 to-success-600 rounded-xl group-hover:from-success-600 group-hover:to-success-700 transition-all duration-300 shadow-lg">
                 <Users className="h-6 w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="font-semibold text-secondary-900">Öğrenci Analizleri</p>
+              <div className="ml-4 flex-1">
+                <p className="font-semibold text-secondary-900 group-hover:text-success-600 transition-colors duration-300">Öğrenci Analizleri</p>
                 <p className="text-sm text-secondary-600">
-                  {stats.totalStudents} öğrenci
+                  {stats.totalStudents} öğrenci • Performans takibi
                 </p>
+              </div>
+              <div className="text-success-600 group-hover:translate-x-1 transition-transform duration-300">
+                →
+              </div>
+            </Link>
+            <Link
+              href="/ogretmen/analiz"
+              className="flex items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-xl hover:from-purple-100 hover:to-purple-200 hover:shadow-md transition-all duration-300 group"
+            >
+              <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl group-hover:from-purple-600 group-hover:to-purple-700 transition-all duration-300 shadow-lg">
+                <BarChart3 className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4 flex-1">
+                <p className="font-semibold text-secondary-900 group-hover:text-purple-600 transition-colors duration-300">Detaylı Analiz</p>
+                <p className="text-sm text-secondary-600">
+                  Kapsamlı raporlar • İstatistikler
+                </p>
+              </div>
+              <div className="text-purple-600 group-hover:translate-x-1 transition-transform duration-300">
+                →
               </div>
             </Link>
           </div>
@@ -206,94 +280,149 @@ export default function TeacherDashboard() {
 
       {/* Video Koçluk */}
       <div className="mb-10">
-        <h2 className="text-2xl font-bold text-secondary-900 mb-6">Video Koçluk</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-secondary-900">Video Koçluk</h2>
+          <Link 
+            href="/ogretmen/video-koçluk"
+            className="text-primary-600 hover:text-primary-700 font-medium flex items-center group"
+          >
+            Tümünü Gör
+            <span className="ml-1 group-hover:translate-x-1 transition-transform duration-300">→</span>
+          </Link>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="card card-hover group animate-scale-in">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Video className="w-8 h-8 text-white" />
+          <Link href="/ogretmen/video-koçluk" className="group animate-scale-in">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <Video className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-secondary-900 mb-2 group-hover:text-primary-600 transition-colors duration-300">Video Koçluk</h3>
+                <p className="text-secondary-600 mb-4">Canlı video oturumları ve kayıtlar</p>
+                <div className="text-3xl font-bold text-blue-600 mb-2">{stats.videoSessions}</div>
+                <div className="text-sm text-secondary-500">Video Oturumu</div>
               </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-2">Video Koçluk</h3>
-              <p className="text-secondary-600 mb-4">Canlı video oturumları</p>
-              <div className="text-2xl font-bold text-blue-600">{stats.videoSessions}</div>
-              <div className="text-sm text-secondary-500">Video Oturumu</div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="card animate-slide-up">
-          <div className="card-header">
-            <h3 className="card-title">
-              Hızlı İşlemler
-            </h3>
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-slide-up">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-secondary-900">Hızlı İşlemler</h3>
+            <div className="p-2 bg-primary-50 rounded-lg">
+              <Target className="h-5 w-5 text-primary-600" />
+            </div>
           </div>
           <div className="space-y-4">
             <Link
               href="/ogretmen/ogrenciler"
-              className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 group"
+              className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 hover:shadow-md transition-all duration-300 group"
             >
-              <div className="p-3 bg-primary-500 rounded-xl group-hover:bg-primary-600 transition-colors duration-300">
+              <div className="p-3 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl group-hover:from-primary-600 group-hover:to-primary-700 transition-all duration-300 shadow-lg">
                 <UserPlus className="h-6 w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="font-semibold text-secondary-900">Yeni Öğrenci Ekle</p>
+              <div className="ml-4 flex-1">
+                <p className="font-semibold text-secondary-900 group-hover:text-primary-600 transition-colors duration-300">Yeni Öğrenci Ekle</p>
                 <p className="text-sm text-secondary-600">
-                  Öğrenci hesabı oluşturun
+                  Öğrenci hesabı oluşturun ve yönetin
                 </p>
+              </div>
+              <div className="text-primary-600 group-hover:translate-x-1 transition-transform duration-300">
+                →
               </div>
             </Link>
             <Link
               href="/ogretmen/siniflar"
-              className="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 group"
+              className="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 hover:shadow-md transition-all duration-300 group"
             >
-              <div className="p-3 bg-success-500 rounded-xl group-hover:bg-success-600 transition-colors duration-300">
+              <div className="p-3 bg-gradient-to-r from-success-500 to-success-600 rounded-xl group-hover:from-success-600 group-hover:to-success-700 transition-all duration-300 shadow-lg">
                 <BookOpen className="h-6 w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="font-semibold text-secondary-900">Sınıf Oluştur</p>
+              <div className="ml-4 flex-1">
+                <p className="font-semibold text-secondary-900 group-hover:text-success-600 transition-colors duration-300">Sınıf Oluştur</p>
                 <p className="text-sm text-secondary-600">
                   Yeni sınıf açın ve öğrenci atayın
                 </p>
               </div>
+              <div className="text-success-600 group-hover:translate-x-1 transition-transform duration-300">
+                →
+              </div>
             </Link>
             <Link
               href="/ogretmen/odevler"
-              className="flex items-center p-4 bg-gradient-to-r from-warning-50 to-warning-100 border border-warning-200 rounded-xl hover:from-warning-100 hover:to-warning-200 transition-all duration-300 group"
+              className="flex items-center p-4 bg-gradient-to-r from-warning-50 to-warning-100 border border-warning-200 rounded-xl hover:from-warning-100 hover:to-warning-200 hover:shadow-md transition-all duration-300 group"
             >
-              <div className="p-3 bg-warning-500 rounded-xl group-hover:bg-warning-600 transition-colors duration-300">
+              <div className="p-3 bg-gradient-to-r from-warning-500 to-warning-600 rounded-xl group-hover:from-warning-600 group-hover:to-warning-700 transition-all duration-300 shadow-lg">
                 <FileText className="h-6 w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="font-semibold text-secondary-900">Ödev Ver</p>
+              <div className="ml-4 flex-1">
+                <p className="font-semibold text-secondary-900 group-hover:text-warning-600 transition-colors duration-300">Ödev Ver</p>
                 <p className="text-sm text-secondary-600">
                   Bireysel veya sınıf ödevi oluşturun
                 </p>
+              </div>
+              <div className="text-warning-600 group-hover:translate-x-1 transition-transform duration-300">
+                →
+              </div>
+            </Link>
+            <Link
+              href="/ogretmen/hedefler"
+              className="flex items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-xl hover:from-purple-100 hover:to-purple-200 hover:shadow-md transition-all duration-300 group"
+            >
+              <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl group-hover:from-purple-600 group-hover:to-purple-700 transition-all duration-300 shadow-lg">
+                <Target className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4 flex-1">
+                <p className="font-semibold text-secondary-900 group-hover:text-purple-600 transition-colors duration-300">Hedef Belirle</p>
+                <p className="text-sm text-secondary-600">
+                  Öğrenci hedefleri oluşturun ve takip edin
+                </p>
+              </div>
+              <div className="text-purple-600 group-hover:translate-x-1 transition-transform duration-300">
+                →
               </div>
             </Link>
           </div>
         </div>
 
-        <div className="card animate-slide-up" style={{animationDelay: '0.1s'}}>
-          <div className="card-header">
-            <h3 className="card-title">
-              Son Aktiviteler
-            </h3>
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.1s'}}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-secondary-900">Son Aktiviteler</h3>
+            <div className="p-2 bg-primary-50 rounded-lg">
+              <Clock className="h-5 w-5 text-primary-600" />
+            </div>
           </div>
           <div className="space-y-4">
-            <div className="flex items-center p-3 bg-primary-50 rounded-xl">
-              <div className="w-3 h-3 bg-primary-500 rounded-full mr-4"></div>
-              <span className="text-secondary-700 font-medium">Dashboard&apos;a hoş geldiniz!</span>
+            <div className="flex items-center p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border border-primary-200">
+              <div className="w-4 h-4 bg-primary-500 rounded-full mr-4 flex-shrink-0"></div>
+              <div>
+                <span className="text-secondary-700 font-semibold">Dashboard&apos;a hoş geldiniz!</span>
+                <p className="text-sm text-secondary-500 mt-1">Öğrenci koçluğu platformunu keşfetmeye başlayın</p>
+              </div>
             </div>
-            <div className="flex items-center p-3 bg-success-50 rounded-xl">
-              <div className="w-3 h-3 bg-success-500 rounded-full mr-4"></div>
-              <span className="text-secondary-700 font-medium">Öğrenci ekleme işlemlerine başlayabilirsiniz</span>
+            <div className="flex items-center p-4 bg-gradient-to-r from-success-50 to-success-100 rounded-xl border border-success-200">
+              <div className="w-4 h-4 bg-success-500 rounded-full mr-4 flex-shrink-0"></div>
+              <div>
+                <span className="text-secondary-700 font-semibold">Öğrenci ekleme işlemlerine başlayabilirsiniz</span>
+                <p className="text-sm text-secondary-500 mt-1">Yeni öğrenciler ekleyerek sınıfınızı oluşturun</p>
+              </div>
             </div>
-            <div className="flex items-center p-3 bg-blue-50 rounded-xl">
-              <div className="w-3 h-3 bg-blue-500 rounded-full mr-4"></div>
-              <span className="text-secondary-700 font-medium">Sınıf oluşturarak grup çalışmaları yapabilirsiniz</span>
+            <div className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+              <div className="w-4 h-4 bg-blue-500 rounded-full mr-4 flex-shrink-0"></div>
+              <div>
+                <span className="text-secondary-700 font-semibold">Sınıf oluşturarak grup çalışmaları yapabilirsiniz</span>
+                <p className="text-sm text-secondary-500 mt-1">Öğrencileri gruplara ayırarak organize edin</p>
+              </div>
+            </div>
+            <div className="flex items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+              <div className="w-4 h-4 bg-purple-500 rounded-full mr-4 flex-shrink-0"></div>
+              <div>
+                <span className="text-secondary-700 font-semibold">Ödev vererek öğrenci ilerlemesini takip edin</span>
+                <p className="text-sm text-secondary-500 mt-1">Detaylı analizlerle performansı değerlendirin</p>
+              </div>
             </div>
           </div>
         </div>
