@@ -60,6 +60,8 @@ export function useDataFetching<T>(
 
     try {
       const response = await fetch(url, {
+        // Ensure cookies are sent for auth-protected resources
+        credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache',
         },

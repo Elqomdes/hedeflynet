@@ -1,16 +1,16 @@
 import mongoose from 'mongoose';
 
-// MongoDB connection string - MUST be provided via environment variable
-// In development, fall back to provided Atlas URI if not set
+// MongoDB connection string - MUST be provided via environment variable in production.
+// In development, fall back to localhost for safety. Never embed credentials in source.
 const MONGODB_URI = process.env.MONGODB_URI || (process.env.NODE_ENV !== 'production'
-  ? 'mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/hedeflydatas?retryWrites=true&w=majority&appName=hedeflydatas'
+  ? 'mongodb://127.0.0.1:27017'
   : undefined);
 // Preferred database name (defaults to 'hedeflydatas' if not provided)
 const MONGODB_DB = process.env.MONGODB_DB || 'hedeflydatas';
 
-// Don't throw error during build time
+// Don't throw error during build time; warn in dev if using fallback
 if (!process.env.MONGODB_URI && process.env.NODE_ENV !== 'production') {
-  console.warn('MONGODB_URI not provided, using development fallback URI');
+  console.warn('MONGODB_URI not provided, using safe localhost fallback');
 }
 
 // Global type declaration for mongoose cache
@@ -29,9 +29,9 @@ if (!cached) {
 
 async function connectDB() {
   try {
-    // If MONGODB_URI is not provided, return null for build time
+    // If MONGODB_URI is not provided in production, skip to avoid leaking errors
     if (!MONGODB_URI) {
-      console.warn('MONGODB_URI not provided, skipping connection');
+      console.warn('MONGODB_URI not provided; skipping DB connection');
       return null;
     }
 
@@ -59,7 +59,11 @@ async function connectDB() {
         maxStalenessSeconds: 90, // Max staleness for secondary reads
       };
 
-      cached!.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
+      const connectionUri = MONGODB_URI!.includes('mongodb://') && !MONGODB_URI!.includes('/')
+        ? `${MONGODB_URI}/${MONGODB_DB}`
+        : MONGODB_URI!;
+
+      cached!.promise = mongoose.connect(connectionUri, opts).then((mongooseInstance) => {
         console.log(`MongoDB connected successfully (db: ${MONGODB_DB})`);
         return mongooseInstance;
       }).catch((error) => {
@@ -76,16 +80,7 @@ async function connectDB() {
       throw new Error(`MongoDB connection not ready. State: ${mongoose.connection.readyState}`);
     }
     
-    // Test the connection with a ping
-    try {
-      if (mongoose.connection.db) {
-        await mongoose.connection.db.admin().ping();
-        console.log('MongoDB connection verified with ping');
-      }
-    } catch (pingError) {
-      console.warn('MongoDB ping failed, but connection exists:', pingError);
-      // Don't throw error for ping failure, connection might still be usable
-    }
+    // Skip per-request ping to avoid extra latency; rely on readyState and events
     
     // Set up connection event listeners for better error handling
     mongoose.connection.on('error', (error) => {

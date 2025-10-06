@@ -58,6 +58,8 @@ class ApiClient {
           const response = await fetch(url, {
             ...fetchOptions,
             signal: controller.signal,
+            // Always send cookies for auth-protected endpoints
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
               'Cache-Control': 'no-cache',
@@ -68,6 +70,7 @@ class ApiClient {
           clearTimeout(timeoutId);
 
           if (!response.ok) {
+            // Surface the exact status to guide retry/handling
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
@@ -82,8 +85,12 @@ class ApiClient {
         } catch (error) {
           lastError = error as Error;
           
-          // Don't retry on abort or client errors
-          if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('4'))) {
+          // Don't retry on abort or client errors (4xx)
+          if (
+            error instanceof Error && (
+              error.name === 'AbortError' || /HTTP error! status: 4\d{2}/.test(error.message)
+            )
+          ) {
             break;
           }
 
