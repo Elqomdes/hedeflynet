@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, FileText, UserCheck, TrendingUp, Brain, Award, Video, BarChart3, Smartphone, Activity } from 'lucide-react';
+import { Users, FileText, UserCheck, TrendingUp, Video, BarChart3, Activity } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -11,12 +11,7 @@ export default function AdminDashboard() {
     totalClasses: 0,
     // Yeni özellikler için istatistikler
     totalParents: 0,
-    aiRecommendations: 0,
     videoSessions: 0,
-    adaptiveLearningModules: 0,
-    mobileUsers: 0,
-    socialLearningPosts: 0,
-    gamificationPoints: 0,
     systemHealth: 'excellent'
   });
   const [loading, setLoading] = useState(true);
@@ -102,20 +97,9 @@ export default function AdminDashboard() {
 
       {/* Yeni Özellikler v3.4 */}
       <div className="mb-10">
-        <h2 className="text-2xl font-bold text-secondary-900 mb-6">Platform Özellikleri (v3.4)</h2>
+        <h2 className="text-2xl font-bold text-secondary-900 mb-6">Platform Özellikleri</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="card card-hover group animate-scale-in">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Brain className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-secondary-900 mb-2">AI Koçluk</h3>
-              <div className="text-2xl font-bold text-purple-600">{stats.aiRecommendations}</div>
-              <div className="text-sm text-secondary-500">AI Önerisi</div>
-            </div>
-          </div>
-
-          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.1s'}}>
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
                 <Video className="w-8 h-8 text-white" />
@@ -126,51 +110,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.2s'}}>
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <BarChart3 className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-secondary-900 mb-2">Adaptif Öğrenme</h3>
-              <div className="text-2xl font-bold text-green-600">{stats.adaptiveLearningModules}</div>
-              <div className="text-sm text-secondary-500">Öğrenme Modülü</div>
-            </div>
-          </div>
-
-          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.3s'}}>
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Award className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-secondary-900 mb-2">Gamification</h3>
-              <div className="text-2xl font-bold text-orange-600">{stats.gamificationPoints}</div>
-              <div className="text-sm text-secondary-500">Toplam Puan</div>
-            </div>
-          </div>
-
-          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.4s'}}>
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-secondary-900 mb-2">Sosyal Öğrenme</h3>
-              <div className="text-2xl font-bold text-pink-600">{stats.socialLearningPosts}</div>
-              <div className="text-sm text-secondary-500">Topluluk Gönderisi</div>
-            </div>
-          </div>
-
-          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.5s'}}>
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Smartphone className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-secondary-900 mb-2">Mobil Uygulama</h3>
-              <div className="text-2xl font-bold text-indigo-600">{stats.mobileUsers}</div>
-              <div className="text-sm text-secondary-500">Mobil Kullanıcı</div>
-            </div>
-          </div>
-
-          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.6s'}}>
+          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.1s'}}>
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
                 <UserCheck className="w-8 h-8 text-white" />

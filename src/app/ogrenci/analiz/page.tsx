@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart3, FileText, Target, TrendingUp, Star, CheckCircle, Clock, MessageSquare } from 'lucide-react';
+import { BarChart3, FileText, Target, Star, CheckCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 
 interface AnalysisData {

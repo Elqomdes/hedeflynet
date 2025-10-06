@@ -13,14 +13,8 @@ import {
   Menu, 
   X,
   Home,
-  UserPlus,
   Inbox,
-  Brain,
-  Video,
-  Award,
-  MessageSquare,
-  Smartphone,
-  Activity
+  Video
 } from 'lucide-react';
 import AuthWrapper from '@/components/AuthWrapper';
 
@@ -66,12 +60,7 @@ export default function TeacherLayout({
     { name: 'Teslimler', href: '/ogretmen/teslimler', icon: Inbox },
     { name: 'Hedefler', href: '/ogretmen/hedefler', icon: Target },
     { name: 'Detaylı Analiz', href: '/ogretmen/analiz', icon: BarChart3 },
-    { name: 'AI Koçluk', href: '/ogretmen/ai-koçluk', icon: Brain },
     { name: 'Video Koçluk', href: '/ogretmen/video-koçluk', icon: Video },
-    { name: 'Adaptif Öğrenme', href: '/ogretmen/adaptif-öğrenme', icon: Activity },
-    { name: 'Gamification', href: '/ogretmen/gamification', icon: Award },
-    { name: 'Sosyal Öğrenme', href: '/ogretmen/sosyal-öğrenme', icon: MessageSquare },
-    { name: 'Mobil Uygulama', href: '/ogretmen/mobil', icon: Smartphone },
   ];
 
   return (

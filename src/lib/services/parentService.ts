@@ -438,7 +438,7 @@ export class ParentService {
       },
       subjects,
       recommendations,
-      achievements: [], // Would be populated from gamification system
+      achievements: []
       concerns
     };
   }

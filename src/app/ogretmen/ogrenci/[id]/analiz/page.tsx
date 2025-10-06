@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { BarChart3, FileText, Target, TrendingUp, Download, Star, CheckCircle, Clock, MessageSquare } from 'lucide-react';
+import { BarChart3, FileText, Target, Download, Star, CheckCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 
 interface Student {

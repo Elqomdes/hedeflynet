@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from './auth';
 
 export function authMiddleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

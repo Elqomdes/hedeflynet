@@ -5,15 +5,10 @@
 ### 1. TypeScript Compilation Hataları
 - **Problem**: `rec._id.toString()` hatası - `rec._id` tipi `unknown` olarak algılanıyordu
 - **Çözüm**: Type assertion `(rec._id as any).toString()` kullanıldı
-- **Dosyalar**:
-  - `src/app/api/teacher/ai-coaching/recommendations/route.ts:38`
-  - `src/lib/services/adaptiveLearningService.ts:200`
 
 ### 2. User ID Type Hataları
 - **Problem**: `user._id.toString()` hatası - `user._id` tipi `unknown` olarak algılanıyordu
 - **Çözüm**: Type assertion `(user._id as any).toString()` kullanıldı
-- **Dosyalar**:
-  - `src/app/api/teacher/social-learning/posts/route.ts:169,185,192`
 
 ### 3. Test Database Operations Type Hataları
 - **Problem**: `results.errors` array tipi `never[]` olarak tanımlanmıştı
@@ -23,7 +18,6 @@
 ### 4. Mongoose Duplicate Index Uyarıları
 - **Problem**: `studentId` field'ında hem `index: true` hem de `schema.index()` kullanılıyordu
 - **Çözüm**: Schema definition'dan `index: true` kaldırıldı, sadece `schema.index()` kullanıldı
-- **Dosya**: `src/lib/models/AIRecommendation.ts`
 
 ## 🔧 Yapılan Düzeltmeler
 

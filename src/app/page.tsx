@@ -202,7 +202,7 @@ export default function HomePage() {
                 Hedefly
               </h1>
               <p className="text-xl md:text-2xl text-secondary-700 mb-12 max-w-4xl mx-auto leading-relaxed">
-                AI koçluk, video koçluk, adaptif öğrenme, gamification ve sosyal öğrenme ile sonuç odaklı modern öğrenci koçluğu.
+                Video koçluk ile sonuç odaklı modern öğrenci koçluğu.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -229,17 +229,6 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="card p-8 animate-slide-up">
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">AI Koçluk</h3>
-              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
-                <li>Kişiselleştirilmiş çalışma önerileri</li>
-                <li>Hedef revizyonu ve odak alanları</li>
-                <li>Performans verisine dayalı öneriler</li>
-              </ul>
-              <div className="mt-6">
-                <a href="/ogretmen/ai-koçluk" className="btn-link">AI Koçluk’u keşfet</a>
-              </div>
-            </div>
-            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.05s'}}>
               <h3 className="text-2xl font-bold text-secondary-900 mb-4">Video Koçluk</h3>
               <ul className="space-y-2 text-secondary-700 list-disc list-inside">
                 <li>Planlı canlı oturumlar</li>
@@ -250,48 +239,15 @@ export default function HomePage() {
                 <a href="/ogretmen/video-koçluk" className="btn-link">Video Koçluk oturumları</a>
               </div>
             </div>
-            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Adaptif Öğrenme</h3>
-              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
-                <li>Düzeye göre modül önerileri</li>
-                <li>Modül türleri: video, interaktif, ölçme</li>
-                <li>Tahmini süre ve zorluk yönetimi</li>
-              </ul>
-              <div className="mt-6">
-                <a href="/ogretmen/adaptif-öğrenme" className="btn-link">Modül kataloğu</a>
-              </div>
-            </div>
-            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.15s'}}>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Gamification</h3>
-              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
-                <li>Puan ve seviye sistemi</li>
-                <li>Rozetler ve başarılar</li>
-                <li>Seri (streak) takibi</li>
-              </ul>
-              <div className="mt-6">
-                <a href="/ogretmen/gamification" className="btn-link">Gamification yönetimi</a>
-              </div>
-            </div>
-            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.2s'}}>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Sosyal Öğrenme</h3>
-              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
-                <li>Topluluk gönderileri ve tartışmalar</li>
-                <li>Çalışma grupları ve kaynak paylaşımı</li>
-                <li>Beğeni ve yorum etkileşimi</li>
-              </ul>
-              <div className="mt-6">
-                <a href="/ogretmen/sosyal-öğrenme" className="btn-link">Topluluğa göz at</a>
-              </div>
-            </div>
-            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.25s'}}>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Mobil & Veli</h3>
+            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.05s'}}>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Veli Portalı</h3>
               <ul className="space-y-2 text-secondary-700 list-disc list-inside">
                 <li>Öğrenci ve veli bildirimleri</li>
                 <li>Veli rapor ve özetler</li>
-                <li>Mobil duyuru yönetimi</li>
+                <li>Detaylı ilerleme takibi</li>
               </ul>
-              <div className="mt-6 space-x-4">
-                <a href="/ogretmen/mobil" className="btn-link">Mobil bildirimler</a>
+              <div className="mt-6">
+                <a href="/veli" className="btn-link">Veli portalına git</a>
               </div>
             </div>
           </div>
@@ -313,13 +269,13 @@ export default function HomePage() {
             <div className="card p-8 animate-slide-up">
               <div className="text-secondary-900 font-semibold mb-2">Ayşe K. • Matematik Öğretmeni</div>
               <p className="text-secondary-700 leading-relaxed">
-                AI koçluk önerileriyle öğrencilerimin odak alanlarını haftalık planlara dönüştürmek çok kolaylaştı. Not ortalamamız yükseldi.
+                Video koçluk oturumlarıyla öğrencilerimin konuları daha iyi kavramasını sağladım. Not ortalamamız yükseldi.
               </p>
             </div>
             <div className="card p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
               <div className="text-secondary-900 font-semibold mb-2">Mehmet D. • 11. Sınıf Öğrencisi</div>
               <p className="text-secondary-700 leading-relaxed">
-                Rozet ve puan sistemi beni motive etti. Video koçluk oturumlarıyla konuları daha hızlı kavradım.
+                Video koçluk oturumlarıyla konuları daha hızlı kavradım. Ödev takibi çok kolay.
               </p>
             </div>
             <div className="card p-8 animate-slide-up" style={{animationDelay: '0.2s'}}>
@@ -405,41 +361,6 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.5s'}}>
-              <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Users className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                AI Koçluk Sistemi
-              </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                Yapay zeka destekli kişiselleştirilmiş öğrenme önerileri ve çalışma planları.
-              </p>
-            </div>
-
-            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.6s'}}>
-              <div className="w-20 h-20 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Target className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Gamification
-              </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                Puan, rozet ve seviye sistemi ile öğrenmeyi eğlenceli hale getirin.
-              </p>
-            </div>
-
-            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.7s'}}>
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Users className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Sosyal Öğrenme
-              </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                Çalışma grupları, oturumlar ve topluluk etkileşimi ile birlikte öğrenin.
-              </p>
-            </div>
 
             <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.8s'}}>
               <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
