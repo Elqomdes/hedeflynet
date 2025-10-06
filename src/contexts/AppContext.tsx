@@ -79,7 +79,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'SET_LOADING', payload: true });
         const response = await fetch('/api/auth/me', {
           credentials: 'include',
-          headers: { 'Cache-Control': 'no-cache' },
+          headers: { 
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          },
         });
 
         if (response.ok) {
@@ -143,7 +147,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         try {
           const response = await fetch('/api/auth/me', {
             credentials: 'include',
-            headers: { 'Cache-Control': 'no-cache' },
+            headers: { 
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            },
           });
 
           if (response.ok) {
@@ -183,7 +191,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await fetch('/api/auth/me', {
         credentials: 'include',
-        headers: { 'Cache-Control': 'no-cache' },
+        headers: { 
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
       });
 
       if (response.ok) {

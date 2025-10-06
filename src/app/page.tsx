@@ -35,22 +35,33 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   
-  // Force re-render to prevent cache issues
-  const [version] = useState(() => {
-    // Generate unique version on each page load
-    return Math.random().toString(36).substr(2, 9) + Date.now();
-  });
+  // Cache busting for dynamic content
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    
     const fetchUser = async () => {
       try {
-        const response = await fetch('/api/auth/me');
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          },
+          credentials: 'include'
+        });
+        
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
+        } else {
+          setUser(null);
         }
       } catch (error) {
         console.error('Failed to fetch user:', error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -59,7 +70,7 @@ export default function HomePage() {
     fetchUser();
   }, []);
 
-  if (loading) {
+  if (loading || !mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
@@ -67,23 +78,33 @@ export default function HomePage() {
     );
   }
 
-  // If user is logged in, redirect to appropriate dashboard
-  if (user) {
-                  switch (user.role) {
-                    case 'admin':
-                      router.push('/admin');
-                      break;
-                    case 'teacher':
-                      router.push('/ogretmen');
-                      break;
-                    case 'student':
-                      router.push('/ogrenci');
-                      break;
-      case 'parent':
-        router.push('/veli');
-        break;
+  // Handle redirects after user data is loaded
+  useEffect(() => {
+    if (!loading && user && mounted) {
+      switch (user.role) {
+        case 'admin':
+          router.push('/admin');
+          break;
+        case 'teacher':
+          router.push('/ogretmen');
+          break;
+        case 'student':
+          router.push('/ogrenci');
+          break;
+        case 'parent':
+          router.push('/veli');
+          break;
+      }
     }
-    return null;
+  }, [user, loading, mounted, router]);
+
+  // If user is logged in, show loading while redirecting
+  if (user && mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      </div>
+    );
   }
 
   // If user is not logged in, show public homepage

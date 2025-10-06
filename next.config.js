@@ -11,6 +11,29 @@ const nextConfig = {
       pagesBufferLength: 2,
     },
   }),
+  // Cache control headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+    ];
+  },
   redirects: async () => {
     return [
       { source: '/ogretmen/adaptif-%C3%B6%C4%9Frenme', destination: '/ogretmen/adaptif-ogrenme', permanent: true },
