@@ -41,7 +41,10 @@ export default function HomePage() {
   const router = useRouter();
   
   // Force re-render to prevent cache issues
-  const [version] = useState(Date.now());
+  const [version] = useState(() => {
+    // Generate unique version on each page load
+    return Math.random().toString(36).substr(2, 9) + Date.now();
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -91,6 +94,12 @@ export default function HomePage() {
   // If user is not logged in, show public homepage
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
+      {/* Debug info - remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-20 right-4 bg-red-500 text-white p-2 rounded text-xs z-50">
+          Version: {version}
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
