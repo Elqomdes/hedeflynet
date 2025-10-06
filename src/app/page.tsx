@@ -13,17 +13,12 @@ import {
   Video, 
   Shield, 
   CheckCircle, 
-  Star,
   TrendingUp,
   Clock,
   Award,
   MessageSquare,
   UserCheck,
-  GraduationCap,
-  PieChart,
-  Calendar,
-  Bell,
-  Settings
+  GraduationCap
 } from 'lucide-react';
 
 interface User {
@@ -94,12 +89,6 @@ export default function HomePage() {
   // If user is not logged in, show public homepage
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
-      {/* Debug info - remove in production */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-20 right-4 bg-red-500 text-white p-2 rounded text-xs z-50">
-          Version: {version}
-        </div>
-      )}
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
@@ -122,11 +111,11 @@ export default function HomePage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Link href="/giris" className="btn-primary text-lg px-10 py-4 btn-lg inline-flex items-center justify-center group hover:scale-105 transition-all duration-300">
+              <Link href="/giris" className="btn-primary text-lg px-10 py-4 inline-flex items-center justify-center group hover:scale-105 transition-all duration-300">
                 Hemen Başla
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
-              <Link href="/iletisim" className="btn-outline text-lg px-10 py-4 btn-lg hover:scale-105 transition-all duration-300">
+              <Link href="/iletisim" className="btn-outline text-lg px-10 py-4 hover:scale-105 transition-all duration-300">
                 İletişime Geç
               </Link>
             </div>
@@ -502,10 +491,10 @@ export default function HomePage() {
                 <div className="text-center">
                   <div className="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <Award className="w-8 h-8 text-white" />
-              </div>
+                  </div>
                   <h4 className="font-bold text-secondary-900 mb-2">Kalite</h4>
                   <p className="text-sm text-secondary-600">Profesyonel eğitim standartları</p>
-            </div>
+                </div>
               </div>
             </div>
           </div>
@@ -516,20 +505,20 @@ export default function HomePage() {
       <section className="py-20 bg-gradient-to-r from-primary-600 to-primary-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-              Hemen Başlayın
-            </h2>
+            Hemen Başlayın
+          </h2>
           <p className="text-xl text-primary-100 mb-8 max-w-3xl mx-auto">
             Öğrenci koçluğunuzu dijitalleştirin ve daha etkili sonuçlar alın. 
             Ücretsiz deneme ile platformu keşfedin.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link href="/giris" className="bg-white text-primary-600 px-10 py-4 rounded-xl font-semibold text-lg hover:bg-primary-50 transition-colors duration-300 inline-flex items-center justify-center group">
               Ücretsiz Başla
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-              </Link>
+            </Link>
             <Link href="/iletisim" className="border-2 border-white text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors duration-300">
               Demo Talep Et
-              </Link>
+            </Link>
           </div>
           <div className="mt-8 flex justify-center space-x-8 text-primary-100">
             <div className="flex items-center">
