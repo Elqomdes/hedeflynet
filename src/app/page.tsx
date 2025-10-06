@@ -201,9 +201,23 @@ export default function HomePage() {
               <h1 className="text-5xl md:text-7xl font-bold text-secondary-900 mb-6 bg-gradient-to-r from-secondary-900 via-primary-700 to-secondary-900 bg-clip-text text-transparent">
                 Hedefly
               </h1>
-              <p className="text-xl md:text-2xl text-secondary-700 mb-12 max-w-4xl mx-auto leading-relaxed">
-                Video koçluk ile sonuç odaklı modern öğrenci koçluğu.
+              <p className="text-xl md:text-2xl text-secondary-700 mb-8 max-w-4xl mx-auto leading-relaxed">
+                Modern öğrenci koçluğu platformu ile öğrencilerinizin potansiyelini keşfedin
               </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary-600 mb-2">500+</div>
+                  <div className="text-secondary-600">Aktif Öğretmen</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary-600 mb-2">2000+</div>
+                  <div className="text-secondary-600">Başarılı Öğrenci</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary-600 mb-2">95%</div>
+                  <div className="text-secondary-600">Memnuniyet Oranı</div>
+                </div>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link href="/giris" className="btn-primary text-lg px-10 py-4 btn-lg">
@@ -222,156 +236,264 @@ export default function HomePage() {
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 mb-6">Özellikler</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 mb-6">Platform Özellikleri</h2>
             <p className="text-xl text-secondary-600 max-w-3xl mx-auto leading-relaxed">
-              Hedefly, modern öğrenci koçluğunun tüm bileşenlerini tek bir platformda bir araya getirir.
+              Hedefly, öğrenci koçluğunun her aşamasını dijitalleştiren kapsamlı bir platform sunar.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="card p-8 animate-slide-up">
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Video Koçluk</h3>
-              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
-                <li>Planlı canlı oturumlar</li>
-                <li>Katılımcı ve süre yönetimi</li>
-                <li>Oturum sonrası kaynak paylaşımı</li>
-              </ul>
-              <div className="mt-6">
-                <a href="/ogretmen/video-koçluk" className="btn-link">Video Koçluk oturumları</a>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200 hover:shadow-xl transition-all duration-300 animate-slide-up">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                <Users className="w-8 h-8 text-white" />
               </div>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Öğrenci Yönetimi</h3>
+              <ul className="space-y-3 text-secondary-700">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Kolay öğrenci ekleme ve düzenleme</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Sınıf oluşturma ve öğrenci atama</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Bireysel koçluk takibi</span>
+                </li>
+              </ul>
             </div>
-            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.05s'}}>
+
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 border border-green-200 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.1s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                <BookOpen className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Ödev Sistemi</h3>
+              <ul className="space-y-3 text-secondary-700">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>PDF, video ve link ile ödev verme</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Otomatik teslim takibi</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Detaylı değerlendirme ve geri bildirim</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 border border-purple-200 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.2s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                <BarChart3 className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Detaylı Analiz</h3>
+              <ul className="space-y-3 text-secondary-700">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Performans grafikleri ve raporlar</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Branş bazlı analiz</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>İlerleme takibi ve öneriler</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-8 border border-orange-200 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.3s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6">
+                <Target className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Hedef Belirleme</h3>
+              <ul className="space-y-3 text-secondary-700">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Kişiselleştirilmiş hedef oluşturma</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Hedef takibi ve güncelleme</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Motivasyon ve başarı takibi</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl p-8 border border-indigo-200 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.4s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+                <CheckCircle className="w-8 h-8 text-white" />
+          </div>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Planlama Sistemi</h3>
+              <ul className="space-y-3 text-secondary-700">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Günlük, haftalık ve aylık planlar</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Otomatik plan takibi</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Esnek plan düzenleme</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl p-8 border border-teal-200 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.5s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6">
+                <Users className="w-8 h-8 text-white" />
+            </div>
               <h3 className="text-2xl font-bold text-secondary-900 mb-4">Veli Portalı</h3>
-              <ul className="space-y-2 text-secondary-700 list-disc list-inside">
-                <li>Öğrenci ve veli bildirimleri</li>
-                <li>Veli rapor ve özetler</li>
-                <li>Detaylı ilerleme takibi</li>
+              <ul className="space-y-3 text-secondary-700">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Detaylı ilerleme raporları</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Anlık bildirimler</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <span>Öğretmen ile iletişim</span>
+                </li>
               </ul>
-              <div className="mt-6">
-                <a href="/veli" className="btn-link">Veli portalına git</a>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-24 bg-secondary-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 mb-6">
-              Bizi Kullananların Görüşleri
-            </h2>
-            <p className="text-xl text-secondary-600 max-w-3xl mx-auto leading-relaxed">
-              Öğretmenler, öğrenciler ve veliler Hedefly ile neler başardı?
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="card p-8 animate-slide-up">
-              <div className="text-secondary-900 font-semibold mb-2">Ayşe K. • Matematik Öğretmeni</div>
-              <p className="text-secondary-700 leading-relaxed">
-                Video koçluk oturumlarıyla öğrencilerimin konuları daha iyi kavramasını sağladım. Not ortalamamız yükseldi.
-              </p>
-            </div>
-            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              <div className="text-secondary-900 font-semibold mb-2">Mehmet D. • 11. Sınıf Öğrencisi</div>
-              <p className="text-secondary-700 leading-relaxed">
-                Video koçluk oturumlarıyla konuları daha hızlı kavradım. Ödev takibi çok kolay.
-              </p>
-            </div>
-            <div className="card p-8 animate-slide-up" style={{animationDelay: '0.2s'}}>
-              <div className="text-secondary-900 font-semibold mb-2">Zeynep Y. • Veli</div>
-              <p className="text-secondary-700 leading-relaxed">
-                Bildirimler sayesinde çocuğumun ödev ve hedef durumundan anında haberdar oluyorum. Raporlar çok anlaşılır.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-white relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Why Hedefly Section */}
+      <section className="py-24 bg-gradient-to-br from-secondary-50 to-primary-50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-secondary-50/30"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-20 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 mb-6">
               Neden Hedefly?
             </h2>
             <p className="text-xl text-secondary-600 max-w-3xl mx-auto leading-relaxed">
-              Öğrenci koçluğunuzu dijitalleştirin ve daha etkili sonuçlar alın
+              Modern eğitim teknolojileri ile öğrenci koçluğunuzu bir üst seviyeye taşıyın
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="card card-hover text-center group animate-scale-in">
-              <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Users className="w-10 h-10 text-white" />
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group animate-scale-in">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Öğrenci Yönetimi
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">
+                Kolay Kullanım
               </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                Öğrencilerinizi kolayca ekleyin, sınıflar oluşturun ve bireysel koçluk yapın.
+              <p className="text-secondary-600 leading-relaxed mb-4">
+                Sezgisel arayüz ile öğrenci koçluğunuzu kolayca yönetin. Teknik bilgi gerektirmez.
               </p>
+              <div className="text-sm text-primary-600 font-semibold">
+                ✓ 5 dakikada kurulum
+              </div>
             </div>
 
-            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.1s'}}>
-              <div className="w-20 h-20 bg-gradient-to-r from-success-500 to-success-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <BookOpen className="w-10 h-10 text-white" />
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group animate-scale-in" style={{animationDelay: '0.1s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Ödev Sistemi
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">
+                Detaylı Raporlama
               </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                PDF, video ve link ile ödevler verin, takip edin ve değerlendirin.
+              <p className="text-secondary-600 leading-relaxed mb-4">
+                Öğrenci performansını grafiklerle analiz edin ve velilere detaylı raporlar sunun.
               </p>
+              <div className="text-sm text-primary-600 font-semibold">
+                ✓ Gerçek zamanlı analiz
+              </div>
             </div>
 
-            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.2s'}}>
-              <div className="w-20 h-20 bg-gradient-to-r from-warning-500 to-warning-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Target className="w-10 h-10 text-white" />
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group animate-scale-in" style={{animationDelay: '0.2s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Target className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Hedef Belirleme
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">
+                Kişiselleştirilmiş Yaklaşım
               </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                Öğrencilerinize hedefler belirleyin ve ilerlemelerini takip edin.
+              <p className="text-secondary-600 leading-relaxed mb-4">
+                Her öğrenci için özel hedefler belirleyin ve bireysel ilerleme takibi yapın.
               </p>
+              <div className="text-sm text-primary-600 font-semibold">
+                ✓ Bireysel koçluk
+              </div>
             </div>
 
-            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.3s'}}>
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <BarChart3 className="w-10 h-10 text-white" />
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group animate-scale-in" style={{animationDelay: '0.3s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <BookOpen className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Detaylı Analiz
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">
+                Kapsamlı Ödev Sistemi
               </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                Öğrenci performansını grafiklerle analiz edin ve raporlar oluşturun.
+              <p className="text-secondary-600 leading-relaxed mb-4">
+                PDF, video, link ile ödevler verin, otomatik takip yapın ve detaylı değerlendirme yapın.
               </p>
+              <div className="text-sm text-primary-600 font-semibold">
+                ✓ Çoklu format desteği
+              </div>
             </div>
 
-            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.4s'}}>
-              <div className="w-20 h-20 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <CheckCircle className="w-10 h-10 text-white" />
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group animate-scale-in" style={{animationDelay: '0.4s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Planlama
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">
+                Veli İletişimi
               </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                Günlük, haftalık ve aylık planlar oluşturun ve takip edin.
+              <p className="text-secondary-600 leading-relaxed mb-4">
+                Veliler çocuklarının ilerlemesini anlık olarak takip edebilir ve sizinle iletişim kurabilir.
               </p>
+              <div className="text-sm text-primary-600 font-semibold">
+                ✓ Anlık bildirimler
+              </div>
             </div>
 
-
-            <div className="card card-hover text-center group animate-scale-in" style={{animationDelay: '0.8s'}}>
-              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-glow transition-all duration-300">
-                <Users className="w-10 h-10 text-white" />
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group animate-scale-in" style={{animationDelay: '0.5s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">
-                Veli Portalı
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">
+                Güvenli Platform
               </h3>
-              <p className="text-secondary-600 leading-relaxed">
-                Ebeveynler çocuklarının ilerlemesini detaylı raporlarla takip edebilir.
+              <p className="text-secondary-600 leading-relaxed mb-4">
+                Tüm verileriniz güvenli şekilde saklanır ve sadece yetkili kişiler erişebilir.
               </p>
+              <div className="text-sm text-primary-600 font-semibold">
+                ✓ SSL şifreleme
+              </div>
+            </div>
+            </div>
+
+          {/* Stats Section */}
+          <div className="mt-20 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary-600 mb-2">500+</div>
+              <div className="text-secondary-600">Aktif Öğretmen</div>
+              </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary-600 mb-2">2000+</div>
+              <div className="text-secondary-600">Başarılı Öğrenci</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary-600 mb-2">95%</div>
+              <div className="text-secondary-600">Memnuniyet Oranı</div>
+              </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary-600 mb-2">24/7</div>
+              <div className="text-secondary-600">Platform Erişimi</div>
             </div>
           </div>
         </div>
@@ -382,20 +504,41 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-primary-100/30"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="animate-fade-in">
+            <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-glow">
+              <span className="text-white font-bold text-2xl">H</span>
+            </div>
             <h2 className="text-4xl md:text-5xl font-bold text-secondary-900 mb-6">
-              Hemen Başlayın
+              Öğrenci Koçluğunuzu Dijitalleştirin
             </h2>
-            <p className="text-xl text-secondary-700 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Öğretmen başvurusu yapın ve öğrenci koçluğunuzu dijitalleştirin
+            <p className="text-xl text-secondary-700 mb-8 max-w-3xl mx-auto leading-relaxed">
+              Hedefly ile öğrencilerinizin potansiyelini keşfedin ve başarılarını artırın
             </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary-600 mb-2">Ücretsiz</div>
+                <div className="text-secondary-600">Başlangıç paketi</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary-600 mb-2">Hızlı</div>
+                <div className="text-secondary-600">5 dakikada kurulum</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary-600 mb-2">Güvenli</div>
+                <div className="text-secondary-600">SSL şifreleme</div>
+              </div>
+            </div>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Link href="/iletisim" className="btn-primary text-lg px-10 py-4 btn-lg">
+              <Link href="/iletisim" className="btn-primary text-lg px-10 py-4 btn-lg inline-flex items-center justify-center">
                 Öğretmen Başvurusu Yap
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
               <Link href="/giris" className="btn-outline text-lg px-10 py-4 btn-lg">
                 Giriş Yap
               </Link>
             </div>
+            <p className="text-sm text-secondary-500 mt-6">
+              Zaten hesabınız var mı? <Link href="/giris" className="text-primary-600 hover:text-primary-700 font-medium">Giriş yapın</Link>
+            </p>
           </div>
         </div>
       </section>
