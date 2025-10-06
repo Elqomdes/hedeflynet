@@ -93,6 +93,15 @@ export default function Navbar() {
             <Link href="/" className="nav-link text-base font-medium">
               Ana Sayfa
             </Link>
+            <a href="#features" className="nav-link text-base font-medium hover:text-primary-600 transition-colors">
+              Özellikler
+            </a>
+            <a href="#benefits" className="nav-link text-base font-medium hover:text-primary-600 transition-colors">
+              Avantajlar
+            </a>
+            <a href="#roles" className="nav-link text-base font-medium hover:text-primary-600 transition-colors">
+              Roller
+            </a>
             <Link href="/iletisim" className="nav-link text-base font-medium">
               İletişim
             </Link>
@@ -153,6 +162,27 @@ export default function Navbar() {
               >
                 Ana Sayfa
               </Link>
+              <a
+                href="#features"
+                className="block px-4 py-3 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-300 font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Özellikler
+              </a>
+              <a
+                href="#benefits"
+                className="block px-4 py-3 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-300 font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Avantajlar
+              </a>
+              <a
+                href="#roles"
+                className="block px-4 py-3 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-300 font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Roller
+              </a>
               <Link
                 href="/iletisim"
                 className="block px-4 py-3 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-300 font-medium"

@@ -88,30 +88,6 @@ export default function HomePage() {
   // If user is not logged in, show public homepage
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
-      {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-secondary-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-xl">H</span>
-              </div>
-              <span className="ml-3 text-2xl font-bold text-secondary-900">Hedefly</span>
-            </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-secondary-600 hover:text-primary-600 transition-colors">Özellikler</a>
-              <a href="#benefits" className="text-secondary-600 hover:text-primary-600 transition-colors">Avantajlar</a>
-              <a href="#roles" className="text-secondary-600 hover:text-primary-600 transition-colors">Roller</a>
-              <a href="#contact" className="text-secondary-600 hover:text-primary-600 transition-colors">İletişim</a>
-                    </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/giris" className="btn-primary">
-                Giriş Yap
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
@@ -560,50 +536,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="contact" className="bg-secondary-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">H</span>
-                </div>
-                <span className="ml-3 text-2xl font-bold">Hedefly</span>
-              </div>
-              <p className="text-secondary-300 mb-4">
-                Modern öğrenci koçluğu platformu ile eğitimi dijitalleştirin.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Platform</h3>
-              <ul className="space-y-2 text-secondary-300">
-                <li><a href="#features" className="hover:text-white transition-colors">Özellikler</a></li>
-                <li><a href="#benefits" className="hover:text-white transition-colors">Avantajlar</a></li>
-                <li><a href="#roles" className="hover:text-white transition-colors">Roller</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Kullanıcılar</h3>
-              <ul className="space-y-2 text-secondary-300">
-                <li><Link href="/giris" className="hover:text-white transition-colors">Öğretmen Girişi</Link></li>
-                <li><Link href="/giris" className="hover:text-white transition-colors">Öğrenci Girişi</Link></li>
-                <li><Link href="/giris" className="hover:text-white transition-colors">Veli Girişi</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">İletişim</h3>
-              <ul className="space-y-2 text-secondary-300">
-                <li><Link href="/iletisim" className="hover:text-white transition-colors">İletişim Formu</Link></li>
-                <li><a href="mailto:info@hedefly.com" className="hover:text-white transition-colors">info@hedefly.com</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-secondary-700 mt-12 pt-8 text-center text-secondary-300">
-            <p>&copy; 2024 Hedefly. Tüm hakları saklıdır.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
