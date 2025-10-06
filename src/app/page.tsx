@@ -190,41 +190,32 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="gradient-bg py-24 relative overflow-hidden">
+      <section className="gradient-bg py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-primary-100/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center animate-fade-in">
-            <div className="mb-8">
-              <div className="w-24 h-24 bg-gradient-to-r from-primary-500 to-primary-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-glow animate-bounce-gentle">
-                <span className="text-white font-bold text-3xl">H</span>
+            <div className="mb-12">
+              <div className="w-28 h-28 bg-gradient-to-r from-primary-500 to-primary-600 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-2xl animate-bounce-gentle">
+                <span className="text-white font-bold text-4xl">H</span>
               </div>
-              <h1 className="text-5xl md:text-7xl font-bold text-secondary-900 mb-6 bg-gradient-to-r from-secondary-900 via-primary-700 to-secondary-900 bg-clip-text text-transparent">
+              <h1 className="text-6xl md:text-8xl font-bold text-secondary-900 mb-8 bg-gradient-to-r from-secondary-900 via-primary-700 to-secondary-900 bg-clip-text text-transparent leading-tight">
                 Hedefly
               </h1>
-              <p className="text-xl md:text-2xl text-secondary-700 mb-8 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-2xl md:text-3xl text-secondary-700 mb-8 max-w-5xl mx-auto leading-relaxed font-medium">
                 Modern öğrenci koçluğu platformu ile öğrencilerinizin potansiyelini keşfedin
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary-600 mb-2">500+</div>
-                  <div className="text-secondary-600">Aktif Öğretmen</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary-600 mb-2">2000+</div>
-                  <div className="text-secondary-600">Başarılı Öğrenci</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary-600 mb-2">95%</div>
-                  <div className="text-secondary-600">Memnuniyet Oranı</div>
-                </div>
-              </div>
+              <p className="text-xl text-secondary-600 mb-16 max-w-4xl mx-auto leading-relaxed">
+                Öğrenci yönetiminden detaylı analizlere, ödev sisteminden veli iletişimine kadar 
+                öğrenci koçluğunun her aşamasını dijitalleştiren kapsamlı bir platform.
+              </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Link href="/giris" className="btn-primary text-lg px-10 py-4 btn-lg">
+            <div className="flex flex-col sm:flex-row gap-8 justify-center">
+              <Link href="/giris" className="btn-primary text-xl px-12 py-5 btn-lg inline-flex items-center justify-center group hover:scale-105 transition-all duration-300">
                 Hemen Başla
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
-              <Link href="/iletisim" className="btn-outline text-lg px-10 py-4 btn-lg">
+              <Link href="/iletisim" className="btn-outline text-xl px-12 py-5 btn-lg hover:scale-105 transition-all duration-300">
                 İletişime Geç
               </Link>
             </div>
