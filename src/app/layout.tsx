@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
   },
+  other: {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  }
 };
 
 export default function RootLayout({

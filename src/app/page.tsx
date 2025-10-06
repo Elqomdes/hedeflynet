@@ -39,6 +39,9 @@ export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  
+  // Force re-render to prevent cache issues
+  const [version] = useState(Date.now());
 
   useEffect(() => {
     const fetchUser = async () => {

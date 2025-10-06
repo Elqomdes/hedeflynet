@@ -4,6 +4,13 @@ const nextConfig = {
     domains: ['localhost'],
     formats: ['image/webp', 'image/avif'],
   },
+  // Disable caching for development
+  ...(process.env.NODE_ENV === 'development' && {
+    onDemandEntries: {
+      maxInactiveAge: 25 * 1000,
+      pagesBufferLength: 2,
+    },
+  }),
   redirects: async () => {
     return [
       { source: '/ogretmen/adaptif-%C3%B6%C4%9Frenme', destination: '/ogretmen/adaptif-ogrenme', permanent: true },
