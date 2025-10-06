@@ -4,6 +4,63 @@ Tüm önemli değişiklikler bu dosyada belgelenecektir.
 
 Format [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardına uygun olarak düzenlenmiştir.
 
+## [3.4.0] - 2024-12-19
+
+### Removed
+- **AI Koçluk Sistemi**
+  - AI koçluk API endpoint'leri kaldırıldı
+  - AI koçluk servisleri kaldırıldı
+  - AI koçluk modelleri kaldırıldı
+  - AI koçluk sayfaları kaldırıldı
+  - AI koçluk widget'ları kaldırıldı
+
+- **Adaptif Öğrenme Sistemi**
+  - Adaptif öğrenme API endpoint'leri kaldırıldı
+  - Adaptif öğrenme servisleri kaldırıldı
+  - Adaptif öğrenme modelleri kaldırıldı
+  - Adaptif öğrenme sayfaları kaldırıldı
+
+- **Gamification Sistemi**
+  - Gamification API endpoint'leri kaldırıldı
+  - Gamification servisleri kaldırıldı
+  - Gamification modelleri kaldırıldı
+  - Gamification widget'ları kaldırıldı
+
+- **Sosyal Öğrenme Sistemi**
+  - Sosyal öğrenme API endpoint'leri kaldırıldı
+  - Sosyal öğrenme servisleri kaldırıldı
+  - Sosyal öğrenme modelleri kaldırıldı
+  - Sosyal öğrenme sayfaları kaldırıldı
+  - Sosyal öğrenme widget'ları kaldırıldı
+
+- **Mobil Uygulama Özellikleri**
+  - Mobil API endpoint'leri kaldırıldı
+  - Mobil servisleri kaldırıldı
+  - Mobil modelleri kaldırıldı
+  - Mobil sayfaları kaldırıldı
+
+### Changed
+- **Navigation Menus**
+  - Silinen özelliklerle ilgili menü linkleri kaldırıldı
+  - Öğretmen, öğrenci ve admin panellerinde temizlik yapıldı
+
+- **Dashboard'lar**
+  - Silinen özelliklerle ilgili istatistik kartları kaldırıldı
+  - Dashboard'lar sadeleştirildi
+
+- **Codebase Cleanup**
+  - Kullanılmayan import'lar kaldırıldı
+  - Kullanılmayan servis referansları temizlendi
+  - Kullanılmayan model referansları kaldırıldı
+  - Kullanılmayan component referansları temizlendi
+
+### Technical
+- TypeScript hataları düzeltildi
+- Linting hataları düzeltildi
+- Build hataları düzeltildi
+- Performans optimizasyonları yapıldı
+- Kod kalitesi iyileştirildi
+
 ## [3.3.0] - 2024-12-19
 
 ### Added
