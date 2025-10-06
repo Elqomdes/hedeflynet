@@ -8,18 +8,18 @@ Eğer sınıf oluşturduğunuzda MongoDB'de görünmüyorsa, aşağıdaki adıml
 
 MongoDB Atlas (cloud) kullanıldığı için yerel MongoDB servisine gerek yoktur. Bağlantı otomatik olarak yapılacaktır.
 
-**Bağlantı String'i:**
+**Bağlantı String'i (örnek):**
 ```
-mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/?retryWrites=true&w=majority&appName=hedeflydatas
+mongodb+srv://<kullanici>:<parola>@<cluster-host>/?retryWrites=true&w=majority&appName=<uygulama-adi>
 ```
 
 ### 2. Ortam Değişkenlerini Kontrol Edin
 
-`.env.local` dosyasında aşağıdaki değişkenlerin doğru olduğundan emin olun:
+`.env.local` dosyasında aşağıdaki değişkenlerin doğru olduğundan emin olun (örnek değerler kullanın, gerçek kimlik bilgilerini repoda paylaşmayın):
 
 ```env
-MONGODB_URI=mongodb+srv://hedefly_db_user:emre42498*@hedeflydatas.8esydhl.mongodb.net/?retryWrites=true&w=majority&appName=hedeflydatas
-JWT_SECRET=your-super-secret-jwt-key-here-must-be-at-least-32-characters-long
+MONGODB_URI=mongodb+srv://<kullanici>:<parola>@<cluster-host>/?retryWrites=true&w=majority&appName=<uygulama-adi>
+JWT_SECRET=please-set-a-strong-secret-at-least-32-chars
 NODE_ENV=development
 ```
 

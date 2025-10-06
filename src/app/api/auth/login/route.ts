@@ -2,82 +2,36 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
 import { generateToken } from '@/lib/auth';
+import { rateLimit } from '@/lib/rateLimit';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
-// Simple in-memory rate limiting (in production, use Redis)
-const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
+const LoginSchema = z.object({
+  username: z.string().min(3).max(100),
+  password: z.string().min(6).max(128),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
-
-    // Input validation
-    if (!username || !password) {
+    const body = await request.json();
+    const parsed = LoginSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Kullanıcı adı ve şifre gerekli' },
+        { error: 'Geçersiz giriş verileri', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
-
-    if (typeof username !== 'string' || typeof password !== 'string') {
-      return NextResponse.json(
-        { error: 'Geçersiz veri formatı' },
-        { status: 400 }
-      );
-    }
-
-    if (username.trim().length < 3) {
-      return NextResponse.json(
-        { error: 'Kullanıcı adı en az 3 karakter olmalıdır' },
-        { status: 400 }
-      );
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Şifre en az 6 karakter olmalıdır' },
-        { status: 400 }
-      );
-    }
-
-    if (username.length > 100) {
-      return NextResponse.json(
-        { error: 'Kullanıcı adı çok uzun' },
-        { status: 400 }
-      );
-    }
-
-    if (password.length > 128) {
-      return NextResponse.json(
-        { error: 'Şifre çok uzun' },
-        { status: 400 }
-      );
-    }
-
-    // Sanitize inputs
+    const { username, password } = parsed.data;
     const sanitizedUsername = username.trim();
     const sanitizedPassword = password;
 
-    // Rate limiting check
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
-    const now = Date.now();
-    const attemptData = loginAttempts.get(clientIP);
-
-    if (attemptData) {
-      if (now - attemptData.lastAttempt < LOCKOUT_TIME) {
-        if (attemptData.count >= MAX_ATTEMPTS) {
-          return NextResponse.json(
-            { error: 'Çok fazla başarısız giriş denemesi. 15 dakika sonra tekrar deneyin.' },
-            { status: 429 }
-          );
-        }
-      } else {
-        // Reset attempts after lockout time
-        loginAttempts.delete(clientIP);
-      }
+    const rl = await rateLimit(request, { max: 5, windowMs: 15 * 60 * 1000, keyPrefix: 'login' });
+    if (rl.limited) {
+      return NextResponse.json(
+        { error: 'Çok fazla başarısız giriş denemesi. Bir süre sonra tekrar deneyin.' },
+        { status: 429 }
+      );
     }
 
     await connectDB();
@@ -102,21 +56,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (!user || !isPasswordValid) {
-      // Increment failed attempts
-      const currentAttempts = loginAttempts.get(clientIP) || { count: 0, lastAttempt: 0 };
-      loginAttempts.set(clientIP, {
-        count: currentAttempts.count + 1,
-        lastAttempt: now
-      });
-
       return NextResponse.json(
         { error: 'Geçersiz kullanıcı adı veya şifre' },
         { status: 401 }
       );
     }
 
-    // Clear failed attempts on successful login
-    loginAttempts.delete(clientIP);
+    // No need to clear rate limit; it expires automatically
 
     const token = generateToken((user._id as any).toString(), user.username, user.role);
 

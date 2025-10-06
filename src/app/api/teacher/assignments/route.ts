@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Assignment, Class, User } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import { AssignmentCreateSchema } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,57 +46,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, publishAt, closeAt, allowLate, maxAttempts, tags, rubricId } = await request.json();
-
-    if (!title || !description || !type || !dueDate) {
+    const body = await request.json();
+    const parsed = AssignmentCreateSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Tüm gerekli alanlar doldurulmalıdır' },
+        { error: 'Geçersiz giriş verileri', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
-
-    if (type === 'class' && !classId) {
-      return NextResponse.json(
-        { error: 'Sınıf ödevi için sınıf seçilmelidir' },
-        { status: 400 }
-      );
-    }
-
-    if (type === 'individual' && !studentId) {
-      return NextResponse.json(
-        { error: 'Bireysel ödev için öğrenci seçilmelidir' },
-        { status: 400 }
-      );
-    }
-
-    if (maxGrade !== undefined && (typeof maxGrade !== 'number' || maxGrade < 1 || maxGrade > 100)) {
-      return NextResponse.json(
-        { error: 'maxGrade 1 ile 100 arasında olmalıdır' },
-        { status: 400 }
-      );
-    }
-
-    if (maxAttempts !== undefined && (typeof maxAttempts !== 'number' || maxAttempts < 1)) {
-      return NextResponse.json(
-        { error: 'maxAttempts en az 1 olmalıdır' },
-        { status: 400 }
-      );
-    }
-
-    if (allowLate) {
-      if (!['no', 'untilClose', 'always'].includes(allowLate.policy)) {
-        return NextResponse.json(
-          { error: 'Geç teslim politikası geçersiz' },
-          { status: 400 }
-        );
-      }
-      if (allowLate.penaltyPercent !== undefined && (allowLate.penaltyPercent < 0 || allowLate.penaltyPercent > 100)) {
-        return NextResponse.json(
-          { error: 'penaltyPercent 0-100 arasında olmalıdır' },
-          { status: 400 }
-        );
-      }
-    }
+    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, publishAt, closeAt, allowLate, maxAttempts, tags, rubricId } = parsed.data;
 
     await connectDB();
 

@@ -4,6 +4,12 @@ const nextConfig = {
     domains: ['localhost'],
     formats: ['image/webp', 'image/avif'],
   },
+  redirects: async () => {
+    return [
+      { source: '/ogretmen/adaptif-%C3%B6%C4%9Frenme', destination: '/ogretmen/adaptif-ogrenme', permanent: true },
+      { source: '/ogretmen/sosyal-%C3%B6%C4%9Frenme', destination: '/ogretmen/sosyal-ogrenme', permanent: true },
+    ];
+  },
   experimental: {
     serverComponentsExternalPackages: ['mongoose'],
     optimizePackageImports: ['lucide-react'],

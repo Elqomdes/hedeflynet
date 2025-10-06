@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import { User, Class } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { apiCache } from '@/lib/cache';
+import { StudentCreateSchema } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,17 +92,17 @@ export async function POST(request: NextRequest) {
 
     console.log('Authentication successful, parsing request data...');
     
-    // Parse request data
-    const { username, email, password, firstName, lastName, phone } = await request.json();
-
-    // Validation
-    if (!username || !email || !password || !firstName || !lastName) {
-      console.log('Validation failed: missing required fields');
+    // Parse and validate request data
+    const body = await request.json();
+    const parsed = StudentCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      console.log('Validation failed:', parsed.error.flatten());
       return NextResponse.json(
-        { error: 'Gerekli alanlar eksik' },
+        { error: 'Geçersiz giriş verileri', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
+    const { username, email, password, firstName, lastName, phone } = parsed.data;
 
     console.log('Validation passed, connecting to MongoDB...');
     

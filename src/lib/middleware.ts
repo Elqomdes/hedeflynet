@@ -20,8 +20,14 @@ export function authMiddleware(request: NextRequest) {
   const protectedRoutes = ['/ogrenci', '/ogretmen', '/admin'];
   
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
-    // For protected routes, we'll let the layout components handle auth
-    // but we need to ensure the route exists
+    // Lightweight SSR-side guard: if no cookie, redirect to login
+    const token = request.cookies.get('auth-token');
+    if (!token) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/giris';
+      url.searchParams.set('redirectTo', pathname);
+      return NextResponse.redirect(url);
+    }
     return NextResponse.next();
   }
 

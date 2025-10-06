@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Class, User } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import { ClassCreateSchema } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,49 +58,17 @@ export async function POST(request: NextRequest) {
 
     console.log('Authentication successful, parsing request data...');
     
-    // Parse request data
-    const { name, description, coTeacherIds, studentIds } = await request.json();
-
-    // Validation
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      console.log('Validation failed: class name required');
+    // Parse and validate request data
+    const body = await request.json();
+    const parsed = ClassCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      console.log('Validation failed:', parsed.error.flatten());
       return NextResponse.json(
-        { error: 'Sınıf adı gereklidir' },
+        { error: 'Geçersiz giriş verileri', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
-    
-    if (name.trim().length > 100) {
-      console.log('Validation failed: class name too long');
-      return NextResponse.json(
-        { error: 'Sınıf adı 100 karakterden uzun olamaz' },
-        { status: 400 }
-      );
-    }
-    
-    if (description && (typeof description !== 'string' || description.trim().length > 500)) {
-      console.log('Validation failed: description too long');
-      return NextResponse.json(
-        { error: 'Açıklama 500 karakterden uzun olamaz' },
-        { status: 400 }
-      );
-    }
-    
-    if (coTeacherIds && (!Array.isArray(coTeacherIds) || coTeacherIds.length > 3)) {
-      console.log('Validation failed: too many co-teachers');
-      return NextResponse.json(
-        { error: 'Maksimum 3 yardımcı öğretmen seçebilirsiniz' },
-        { status: 400 }
-      );
-    }
-    
-    if (studentIds && !Array.isArray(studentIds)) {
-      console.log('Validation failed: invalid student list format');
-      return NextResponse.json(
-        { error: 'Öğrenci listesi geçersiz format' },
-        { status: 400 }
-      );
-    }
+    const { name, description, coTeacherIds, studentIds } = parsed.data;
 
     console.log('Validation passed, connecting to MongoDB...');
     
