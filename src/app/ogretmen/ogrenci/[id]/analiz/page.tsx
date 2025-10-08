@@ -17,6 +17,7 @@ interface AnalysisData {
   gradedAssignments: number;
   gradingRate: number;
   averageGrade: number;
+  totalAssignments?: number;
   subjectStats: { [key: string]: number };
   subjectDetails: { [key: string]: { 
     completion: number; 
@@ -338,89 +339,84 @@ export default function StudentAnalysisPage() {
           <div className="h-64">
             {(() => {
               // Get chart data - use real data if available, otherwise create fallback
-              let chartData = [];
+              let chartData: Array<{ title: string; count: number }> = [];
               if (analysisData.assignmentTitleCounts && Array.isArray(analysisData.assignmentTitleCounts) && analysisData.assignmentTitleCounts.length > 0) {
                 chartData = analysisData.assignmentTitleCounts;
-              } else if ((analysisData as any).totalAssignments > 0) {
+              } else if (analysisData.totalAssignments && analysisData.totalAssignments > 0) {
                 // Create fallback data based on total assignments
                 chartData = [
-                  { title: 'Genel Ödevler', count: (analysisData as any).totalAssignments }
+                  { title: 'Genel Ödevler', count: analysisData.totalAssignments }
                 ];
               }
               
-              return chartData.length > 0;
-            })() ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={(() => {
-                    let chartData = [];
-                    if (analysisData.assignmentTitleCounts && Array.isArray(analysisData.assignmentTitleCounts) && analysisData.assignmentTitleCounts.length > 0) {
-                      chartData = analysisData.assignmentTitleCounts;
-                    } else if ((analysisData as any).totalAssignments > 0) {
-                      chartData = [
-                        { title: 'Genel Ödevler', count: (analysisData as any).totalAssignments }
-                      ];
-                    }
-                    
-                    return chartData.map((item, index) => ({ 
-                      title: item.title && item.title.length > 15 ? item.title.slice(0, 15) + '...' : (item.title || 'Başlıksız'), 
-                      fullTitle: item.title || 'Başlıksız',
-                      count: item.count || 0,
-                      index: index
-                    }));
-                  })()}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="title" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={100}
-                    interval={0}
-                    fontSize={12}
-                    tick={{ fontSize: 10 }}
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 12 }}
-                    label={{ value: 'Ödev Adedi', angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip 
-                    formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
-                    labelFormatter={(label, payload) => {
-                      if (payload && payload[0] && payload[0].payload) {
-                        return `Başlık: ${payload[0].payload.fullTitle}`;
-                      }
-                      return `Başlık: ${label}`;
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '6px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      fontSize: '12px'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="count" 
-                    fill="#3B82F6" 
-                    name="Ödev Adedi" 
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={50}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <FileText className="mx-auto h-12 w-12 text-secondary-400 mb-4" />
-                  <h3 className="text-sm font-medium text-secondary-900 mb-2">Veri Bulunamadı</h3>
-                  <p className="text-sm text-secondary-500">
-                    Bu öğrenci için ödev başlığı verisi mevcut değil.
-                  </p>
-                </div>
-              </div>
-            )}
+              if (chartData.length > 0) {
+                const processedData = chartData.map((item, index) => ({ 
+                  title: item.title && item.title.length > 15 ? item.title.slice(0, 15) + '...' : (item.title || 'Başlıksız'), 
+                  fullTitle: item.title || 'Başlıksız',
+                  count: item.count || 0,
+                  index: index
+                }));
+
+                return (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart 
+                      data={processedData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="title" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={100}
+                        interval={0}
+                        fontSize={12}
+                        tick={{ fontSize: 10 }}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12 }}
+                        label={{ value: 'Ödev Adedi', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip 
+                        formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
+                        labelFormatter={(label, payload) => {
+                          if (payload && payload[0] && payload[0].payload) {
+                            return `Başlık: ${payload[0].payload.fullTitle}`;
+                          }
+                          return `Başlık: ${label}`;
+                        }}
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <Bar 
+                        dataKey="count" 
+                        fill="#3B82F6" 
+                        name="Ödev Adedi" 
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={50}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                );
+              } else {
+                return (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <FileText className="mx-auto h-12 w-12 text-secondary-400 mb-4" />
+                      <h3 className="text-sm font-medium text-secondary-900 mb-2">Veri Bulunamadı</h3>
+                      <p className="text-sm text-secondary-500">
+                        Bu öğrenci için ödev başlığı verisi mevcut değil.
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+            })()}
           </div>
         </div>
       </div>

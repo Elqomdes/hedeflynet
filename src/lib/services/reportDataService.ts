@@ -2,6 +2,39 @@ import connectDB from '@/lib/mongodb';
 import { Assignment, AssignmentSubmission, Goal, User, Class } from '@/lib/models';
 import { StudentReportData, ReportGenerationOptions } from '@/lib/models/ReportData';
 
+// Type for populated assignment submission
+interface PopulatedAssignmentSubmission {
+  _id: string;
+  assignmentId: {
+    _id: string;
+    title: string;
+    maxGrade?: number;
+  };
+  studentId: string;
+  status: string;
+  grade?: number;
+  maxGrade?: number;
+  feedback?: string;
+  teacherFeedback?: string;
+  submittedAt?: Date;
+  gradedAt?: Date;
+  content?: string;
+  attachments?: Array<{
+    type: 'pdf' | 'video' | 'link' | 'image';
+    url: string;
+    name: string;
+  }>;
+  attempt?: number;
+  versions?: Array<{
+    attempt: number;
+    submittedAt: Date;
+    content?: string;
+    attachments?: Array<{ type: 'pdf' | 'video' | 'link' | 'image'; url: string; name: string }>;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export class ReportDataService {
   /**
    * Öğrenci rapor verilerini toplar
@@ -85,8 +118,15 @@ export class ReportDataService {
         },
         subjects: subjectStats,
         monthlyProgress,
-        recentAssignments,
-        goals,
+        recentAssignments: recentAssignments.map(assignment => ({
+          ...assignment,
+          status: assignment.status as 'completed' | 'submitted' | 'graded' | 'pending',
+          maxGrade: assignment.maxGrade || 100
+        })),
+        goals: goals.map(goal => ({
+          ...goal,
+          status: goal.status as 'completed' | 'pending' | 'in_progress'
+        })),
         insights,
         generatedAt: new Date().toISOString()
       };
@@ -129,7 +169,8 @@ export class ReportDataService {
     let averageGrade = 0;
     if (gradedSubmissions.length > 0) {
       const totalGrade = gradedSubmissions.reduce((sum, submission) => {
-        const maxGrade = (submission.assignmentId as any)?.maxGrade || 100;
+        const populatedSubmission = submission as any;
+        const maxGrade = populatedSubmission.assignmentId?.maxGrade || 100;
         return sum + (submission.grade || 0);
       }, 0);
       averageGrade = Math.round(totalGrade / gradedSubmissions.length);
@@ -191,7 +232,8 @@ export class ReportDataService {
     // Branşlara göre grupla
     const subjectGroups: { [key: string]: any[] } = {};
     assignments.forEach(assignment => {
-      const subjectName = (assignment.classId as any)?.name || 'Genel';
+      const populatedAssignment = assignment as any; // This needs proper typing
+      const subjectName = populatedAssignment.classId?.name || 'Genel';
       if (!subjectGroups[subjectName]) {
         subjectGroups[subjectName] = [];
       }
@@ -200,7 +242,7 @@ export class ReportDataService {
 
     const subjectStats = [];
     for (const [subjectName, subjectAssignments] of Object.entries(subjectGroups)) {
-      const assignmentIds = subjectAssignments.map(a => a._id as any);
+      const assignmentIds = subjectAssignments.map(a => a._id.toString());
       
       const submittedInSubject = await AssignmentSubmission.countDocuments({
         assignmentId: { $in: assignmentIds },
@@ -225,7 +267,8 @@ export class ReportDataService {
       let averageGrade = 0;
       if (gradedSubmissions.length > 0) {
         const totalGrade = gradedSubmissions.reduce((sum, submission) => {
-          const maxGrade = (submission.assignmentId as any)?.maxGrade || 100;
+          const populatedSubmission = submission as any;
+          const maxGrade = populatedSubmission.assignmentId?.maxGrade || 100;
           return sum + (submission.grade || 0);
         }, 0);
         averageGrade = Math.round(totalGrade / gradedSubmissions.length);
@@ -281,7 +324,8 @@ export class ReportDataService {
       let monthAverageGrade = 0;
       if (monthSubmissions.length > 0) {
         const totalGrade = monthSubmissions.reduce((sum, submission) => {
-          const maxGrade = (submission.assignmentId as any)?.maxGrade || 100;
+          const populatedSubmission = submission as any;
+          const maxGrade = populatedSubmission.assignmentId?.maxGrade || 100;
           return sum + (submission.grade || 0);
         }, 0);
         monthAverageGrade = Math.round(totalGrade / monthSubmissions.length);
@@ -312,7 +356,7 @@ export class ReportDataService {
     const recentAssignments = [];
     for (const assignment of assignments) {
       const submission = await AssignmentSubmission.findOne({
-        assignmentId: assignment._id as any,
+        assignmentId: assignment._id,
         studentId
       });
 

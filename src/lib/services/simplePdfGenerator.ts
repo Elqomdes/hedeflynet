@@ -332,7 +332,7 @@ export class SimplePdfGenerator {
   }
 
   private addFooter(): void {
-    const pageCount = this.doc.getNumberOfPages();
+    const pageCount = (this.doc as any).getNumberOfPages();
     
     for (let i = 1; i <= pageCount; i++) {
       this.doc.setPage(i);

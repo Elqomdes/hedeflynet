@@ -4,6 +4,7 @@ import { User, Class } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { apiCache } from '@/lib/cache';
 import { StudentCreateSchema } from '@/lib/validation';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(students);
   } catch (error) {
-    console.error('Students fetch error:', error);
+    logger.error('Students fetch error', { error });
     return NextResponse.json(
       { error: 'Sunucu hatası' },
       { status: 500 }
@@ -78,25 +79,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Starting student creation process...');
+    logger.apiRequest('POST', '/api/teacher/students');
     
     // Authentication check
     const authResult = await getCurrentUser(request);
     if (!authResult || authResult.role !== 'teacher') {
-      console.log('Authentication failed for student creation');
+      logger.authEvent('Authentication failed for student creation');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    console.log('Authentication successful, parsing request data...');
+    logger.authEvent('Authentication successful for student creation');
     
     // Parse and validate request data
     const body = await request.json();
     const parsed = StudentCreateSchema.safeParse(body);
     if (!parsed.success) {
-      console.log('Validation failed:', parsed.error.flatten());
+      logger.warn('Student creation validation failed', { errors: parsed.error.flatten() });
       return NextResponse.json(
         { error: 'Geçersiz giriş verileri', details: parsed.error.flatten() },
         { status: 400 }
@@ -104,28 +105,28 @@ export async function POST(request: NextRequest) {
     }
     const { username, email, password, firstName, lastName, phone } = parsed.data;
 
-    console.log('Validation passed, connecting to MongoDB...');
+    logger.debug('Student creation validation passed, connecting to MongoDB');
     
     // Connect to MongoDB with better error handling
     const connection = await connectDB();
     if (!connection) {
-      console.error('MongoDB connection failed');
+      logger.error('MongoDB connection failed for student creation');
       return NextResponse.json(
         { error: 'Veritabanı bağlantısı kurulamadı' },
         { status: 500 }
       );
     }
-    console.log('MongoDB connected successfully');
+    logger.debug('MongoDB connected successfully for student creation');
 
     // Check for existing user with better error handling
-    console.log('Checking for existing user...');
+    logger.dbOperation('findOne', 'users', { query: { $or: [{ username }, { email }] } });
     let existingUser;
     try {
       existingUser = await User.findOne({
         $or: [{ username }, { email }]
       });
     } catch (dbError) {
-      console.error('Database query error:', dbError);
+      logger.error('Database query error during user lookup', { error: dbError });
       return NextResponse.json(
         { error: 'Veritabanı sorgu hatası' },
         { status: 500 }
@@ -133,14 +134,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (existingUser) {
-      console.log('User already exists');
+      logger.warn('User already exists during student creation', { username, email });
       return NextResponse.json(
         { error: 'Bu kullanıcı adı veya e-posta zaten kullanılıyor' },
         { status: 400 }
       );
     }
 
-    console.log('No existing user found, creating new student...');
+    logger.debug('No existing user found, creating new student');
     
     // Create and save student
     const student = new User({
@@ -154,12 +155,12 @@ export async function POST(request: NextRequest) {
       isActive: true
     });
 
-    console.log('Saving student to database...');
+    logger.dbOperation('save', 'users', { studentId: student._id });
     try {
       await student.save();
-      console.log('Student saved successfully with ID:', student._id);
+      logger.info('Student saved successfully', { studentId: student._id });
     } catch (saveError) {
-      console.error('Student save error:', saveError);
+      logger.error('Student save error', { error: saveError, studentId: student._id });
       return NextResponse.json(
         { error: 'Öğrenci kaydedilemedi' },
         { status: 500 }
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
 
     // Add student to teacher's default class or first available class
     try {
-      console.log('Adding student to teacher\'s class...');
+      logger.debug('Adding student to teacher\'s class');
       const teacherId = authResult._id;
       
       // Find teacher's first class or create a default one
@@ -181,7 +182,7 @@ export async function POST(request: NextRequest) {
 
       if (!teacherClass) {
         // Create a default class for the teacher
-        console.log('Creating default class for teacher...');
+        logger.debug('Creating default class for teacher');
         teacherClass = new Class({
           name: `${authResult.firstName} ${authResult.lastName} - Varsayılan Sınıf`,
           description: 'Öğretmen tarafından oluşturulan varsayılan sınıf',
@@ -189,19 +190,19 @@ export async function POST(request: NextRequest) {
           students: [student._id as any]
         });
         await teacherClass.save();
-        console.log('Default class created with ID:', teacherClass._id);
+        logger.info('Default class created', { classId: teacherClass._id });
       } else {
         // Add student to existing class
         if (!teacherClass.students.includes(student._id as any)) {
           teacherClass.students.push(student._id as any);
           await teacherClass.save();
-          console.log('Student added to existing class:', teacherClass._id);
+          logger.info('Student added to existing class', { classId: teacherClass._id, studentId: student._id });
         }
       }
     } catch (classError) {
-      console.error('Error adding student to class:', classError);
+      logger.error('Error adding student to class', { error: classError, studentId: student._id });
       // Don't fail the student creation if class assignment fails
-      console.log('Student created but class assignment failed');
+      logger.warn('Student created but class assignment failed', { studentId: student._id });
     }
 
     return NextResponse.json({
@@ -216,10 +217,8 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Add student error:', error);
-    console.error('Error details:', {
-      name: error instanceof Error ? error.name : 'Unknown',
-      message: error instanceof Error ? error.message : 'Unknown error',
+    logger.error('Add student error', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     });
     return NextResponse.json(

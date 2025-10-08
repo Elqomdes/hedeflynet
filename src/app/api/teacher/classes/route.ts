@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import { Class, User } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { ClassCreateSchema } from '@/lib/validation';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(classes);
   } catch (error) {
-    console.error('Teacher classes error:', error);
+    logger.error('Teacher classes fetch error', { error });
     return NextResponse.json(
       { error: 'Sunucu hatası' },
       { status: 500 }
@@ -44,25 +45,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Starting class creation process...');
+    logger.apiRequest('POST', '/api/teacher/classes');
     
     // Authentication check
     const authResult = await getCurrentUser(request);
     if (!authResult || authResult.role !== 'teacher') {
-      console.log('Authentication failed for class creation');
+      logger.authEvent('Authentication failed for class creation');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    console.log('Authentication successful, parsing request data...');
+    logger.authEvent('Authentication successful for class creation');
     
     // Parse and validate request data
     const body = await request.json();
     const parsed = ClassCreateSchema.safeParse(body);
     if (!parsed.success) {
-      console.log('Validation failed:', parsed.error.flatten());
+      logger.warn('Class creation validation failed', { errors: parsed.error.flatten() });
       return NextResponse.json(
         { error: 'Geçersiz giriş verileri', details: parsed.error.flatten() },
         { status: 400 }
@@ -70,35 +71,35 @@ export async function POST(request: NextRequest) {
     }
     const { name, description, coTeacherIds, studentIds } = parsed.data;
 
-    console.log('Validation passed, connecting to MongoDB...');
+    logger.debug('Class creation validation passed, connecting to MongoDB');
     
     // Connect to MongoDB with better error handling
     const connection = await connectDB();
     if (!connection) {
-      console.error('MongoDB connection failed');
+      logger.error('MongoDB connection failed for class creation');
       return NextResponse.json(
         { error: 'Veritabanı bağlantısı kurulamadı' },
         { status: 500 }
       );
     }
-    console.log('MongoDB connected successfully');
+    logger.debug('MongoDB connected successfully for class creation');
 
     // Check for existing class
-    console.log('Checking for existing class...');
+    logger.dbOperation('findOne', 'classes', { query: { name, teacherId: authResult._id } });
     const existingClass = await Class.findOne({
       name,
       teacherId: authResult._id
     });
 
     if (existingClass) {
-      console.log('Class already exists with this name');
+      logger.warn('Class already exists with this name', { className: name, teacherId: authResult._id });
       return NextResponse.json(
         { error: 'Bu isimde zaten bir sınıf mevcut' },
         { status: 400 }
       );
     }
 
-    console.log('No existing class found, creating new class...');
+    logger.debug('No existing class found, creating new class');
     
     // Create and save class
     const classData = new Class({
@@ -109,24 +110,22 @@ export async function POST(request: NextRequest) {
       students: studentIds || []
     });
 
-    console.log('Saving class to database...');
+    logger.dbOperation('save', 'classes', { classId: classData._id });
     await classData.save();
-    console.log('Class saved successfully with ID:', classData._id);
+    logger.info('Class saved successfully', { classId: classData._id });
 
     // Populate the created class
-    console.log('Populating class data...');
+    logger.debug('Populating class data');
     const populatedClass = await Class.findById(classData._id)
       .populate('teacherId', 'firstName lastName')
       .populate('coTeachers', 'firstName lastName')
       .populate('students', 'firstName lastName');
 
-    console.log('Class creation completed successfully');
+    logger.info('Class creation completed successfully', { classId: classData._id });
     return NextResponse.json(populatedClass, { status: 201 });
   } catch (error) {
-    console.error('Create class error:', error);
-    console.error('Error details:', {
-      name: error instanceof Error ? error.name : 'Unknown',
-      message: error instanceof Error ? error.message : 'Unknown error',
+    logger.error('Create class error', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     });
     return NextResponse.json(
