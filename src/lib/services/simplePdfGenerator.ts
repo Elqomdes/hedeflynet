@@ -37,7 +37,7 @@ export class SimplePdfGenerator {
       
       console.log('SimplePdfGenerator: PDF generation completed successfully');
       
-      const pdfOutput = this.doc.output('arraybuffer');
+      const pdfOutput = this.doc.output('arraybuffer') as ArrayBuffer;
       return Buffer.from(pdfOutput);
       
     } catch (error) {

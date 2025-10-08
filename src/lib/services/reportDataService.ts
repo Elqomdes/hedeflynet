@@ -58,14 +58,14 @@ export class ReportDataService {
 
       return {
         student: {
-          id: student._id.toString(),
+          id: (student._id as any).toString(),
           firstName: student.firstName,
           lastName: student.lastName,
           email: student.email,
           class: studentClass?.name
         },
         teacher: {
-          id: teacher._id.toString(),
+          id: (teacher._id as any).toString(),
           firstName: teacher.firstName,
           lastName: teacher.lastName,
           email: teacher.email
@@ -200,7 +200,7 @@ export class ReportDataService {
 
     const subjectStats = [];
     for (const [subjectName, subjectAssignments] of Object.entries(subjectGroups)) {
-      const assignmentIds = subjectAssignments.map(a => a._id);
+      const assignmentIds = subjectAssignments.map(a => a._id as any);
       
       const submittedInSubject = await AssignmentSubmission.countDocuments({
         assignmentId: { $in: assignmentIds },
@@ -312,7 +312,7 @@ export class ReportDataService {
     const recentAssignments = [];
     for (const assignment of assignments) {
       const submission = await AssignmentSubmission.findOne({
-        assignmentId: assignment._id,
+        assignmentId: assignment._id as any,
         studentId
       });
 
