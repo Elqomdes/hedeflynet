@@ -47,20 +47,29 @@ export class ReportDataService {
     options: ReportGenerationOptions = {}
   ): Promise<StudentReportData> {
     try {
-      await connectDB();
+      console.log('ReportDataService: Starting data collection', { studentId, teacherId });
+      
+      // MongoDB bağlantısını kontrol et
+      const dbConnection = await connectDB();
+      if (!dbConnection) {
+        throw new Error('Veritabanı bağlantısı kurulamadı');
+      }
 
       // Öğrenci ve öğretmen bilgilerini al
+      console.log('ReportDataService: Fetching user data');
       const [student, teacher] = await Promise.all([
         User.findById(studentId).select('firstName lastName email'),
         User.findById(teacherId).select('firstName lastName email')
       ]);
 
       if (!student) {
-        throw new Error('Öğrenci bulunamadı');
+        throw new Error(`Öğrenci bulunamadı: ${studentId}`);
       }
       if (!teacher) {
-        throw new Error('Öğretmen bulunamadı');
+        throw new Error(`Öğretmen bulunamadı: ${teacherId}`);
       }
+
+      console.log('ReportDataService: User data fetched successfully');
 
       // Öğrencinin sınıf bilgisini al
       const studentClass = await Class.findOne({ students: studentId }).select('name');

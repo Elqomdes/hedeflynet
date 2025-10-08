@@ -93,7 +93,7 @@ export default function StudentAnalysisPage() {
         credentials: 'include', // Include cookies for authentication
       });
 
-      // console.log('New report response status:', response.status);
+      console.log('Report response status:', response.status);
       
       if (response.ok) {
         const contentType = response.headers.get('content-type') || '';

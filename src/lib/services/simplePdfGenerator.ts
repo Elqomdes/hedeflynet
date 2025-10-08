@@ -19,23 +19,41 @@ export class SimplePdfGenerator {
 
   public async generateReport(reportData: StudentReportData): Promise<Buffer> {
     try {
-      // console.log('SimplePdfGenerator: Starting PDF generation');
+      console.log('SimplePdfGenerator: Starting PDF generation');
+      
+      // Validate report data
+      if (!reportData) {
+        throw new Error('Rapor verisi bulunamadı');
+      }
+      
+      if (!reportData.student) {
+        throw new Error('Öğrenci bilgileri bulunamadı');
+      }
+      
+      if (!reportData.teacher) {
+        throw new Error('Öğretmen bilgileri bulunamadı');
+      }
       
       this.currentY = this.margin;
       
-      // Add all sections
-      this.addHeader(reportData);
-      this.addStudentInfo(reportData);
-      this.addPerformanceSummary(reportData);
-      this.addStatistics(reportData);
-      this.addSubjectStatistics(reportData);
-      this.addMonthlyProgress(reportData);
-      this.addRecentAssignments(reportData);
-      this.addGoals(reportData);
-      this.addInsights(reportData);
-      this.addFooter();
+      // Add all sections with error handling
+      try {
+        this.addHeader(reportData);
+        this.addStudentInfo(reportData);
+        this.addPerformanceSummary(reportData);
+        this.addStatistics(reportData);
+        this.addSubjectStatistics(reportData);
+        this.addMonthlyProgress(reportData);
+        this.addRecentAssignments(reportData);
+        this.addGoals(reportData);
+        this.addInsights(reportData);
+        this.addFooter();
+      } catch (sectionError) {
+        console.error('SimplePdfGenerator: Error in section generation', sectionError);
+        throw new Error(`PDF bölümü oluşturma hatası: ${sectionError instanceof Error ? sectionError.message : 'Bilinmeyen hata'}`);
+      }
       
-      // console.log('SimplePdfGenerator: PDF generation completed successfully');
+      console.log('SimplePdfGenerator: PDF generation completed successfully');
       
       const pdfOutput = this.doc.output('arraybuffer') as ArrayBuffer;
       return Buffer.from(pdfOutput);
