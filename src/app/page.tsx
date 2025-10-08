@@ -69,8 +69,8 @@ interface PricingData {
   }>;
 }
 
-// Free Teacher Progress Section Component
-function FreeTeacherProgressSection() {
+// Enhanced Free Teacher Progress Section Component - Now Hero
+function EnhancedFreeTeacherProgressSection() {
   const [slotData, setSlotData] = useState<FreeTeacherSlotData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -94,13 +94,12 @@ function FreeTeacherProgressSection() {
 
   if (loading || !slotData) {
     return (
-      <section className="py-16 bg-gradient-to-r from-green-50 to-emerald-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-96 mx-auto"></div>
-            </div>
+      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10 text-center">
+          <div className="animate-pulse">
+            <div className="h-12 bg-white/30 rounded w-96 mx-auto mb-6"></div>
+            <div className="h-6 bg-white/20 rounded w-64 mx-auto"></div>
           </div>
         </div>
       </section>
@@ -110,38 +109,62 @@ function FreeTeacherProgressSection() {
   const progressPercentage = (slotData.usedSlots / slotData.totalSlots) * 100;
 
   return (
-    <section className="py-16 bg-gradient-to-r from-green-50 to-emerald-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl mb-6 shadow-lg">
-            <Gift className="w-8 h-8 text-white" />
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full animate-pulse"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-white/15 rounded-full animate-bounce"></div>
+        <div className="absolute bottom-32 left-1/4 w-16 h-16 bg-white/20 rounded-full animate-ping"></div>
+        <div className="absolute bottom-20 right-20 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        {/* Logo and Brand */}
+        <div className="mb-12">
+          <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl border border-white/30">
+            <span className="text-white font-bold text-4xl">H</span>
           </div>
-          <h2 className="text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
-            İlk 50 Öğretmen Ücretsiz!
+          <h1 className="text-6xl lg:text-8xl font-bold text-white mb-6 drop-shadow-2xl">
+            Hedefly
+          </h1>
+        </div>
+
+        {/* Main Offer */}
+        <div className="mb-16">
+          <div className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-8 shadow-2xl animate-pulse">
+            <Gift className="w-8 h-8 text-white mr-3" />
+            <span className="text-white font-bold text-2xl">İLK 50 ÖĞRETMEN ÜCRETSİZ!</span>
+          </div>
+          
+          <h2 className="text-4xl lg:text-6xl font-bold text-white mb-8 drop-shadow-xl">
+            Modern Öğrenci Koçluğu Platformu
           </h2>
-          <p className="text-lg text-secondary-600 max-w-3xl mx-auto">
+          
+          <p className="text-xl lg:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed drop-shadow-lg">
             Platformumuzun açılışında ilk 50 öğretmenimize 1 yıl boyunca ücretsiz erişim imkanı sunuyoruz.
-            Hemen başvurun ve bu fırsattan yararlanın!
+            <br />
+            <span className="font-bold text-yellow-300">Hemen başvurun ve bu fırsattan yararlanın!</span>
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        {/* Progress Section */}
+        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 mb-12 border border-white/20 shadow-2xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Progress Bar */}
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-secondary-900">İlerleme Durumu</h3>
-                <span className="text-2xl font-bold text-green-600">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-white">İlerleme Durumu</h3>
+                <span className="text-4xl font-bold text-yellow-300">
                   {slotData.usedSlots}/{slotData.totalSlots}
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-6 mb-4">
+              <div className="w-full bg-white/20 rounded-full h-8 mb-6">
                 <div 
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 h-6 rounded-full transition-all duration-1000 ease-out"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 h-8 rounded-full transition-all duration-2000 ease-out shadow-lg"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
-              <div className="flex justify-between text-sm text-secondary-600">
+              <div className="flex justify-between text-lg text-white/80">
                 <span>Kullanılan: {slotData.usedSlots}</span>
                 <span>Kalan: {slotData.availableSlots}</span>
               </div>
@@ -149,13 +172,13 @@ function FreeTeacherProgressSection() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-                <div className="text-3xl font-bold text-green-600 mb-2">{slotData.usedSlots}</div>
-                <div className="text-sm text-secondary-600">Kullanılan Slot</div>
+              <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                <div className="text-5xl font-bold text-yellow-300 mb-3">{slotData.usedSlots}</div>
+                <div className="text-lg text-white/80">Kullanılan Slot</div>
               </div>
-              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
-                <div className="text-3xl font-bold text-blue-600 mb-2">{slotData.availableSlots}</div>
-                <div className="text-sm text-secondary-600">Kalan Slot</div>
+              <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                <div className="text-5xl font-bold text-green-300 mb-3">{slotData.availableSlots}</div>
+                <div className="text-lg text-white/80">Kalan Slot</div>
               </div>
             </div>
           </div>
@@ -163,19 +186,19 @@ function FreeTeacherProgressSection() {
 
         {/* Recent Assignments */}
         {slotData.recentAssignments.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h3 className="text-xl font-bold text-secondary-900 mb-6 text-center">
+          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 mb-12 border border-white/20 shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-8">
               Son Atanan Öğretmenler
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {slotData.recentAssignments.map((assignment, index) => (
-                <div key={index} className="flex items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
-                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                    <Star className="w-5 h-5 text-white" />
+                <div key={index} className="flex items-center p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-4 shadow-lg">
+                    <Star className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="font-semibold text-secondary-900">{assignment.teacherName}</div>
-                    <div className="text-sm text-secondary-600">Slot #{assignment.slotNumber}</div>
+                    <div className="font-bold text-white text-lg">{assignment.teacherName}</div>
+                    <div className="text-white/70">Slot #{assignment.slotNumber}</div>
                   </div>
                 </div>
               ))}
@@ -183,16 +206,29 @@ function FreeTeacherProgressSection() {
           </div>
         )}
 
-        {/* CTA */}
-        <div className="text-center mt-8">
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row gap-6 justify-center">
           <Link 
             href="/giris" 
-            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+            className="inline-flex items-center px-12 py-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-xl rounded-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-3xl transform hover:scale-105"
           >
-            <Gift className="w-5 h-5 mr-2" />
-            Ücretsiz Başvuru Yap
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <Gift className="w-6 h-6 mr-3" />
+            ÜCRETSİZ BAŞVURU YAP
+            <ArrowRight className="w-6 h-6 ml-3" />
           </Link>
+          <Link 
+            href="/iletisim" 
+            className="inline-flex items-center px-12 py-6 bg-white/20 backdrop-blur-sm text-white font-bold text-xl rounded-2xl hover:bg-white/30 transition-all duration-300 border border-white/30 shadow-xl"
+          >
+            İletişime Geç
+          </Link>
+        </div>
+
+        {/* Urgency Message */}
+        <div className="mt-12 text-center">
+          <p className="text-white/80 text-lg">
+            ⚡ <span className="font-bold text-yellow-300">Sınırlı Sayıda!</span> Sadece {slotData.availableSlots} slot kaldı!
+          </p>
         </div>
       </div>
     </section>
@@ -440,41 +476,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
 
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 via-transparent to-secondary-500/10"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center">
-            <div className="mb-8">
-              <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
-                <span className="text-white font-bold text-3xl">H</span>
-              </div>
-              <h1 className="text-5xl lg:text-7xl font-bold text-secondary-900 mb-6 bg-gradient-to-r from-secondary-900 via-primary-700 to-secondary-900 bg-clip-text text-transparent">
-                Hedefly
-              </h1>
-              <p className="text-2xl lg:text-3xl text-secondary-700 mb-6 max-w-4xl mx-auto font-medium">
-                Modern Öğrenci Koçluğu Platformu
-              </p>
-              <p className="text-lg text-secondary-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Öğrenci yönetiminden detaylı analizlere, ödev sisteminden veli iletişimine kadar 
-                öğrenci koçluğunun her aşamasını dijitalleştiren kapsamlı bir platform.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Link href="/giris" className="btn-primary text-lg px-10 py-4 inline-flex items-center justify-center group hover:scale-105 transition-all duration-300">
-                Hemen Başla
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-              </Link>
-              <Link href="/iletisim" className="btn-outline text-lg px-10 py-4 hover:scale-105 transition-all duration-300">
-                İletişime Geç
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Free Teacher Slots Progress Section */}
-      <FreeTeacherProgressSection />
+      {/* Enhanced Free Teacher Slots Progress Section - Now Hero */}
+      <EnhancedFreeTeacherProgressSection />
 
       {/* Pricing Section */}
       <PricingSection />
@@ -653,7 +656,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Öğretmen */}
             <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
@@ -737,35 +740,6 @@ export default function HomePage() {
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
                   Performans takibi
-                </li>
-              </ul>
-            </div>
-
-            {/* Admin */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-center text-secondary-900 mb-4">Yöneticiler</h3>
-              <p className="text-secondary-600 text-center mb-6">
-                Sistem yönetimi, öğretmen onayları ve genel kontrol
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Öğretmen onayları
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Sistem istatistikleri
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Kullanıcı yönetimi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Platform kontrolü
                 </li>
               </ul>
             </div>

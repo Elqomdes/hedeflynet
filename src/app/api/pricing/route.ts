@@ -8,9 +8,9 @@ export async function GET(request: NextRequest) {
     
     // Base pricing
     const basePricing: Record<string, { price: number; originalPrice: number; discountPercentage?: number; discountName?: string }> = {
-      '3months': { price: 299, originalPrice: 299 },
-      '6months': { price: 549, originalPrice: 549 },
-      '12months': { price: 999, originalPrice: 999 }
+      '3months': { price: 1500, originalPrice: 1500 },
+      '6months': { price: 2400, originalPrice: 2400 },
+      '12months': { price: 3600, originalPrice: 3600 }
     };
 
     // Get active discounts
@@ -52,7 +52,14 @@ export async function GET(request: NextRequest) {
               'Gelişmiş ödev sistemi',
               'Detaylı analiz ve raporlar',
               'Veli portalı erişimi',
-              'Email desteği'
+              'Video koçluk oturumları',
+              'Öncelikli destek',
+              'Özel rapor şablonları',
+              'API erişimi',
+              'Sınırsız video koçluk',
+              'Özel eğitim materyalleri',
+              'Dedicated hesap yöneticisi',
+              'Özel entegrasyonlar'
             ],
             popular: false
           },
@@ -65,11 +72,18 @@ export async function GET(request: NextRequest) {
             discountPercentage: pricing['6months'].discountPercentage,
             discountName: pricing['6months'].discountName,
             features: [
-              '3 aylık planın tüm özellikleri',
+              'Sınırsız öğrenci ekleme',
+              'Gelişmiş ödev sistemi',
+              'Detaylı analiz ve raporlar',
+              'Veli portalı erişimi',
               'Video koçluk oturumları',
               'Öncelikli destek',
               'Özel rapor şablonları',
-              'API erişimi'
+              'API erişimi',
+              'Sınırsız video koçluk',
+              'Özel eğitim materyalleri',
+              'Dedicated hesap yöneticisi',
+              'Özel entegrasyonlar'
             ],
             popular: true
           },
@@ -82,7 +96,14 @@ export async function GET(request: NextRequest) {
             discountPercentage: pricing['12months'].discountPercentage,
             discountName: pricing['12months'].discountName,
             features: [
-              '6 aylık planın tüm özellikleri',
+              'Sınırsız öğrenci ekleme',
+              'Gelişmiş ödev sistemi',
+              'Detaylı analiz ve raporlar',
+              'Veli portalı erişimi',
+              'Video koçluk oturumları',
+              'Öncelikli destek',
+              'Özel rapor şablonları',
+              'API erişimi',
               'Sınırsız video koçluk',
               'Özel eğitim materyalleri',
               'Dedicated hesap yöneticisi',
