@@ -43,7 +43,6 @@ export default function StudentAnalysisPage() {
   const [student, setStudent] = useState<Student | null>(null);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [generatingReport, setGeneratingReport] = useState(false);
 
   const fetchAnalysisData = useCallback(async () => {
     try {
@@ -74,94 +73,14 @@ export default function StudentAnalysisPage() {
     }
   }, [studentId, fetchAnalysisData]);
 
-  const generateReport = async () => {
+  const viewReport = () => {
     if (!student) {
       alert('Öğrenci bilgileri yüklenemedi. Lütfen sayfayı yenileyin.');
       return;
     }
     
-    setGeneratingReport(true);
-    try {
-      // console.log('Generating new report for student:', studentId);
-      
-      // Use download API with GET method to avoid 405 errors
-      const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-      const endDate = new Date().toISOString();
-      
-      const response = await fetch(`/api/teacher/students/${studentId}/report/download?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
-        method: 'GET',
-        credentials: 'include', // Include cookies for authentication
-      });
-
-      console.log('Report response status:', response.status);
-      
-      if (response.ok) {
-        const contentType = response.headers.get('content-type') || '';
-        
-        if (contentType.includes('application/pdf')) {
-          // PDF response
-          const blob = await response.blob();
-          if (blob.size === 0) {
-            throw new Error('PDF dosyası boş geldi');
-          }
-          
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${student.firstName}_${student.lastName}_raporu_${new Date().toISOString().split('T')[0]}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-          
-          alert('Rapor başarıyla indirildi!');
-        } else {
-          throw new Error('Beklenmeyen yanıt formatı');
-        }
-      } else {
-        // Error response
-        let errorMessage = 'Rapor oluşturma başarısız';
-        let details: string | undefined = undefined;
-        
-        try {
-          const errorData = await response.json();
-          console.error('Report generation error response:', errorData);
-          errorMessage = errorData?.error || errorMessage;
-          details = errorData?.details;
-        } catch (parseErr) {
-          console.error('Failed to parse error response:', parseErr);
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        }
-
-        // Show specific error messages
-        if (response.status === 401) {
-          alert('Kimlik doğrulama gerekli. Lütfen giriş yapın ve tekrar deneyin.');
-        } else if (response.status === 403) {
-          alert('Bu işlem için yetkiniz yok. Sadece öğretmenler rapor oluşturabilir.');
-        } else if (response.status === 404) {
-          alert('Öğrenci bulunamadı. Lütfen sayfayı yenileyin.');
-        } else if (response.status === 405) {
-          alert('HTTP 405 hatası. Lütfen sayfayı yenileyin ve tekrar deneyin.');
-        } else if (errorMessage.includes('bulunamadı')) {
-          alert('Öğrenci veya öğretmen bulunamadı. Lütfen giriş yaptığınızdan emin olun.');
-        } else if (errorMessage.includes('bağlantı')) {
-          alert('Veritabanı bağlantı hatası. Lütfen daha sonra tekrar deneyin.');
-        } else if (errorMessage.includes('Geçersiz')) {
-          alert('Geçersiz öğrenci ID. Lütfen sayfayı yenileyin.');
-        } else if (errorMessage.includes('PDF oluşturulamadı')) {
-          alert('PDF oluşturulamadı. Lütfen daha sonra tekrar deneyin.');
-        } else {
-          const finalMessage = details ? `${errorMessage}\n\nDetay: ${details}` : errorMessage;
-          alert(`Rapor oluşturulurken hata oluştu (HTTP ${response.status}):\n\n${finalMessage}`);
-        }
-      }
-    } catch (error) {
-      console.error('Report generation error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
-      alert(`Rapor oluşturulurken hata oluştu:\n\n${errorMessage}\n\nLütfen tekrar deneyin.`);
-    } finally {
-      setGeneratingReport(false);
-    }
+    // Navigate to web-based report page
+    window.open(`/ogretmen/ogrenci/${studentId}/rapor`, '_blank');
   };
 
   if (loading) {
@@ -198,21 +117,12 @@ export default function StudentAnalysisPage() {
             </p>
           </div>
           <button
-            onClick={generateReport}
-            disabled={generatingReport || !analysisData}
+            onClick={viewReport}
+            disabled={!analysisData}
             className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {generatingReport ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Oluşturuluyor...</span>
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                <span>Rapor İndir</span>
-              </>
-            )}
+            <FileText className="w-4 h-4" />
+            <span>Raporu Görüntüle</span>
           </button>
         </div>
       </div>

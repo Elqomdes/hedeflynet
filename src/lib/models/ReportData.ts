@@ -72,5 +72,5 @@ export interface ReportGenerationOptions {
   includeDetailedAssignments?: boolean;
   includeGoals?: boolean;
   includeInsights?: boolean;
-  format?: 'pdf' | 'html';
+  format?: 'pdf' | 'html' | 'json';
 }
