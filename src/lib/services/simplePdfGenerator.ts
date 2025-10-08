@@ -19,7 +19,7 @@ export class SimplePdfGenerator {
 
   public async generateReport(reportData: StudentReportData): Promise<Buffer> {
     try {
-      console.log('SimplePdfGenerator: Starting PDF generation');
+      // console.log('SimplePdfGenerator: Starting PDF generation');
       
       this.currentY = this.margin;
       
@@ -35,7 +35,7 @@ export class SimplePdfGenerator {
       this.addInsights(reportData);
       this.addFooter();
       
-      console.log('SimplePdfGenerator: PDF generation completed successfully');
+      // console.log('SimplePdfGenerator: PDF generation completed successfully');
       
       const pdfOutput = this.doc.output('arraybuffer') as ArrayBuffer;
       return Buffer.from(pdfOutput);

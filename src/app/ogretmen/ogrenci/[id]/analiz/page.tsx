@@ -81,7 +81,7 @@ export default function StudentAnalysisPage() {
     
     setGeneratingReport(true);
     try {
-      console.log('Generating new report for student:', studentId);
+      // console.log('Generating new report for student:', studentId);
       
       // Use new reliable API
       const response = await fetch(`/api/teacher/students/${studentId}/report/new`, {
@@ -100,7 +100,7 @@ export default function StudentAnalysisPage() {
         }),
       });
 
-      console.log('New report response status:', response.status);
+      // console.log('New report response status:', response.status);
       
       if (response.ok) {
         const contentType = response.headers.get('content-type') || '';
