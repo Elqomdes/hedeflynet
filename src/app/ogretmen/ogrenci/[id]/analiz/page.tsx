@@ -341,10 +341,10 @@ export default function StudentAnalysisPage() {
               let chartData = [];
               if (analysisData.assignmentTitleCounts && Array.isArray(analysisData.assignmentTitleCounts) && analysisData.assignmentTitleCounts.length > 0) {
                 chartData = analysisData.assignmentTitleCounts;
-              } else if (analysisData.totalAssignments > 0) {
+              } else if ((analysisData as any).totalAssignments > 0) {
                 // Create fallback data based on total assignments
                 chartData = [
-                  { title: 'Genel Ödevler', count: analysisData.totalAssignments }
+                  { title: 'Genel Ödevler', count: (analysisData as any).totalAssignments }
                 ];
               }
               
@@ -356,9 +356,9 @@ export default function StudentAnalysisPage() {
                     let chartData = [];
                     if (analysisData.assignmentTitleCounts && Array.isArray(analysisData.assignmentTitleCounts) && analysisData.assignmentTitleCounts.length > 0) {
                       chartData = analysisData.assignmentTitleCounts;
-                    } else if (analysisData.totalAssignments > 0) {
+                    } else if ((analysisData as any).totalAssignments > 0) {
                       chartData = [
-                        { title: 'Genel Ödevler', count: analysisData.totalAssignments }
+                        { title: 'Genel Ödevler', count: (analysisData as any).totalAssignments }
                       ];
                     }
                     
