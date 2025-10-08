@@ -185,12 +185,19 @@ export async function GET(
     ]);
 
     // Ensure we have valid title data
-    const assignmentTitleCounts = titleGroups
+    let assignmentTitleCounts = titleGroups
       .filter(item => item._id && item._id.trim().length > 0)
       .map(item => ({ 
         title: item._id.trim(), 
         count: item.count 
       }));
+
+    // If no specific titles found, create a general category
+    if (assignmentTitleCounts.length === 0 && totalAssignments > 0) {
+      assignmentTitleCounts = [
+        { title: 'Genel Ödevler', count: totalAssignments }
+      ];
+    }
 
     return NextResponse.json({
       assignmentCompletion,

@@ -81,41 +81,30 @@ export default function StudentAnalysisPage() {
     
     setGeneratingReport(true);
     try {
-      console.log('Generating reliable report for student:', studentId);
+      console.log('Generating new report for student:', studentId);
       
-      // Try new reliable API first
-      let response = await fetch(`/api/teacher/students/${studentId}/report/reliable`, {
+      // Use new reliable API
+      const response = await fetch(`/api/teacher/students/${studentId}/report/new`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(), // Son 3 ay
-          endDate: new Date().toISOString()
+          endDate: new Date().toISOString(),
+          includeCharts: true,
+          includeDetailedAssignments: true,
+          includeGoals: true,
+          includeInsights: true,
+          format: 'pdf'
         }),
       });
 
-      console.log('Reliable report response status:', response.status);
-      
-      if (!response.ok) {
-        // If reliable API fails, try fallback
-        console.log('Reliable API failed, trying fallback API');
-        response = await fetch(`/api/teacher/students/${studentId}/report?format=pdf`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-            endDate: new Date().toISOString()
-          }),
-        });
-        console.log('Fallback report response status:', response.status);
-      }
-      
-      const contentType = response.headers.get('content-type') || '';
+      console.log('New report response status:', response.status);
       
       if (response.ok) {
+        const contentType = response.headers.get('content-type') || '';
+        
         if (contentType.includes('application/pdf')) {
           // PDF response
           const blob = await response.blob();
@@ -133,15 +122,6 @@ export default function StudentAnalysisPage() {
           document.body.removeChild(a);
           
           alert('Rapor başarıyla indirildi!');
-        } else if (contentType.includes('application/json')) {
-          // JSON response (fallback)
-          const data = await response.json();
-          if (data.url) {
-            // Report created, show link
-            window.open(`${window.location.origin}${data.url}`, '_blank');
-          } else {
-            throw new Error(data.error || 'Bilinmeyen yanıt formatı');
-          }
         } else {
           throw new Error('Beklenmeyen yanıt formatı');
         }
@@ -151,22 +131,16 @@ export default function StudentAnalysisPage() {
         let details: string | undefined = undefined;
         
         try {
-          if (contentType.includes('application/json')) {
-            const errorData = await response.json();
-            console.error('Report generation error response:', errorData);
-            errorMessage = errorData?.error || errorMessage;
-            details = errorData?.details;
-          } else {
-            const text = await response.text();
-            console.error('Report generation error response (text):', text);
-            errorMessage = text || errorMessage;
-          }
+          const errorData = await response.json();
+          console.error('Report generation error response:', errorData);
+          errorMessage = errorData?.error || errorMessage;
+          details = errorData?.details;
         } catch (parseErr) {
           console.error('Failed to parse error response:', parseErr);
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
 
-        // Show more specific error messages
+        // Show specific error messages
         if (errorMessage.includes('bulunamadı')) {
           alert('Öğrenci veya öğretmen bulunamadı. Lütfen giriş yaptığınızdan emin olun.');
         } else if (errorMessage.includes('bağlantı')) {
@@ -362,15 +336,39 @@ export default function StudentAnalysisPage() {
             Başlığa Göre Ödev Dağılımı
           </h3>
           <div className="h-64">
-            {analysisData.assignmentTitleCounts && analysisData.assignmentTitleCounts.length > 0 ? (
+            {(() => {
+              // Get chart data - use real data if available, otherwise create fallback
+              let chartData = [];
+              if (analysisData.assignmentTitleCounts && Array.isArray(analysisData.assignmentTitleCounts) && analysisData.assignmentTitleCounts.length > 0) {
+                chartData = analysisData.assignmentTitleCounts;
+              } else if (analysisData.totalAssignments > 0) {
+                // Create fallback data based on total assignments
+                chartData = [
+                  { title: 'Genel Ödevler', count: analysisData.totalAssignments }
+                ];
+              }
+              
+              return chartData.length > 0;
+            })() ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart 
-                  data={analysisData.assignmentTitleCounts.map((item, index) => ({ 
-                    title: item.title.length > 15 ? item.title.slice(0, 15) + '...' : item.title, 
-                    fullTitle: item.title,
-                    count: item.count,
-                    index: index
-                  }))}
+                  data={(() => {
+                    let chartData = [];
+                    if (analysisData.assignmentTitleCounts && Array.isArray(analysisData.assignmentTitleCounts) && analysisData.assignmentTitleCounts.length > 0) {
+                      chartData = analysisData.assignmentTitleCounts;
+                    } else if (analysisData.totalAssignments > 0) {
+                      chartData = [
+                        { title: 'Genel Ödevler', count: analysisData.totalAssignments }
+                      ];
+                    }
+                    
+                    return chartData.map((item, index) => ({ 
+                      title: item.title && item.title.length > 15 ? item.title.slice(0, 15) + '...' : (item.title || 'Başlıksız'), 
+                      fullTitle: item.title || 'Başlıksız',
+                      count: item.count || 0,
+                      index: index
+                    }));
+                  })()}
                   margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -381,8 +379,12 @@ export default function StudentAnalysisPage() {
                     height={100}
                     interval={0}
                     fontSize={12}
+                    tick={{ fontSize: 10 }}
                   />
-                  <YAxis />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    label={{ value: 'Ödev Adedi', angle: -90, position: 'insideLeft' }}
+                  />
                   <Tooltip 
                     formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
                     labelFormatter={(label, payload) => {
@@ -395,10 +397,17 @@ export default function StudentAnalysisPage() {
                       backgroundColor: 'white',
                       border: '1px solid #e5e7eb',
                       borderRadius: '6px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      fontSize: '12px'
                     }}
                   />
-                  <Bar dataKey="count" fill="#3B82F6" name="Ödev Adedi" radius={[4, 4, 0, 0]} />
+                  <Bar 
+                    dataKey="count" 
+                    fill="#3B82F6" 
+                    name="Ödev Adedi" 
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={50}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
