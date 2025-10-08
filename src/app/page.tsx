@@ -120,65 +120,65 @@ function EnhancedFreeTeacherProgressSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Logo and Brand */}
-        <div className="mb-12">
-          <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl border border-white/30">
-            <span className="text-white font-bold text-4xl">H</span>
+        <div className="mb-8 sm:mb-12">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white/20 backdrop-blur-sm rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-2xl border border-white/30">
+            <span className="text-white font-bold text-2xl sm:text-3xl lg:text-4xl">H</span>
           </div>
-          <h1 className="text-6xl lg:text-8xl font-bold text-white mb-6 drop-shadow-2xl">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-white mb-4 sm:mb-6 drop-shadow-2xl">
             Hedefly
           </h1>
         </div>
 
         {/* Main Offer */}
-        <div className="mb-16">
-          <div className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-8 shadow-2xl animate-pulse">
-            <Gift className="w-8 h-8 text-white mr-3" />
-            <span className="text-white font-bold text-2xl">İLK 50 ÖĞRETMEN ÜCRETSİZ!</span>
+        <div className="mb-12 sm:mb-16">
+          <div className="inline-flex items-center justify-center px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-6 sm:mb-8 shadow-2xl animate-pulse">
+            <Gift className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-white mr-2 sm:mr-3" />
+            <span className="text-white font-bold text-sm sm:text-lg lg:text-2xl">İLK 50 ÖĞRETMEN ÜCRETSİZ!</span>
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-bold text-white mb-8 drop-shadow-xl">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-6 sm:mb-8 drop-shadow-xl px-4">
             Modern Öğrenci Koçluğu Platformu
           </h2>
           
-          <p className="text-xl lg:text-2xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed drop-shadow-lg">
+          <p className="text-base sm:text-lg lg:text-xl xl:text-2xl text-white/90 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed drop-shadow-lg px-4">
             Platformumuzun açılışında ilk 50 öğretmenimize 1 yıl boyunca ücretsiz erişim imkanı sunuyoruz.
-            <br />
-            <span className="font-bold text-yellow-300">Hemen başvurun ve bu fırsattan yararlanın!</span>
+            <br className="hidden sm:block" />
+            <span className="block sm:inline font-bold text-yellow-300 mt-2 sm:mt-0">Hemen başvurun ve bu fırsattan yararlanın!</span>
           </p>
         </div>
 
         {/* Progress Section */}
-        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 mb-12 border border-white/20 shadow-2xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12 border border-white/20 shadow-2xl mx-2 sm:mx-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
             {/* Progress Bar */}
             <div>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-white">İlerleme Durumu</h3>
-                <span className="text-4xl font-bold text-yellow-300">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">İlerleme Durumu</h3>
+                <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-yellow-300">
                   {slotData.usedSlots}/{slotData.totalSlots}
                 </span>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-8 mb-6">
+              <div className="w-full bg-white/20 rounded-full h-6 sm:h-8 mb-4 sm:mb-6">
                 <div 
-                  className="bg-gradient-to-r from-yellow-400 to-orange-500 h-8 rounded-full transition-all duration-2000 ease-out shadow-lg"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 h-6 sm:h-8 rounded-full transition-all duration-2000 ease-out shadow-lg"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
-              <div className="flex justify-between text-lg text-white/80">
+              <div className="flex flex-col sm:flex-row justify-between text-sm sm:text-base lg:text-lg text-white/80 gap-2">
                 <span>Kullanılan: {slotData.usedSlots}</span>
                 <span>Kalan: {slotData.availableSlots}</span>
               </div>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
-                <div className="text-5xl font-bold text-yellow-300 mb-3">{slotData.usedSlots}</div>
-                <div className="text-lg text-white/80">Kullanılan Slot</div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+              <div className="text-center p-4 sm:p-6 lg:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-yellow-300 mb-2 sm:mb-3">{slotData.usedSlots}</div>
+                <div className="text-sm sm:text-base lg:text-lg text-white/80">Kullanılan Slot</div>
               </div>
-              <div className="text-center p-8 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
-                <div className="text-5xl font-bold text-green-300 mb-3">{slotData.availableSlots}</div>
-                <div className="text-lg text-white/80">Kalan Slot</div>
+              <div className="text-center p-4 sm:p-6 lg:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-300 mb-2 sm:mb-3">{slotData.availableSlots}</div>
+                <div className="text-sm sm:text-base lg:text-lg text-white/80">Kalan Slot</div>
               </div>
             </div>
           </div>
@@ -186,19 +186,19 @@ function EnhancedFreeTeacherProgressSection() {
 
         {/* Recent Assignments */}
         {slotData.recentAssignments.length > 0 && (
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 mb-12 border border-white/20 shadow-2xl">
-            <h3 className="text-2xl font-bold text-white mb-8">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12 border border-white/20 shadow-2xl mx-2 sm:mx-0">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-6 sm:mb-8 text-center">
               Son Atanan Öğretmenler
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {slotData.recentAssignments.map((assignment, index) => (
-                <div key={index} className="flex items-center p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-300">
-                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-4 shadow-lg">
-                    <Star className="w-6 h-6 text-white" />
+                <div key={index} className="flex items-center p-4 sm:p-6 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-300">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0">
+                    <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <div>
-                    <div className="font-bold text-white text-lg">{assignment.teacherName}</div>
-                    <div className="text-white/70">Slot #{assignment.slotNumber}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-white text-base sm:text-lg truncate">{assignment.teacherName}</div>
+                    <div className="text-white/70 text-sm sm:text-base">Slot #{assignment.slotNumber}</div>
                   </div>
                 </div>
               ))}
@@ -207,26 +207,26 @@ function EnhancedFreeTeacherProgressSection() {
         )}
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-6 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4">
           <Link 
             href="/giris" 
-            className="inline-flex items-center px-12 py-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-xl rounded-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-3xl transform hover:scale-105"
+            className="inline-flex items-center justify-center px-6 sm:px-8 lg:px-12 py-4 sm:py-5 lg:py-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-base sm:text-lg lg:text-xl rounded-xl sm:rounded-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-3xl transform hover:scale-105 min-h-[48px] touch-manipulation"
           >
-            <Gift className="w-6 h-6 mr-3" />
-            ÜCRETSİZ BAŞVURU YAP
-            <ArrowRight className="w-6 h-6 ml-3" />
+            <Gift className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+            <span className="text-center">ÜCRETSİZ BAŞVURU YAP</span>
+            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-3" />
           </Link>
           <Link 
             href="/iletisim" 
-            className="inline-flex items-center px-12 py-6 bg-white/20 backdrop-blur-sm text-white font-bold text-xl rounded-2xl hover:bg-white/30 transition-all duration-300 border border-white/30 shadow-xl"
+            className="inline-flex items-center justify-center px-6 sm:px-8 lg:px-12 py-4 sm:py-5 lg:py-6 bg-white/20 backdrop-blur-sm text-white font-bold text-base sm:text-lg lg:text-xl rounded-xl sm:rounded-2xl hover:bg-white/30 transition-all duration-300 border border-white/30 shadow-xl min-h-[48px] touch-manipulation"
           >
             İletişime Geç
           </Link>
         </div>
 
         {/* Urgency Message */}
-        <div className="mt-12 text-center">
-          <p className="text-white/80 text-lg">
+        <div className="mt-8 sm:mt-12 text-center px-4">
+          <p className="text-white/80 text-sm sm:text-base lg:text-lg">
             ⚡ <span className="font-bold text-yellow-300">Sınırlı Sayıda!</span> Sadece {slotData.availableSlots} slot kaldı!
           </p>
         </div>
@@ -474,7 +474,7 @@ export default function HomePage() {
 
   // If user is not logged in, show public homepage
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
+    <div className="min-h-screen bg-secondary-50">
 
       {/* Enhanced Free Teacher Slots Progress Section - Now Hero */}
       <EnhancedFreeTeacherProgressSection />
@@ -483,347 +483,385 @@ export default function HomePage() {
       <PricingSection />
 
       {/* Core Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-secondary-900 mb-4">Platform Özellikleri</h2>
-            <p className="text-xl text-secondary-600 max-w-3xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-3 sm:mb-4">Platform Özellikleri</h2>
+            <p className="text-base sm:text-lg lg:text-xl text-secondary-600 max-w-3xl mx-auto px-4">
               Öğrenci koçluğunun her aşamasını kapsayan güçlü araçlar
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Öğrenci Yönetimi */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-200 hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Users className="w-8 h-8 text-white" />
+            <div className="card card-hover group animate-scale-in">
+              <div className="card-header">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Users className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-lg sm:text-xl">Öğrenci Yönetimi</h3>
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Öğrenci Yönetimi</h3>
-              <p className="text-secondary-600 mb-6">
-                Öğrencilerinizi kolayca ekleyin, sınıflara atayın ve detaylı bilgilerini takip edin.
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Sınıf bazlı öğrenci grupları
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Detaylı öğrenci profilleri
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Performans takibi
-                </li>
-              </ul>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                  Öğrencilerinizi kolayca ekleyin, sınıflara atayın ve detaylı bilgilerini takip edin.
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Sınıf bazlı öğrenci grupları
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Detaylı öğrenci profilleri
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Performans takibi
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Ödev Sistemi */}
-            <div className="bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-2xl border border-green-200 hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <FileText className="w-8 h-8 text-white" />
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.1s'}}>
+              <div className="card-header">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <FileText className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-lg sm:text-xl">Gelişmiş Ödev Sistemi</h3>
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Gelişmiş Ödev Sistemi</h3>
-              <p className="text-secondary-600 mb-6">
-                Ödev verin, değerlendirin ve öğrenci ilerlemesini takip edin.
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Bireysel ve sınıf ödevleri
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Otomatik puanlama sistemi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Detaylı geri bildirim
-                </li>
-              </ul>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                  Ödev verin, değerlendirin ve öğrenci ilerlemesini takip edin.
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Bireysel ve sınıf ödevleri
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Otomatik puanlama sistemi
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Detaylı geri bildirim
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Analiz ve Raporlama */}
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-8 rounded-2xl border border-purple-200 hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <BarChart3 className="w-8 h-8 text-white" />
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.2s'}}>
+              <div className="card-header">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <BarChart3 className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-lg sm:text-xl">Detaylı Analiz</h3>
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Detaylı Analiz</h3>
-              <p className="text-secondary-600 mb-6">
-                Kapsamlı raporlar ve analizlerle öğrenci performansını değerlendirin.
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Performans grafikleri
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  PDF rapor oluşturma
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Trend analizi
-                </li>
-              </ul>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                  Kapsamlı raporlar ve analizlerle öğrenci performansını değerlendirin.
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Performans grafikleri
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    PDF rapor oluşturma
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Trend analizi
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Hedef Belirleme */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-8 rounded-2xl border border-orange-200 hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Target className="w-8 h-8 text-white" />
-          </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Hedef Belirleme</h3>
-              <p className="text-secondary-600 mb-6">
-                Öğrencilerle birlikte hedefler belirleyin ve ilerlemelerini takip edin.
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Kişiselleştirilmiş hedefler
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  İlerleme takibi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Başarı kutlamaları
-                </li>
-              </ul>
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.3s'}}>
+              <div className="card-header">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Target className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-lg sm:text-xl">Hedef Belirleme</h3>
+              </div>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                  Öğrencilerle birlikte hedefler belirleyin ve ilerlemelerini takip edin.
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Kişiselleştirilmiş hedefler
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    İlerleme takibi
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Başarı kutlamaları
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Video Koçluk */}
-            <div className="bg-gradient-to-br from-red-50 to-red-100 p-8 rounded-2xl border border-red-200 hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-red-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Video className="w-8 h-8 text-white" />
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.4s'}}>
+              <div className="card-header">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Video className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-lg sm:text-xl">Video Koçluk</h3>
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Video Koçluk</h3>
-              <p className="text-secondary-600 mb-6">
-                Canlı video oturumları ile öğrencilerinize birebir koçluk yapın.
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Canlı oturumlar
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Oturum kayıtları
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Takvim entegrasyonu
-                </li>
-              </ul>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                  Canlı video oturumları ile öğrencilerinize birebir koçluk yapın.
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Canlı oturumlar
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Oturum kayıtları
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Takvim entegrasyonu
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Veli Portalı */}
-            <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-8 rounded-2xl border border-teal-200 hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-teal-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <UserCheck className="w-8 h-8 text-white" />
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.5s'}}>
+              <div className="card-header">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <UserCheck className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-lg sm:text-xl">Veli Portalı</h3>
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Veli Portalı</h3>
-              <p className="text-secondary-600 mb-6">
-                Veliler çocuklarının performansını detaylı olarak takip edebilir.
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Detaylı raporlar
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Bildirim sistemi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Öğretmen iletişimi
-                </li>
-              </ul>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                  Veliler çocuklarının performansını detaylı olarak takip edebilir.
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Detaylı raporlar
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Bildirim sistemi
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Öğretmen iletişimi
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* User Roles Section */}
-      <section id="roles" className="py-20 bg-gradient-to-br from-secondary-50 to-primary-50">
+      <section id="roles" className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-secondary-50 to-primary-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-secondary-900 mb-4">Kimler Kullanır?</h2>
-            <p className="text-xl text-secondary-600 max-w-3xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-3 sm:mb-4">Kimler Kullanır?</h2>
+            <p className="text-base sm:text-lg lg:text-xl text-secondary-600 max-w-3xl mx-auto px-4">
               Hedefly platformu farklı rollerdeki kullanıcılar için özelleştirilmiş deneyimler sunar
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Öğretmen */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
-                <GraduationCap className="w-8 h-8 text-white" />
+            <div className="card card-hover group animate-scale-in">
+              <div className="card-header text-center">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-center text-lg sm:text-xl">Öğretmenler</h3>
               </div>
-              <h3 className="text-2xl font-bold text-center text-secondary-900 mb-4">Öğretmenler</h3>
-              <p className="text-secondary-600 text-center mb-6">
-                Öğrenci yönetimi, ödev verme, analiz ve koçluk araçları
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Öğrenci ekleme ve yönetimi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Ödev sistemi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Detaylı analiz ve raporlama
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Video koçluk
-                </li>
-              </ul>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 text-center mb-4 sm:mb-6 text-sm sm:text-base">
+                  Öğrenci yönetimi, ödev verme, analiz ve koçluk araçları
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Öğrenci ekleme ve yönetimi
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Ödev sistemi
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Detaylı analiz ve raporlama
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Video koçluk
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Öğrenci */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
-                <BookOpen className="w-8 h-8 text-white" />
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.1s'}}>
+              <div className="card-header text-center">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-center text-lg sm:text-xl">Öğrenciler</h3>
               </div>
-              <h3 className="text-2xl font-bold text-center text-secondary-900 mb-4">Öğrenciler</h3>
-              <p className="text-secondary-600 text-center mb-6">
-                Ödevler, hedefler, planlar ve kişisel analiz araçları
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Ödev takibi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Hedef belirleme
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Plan oluşturma
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Performans analizi
-                </li>
-              </ul>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 text-center mb-4 sm:mb-6 text-sm sm:text-base">
+                  Ödevler, hedefler, planlar ve kişisel analiz araçları
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Ödev takibi
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Hedef belirleme
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Plan oluşturma
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Performans analizi
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Veli */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
-                <UserCheck className="w-8 h-8 text-white" />
+            <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.2s'}}>
+              <div className="card-header text-center">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <UserCheck className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h3 className="card-title text-center text-lg sm:text-xl">Veliler</h3>
               </div>
-              <h3 className="text-2xl font-bold text-center text-secondary-900 mb-4">Veliler</h3>
-              <p className="text-secondary-600 text-center mb-6">
-                Çocuklarının eğitim sürecini takip etme ve iletişim
-              </p>
-              <ul className="space-y-2 text-sm text-secondary-600">
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Detaylı raporlar
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Bildirim sistemi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Öğretmen iletişimi
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                  Performans takibi
-                </li>
-              </ul>
+              <div className="p-4 sm:p-6">
+                <p className="text-secondary-600 text-center mb-4 sm:mb-6 text-sm sm:text-base">
+                  Çocuklarının eğitim sürecini takip etme ve iletişim
+                </p>
+                <ul className="space-y-2 text-xs sm:text-sm text-secondary-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Detaylı raporlar
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Bildirim sistemi
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Öğretmen iletişimi
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-2 flex-shrink-0" />
+                    Performans takibi
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
               </div>
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-20 bg-white">
+      <section id="benefits" className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-secondary-900 mb-4">Neden Hedefly?</h2>
-            <p className="text-xl text-secondary-600 max-w-3xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-3 sm:mb-4">Neden Hedefly?</h2>
+            <p className="text-base sm:text-lg lg:text-xl text-secondary-600 max-w-3xl mx-auto px-4">
               Modern eğitim teknolojileri ile öğrenci koçluğunu bir üst seviyeye taşıyın
-              </p>
-            </div>
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
-              <h3 className="text-3xl font-bold text-secondary-900 mb-6">Kapsamlı Çözüm</h3>
-              <p className="text-lg text-secondary-600 mb-8">
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-secondary-900 mb-4 sm:mb-6">Kapsamlı Çözüm</h3>
+              <p className="text-base sm:text-lg text-secondary-600 mb-6 sm:mb-8">
                 Hedefly, öğrenci koçluğunun her aşamasını kapsayan tek platform. 
                 Öğrenci yönetiminden detaylı analizlere, ödev sisteminden veli iletişimine 
                 kadar her şeyi tek yerden yönetin.
               </p>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-start">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-secondary-900 mb-1">Kolay Kullanım</h4>
-                    <p className="text-secondary-600">Sezgisel arayüz ile hızlı öğrenme</p>
+                    <h4 className="font-semibold text-secondary-900 mb-1 text-sm sm:text-base">Kolay Kullanım</h4>
+                    <p className="text-secondary-600 text-xs sm:text-sm">Sezgisel arayüz ile hızlı öğrenme</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <CheckCircle className="w-5 h-5 text-blue-600" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-secondary-900 mb-1">Güvenli Platform</h4>
-                    <p className="text-secondary-600">Veri güvenliği ve gizlilik öncelikli</p>
+                    <h4 className="font-semibold text-secondary-900 mb-1 text-sm sm:text-base">Güvenli Platform</h4>
+                    <p className="text-secondary-600 text-xs sm:text-sm">Veri güvenliği ve gizlilik öncelikli</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <CheckCircle className="w-5 h-5 text-purple-600" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-secondary-900 mb-1">Detaylı Raporlama</h4>
-                    <p className="text-secondary-600">Kapsamlı analiz ve PDF raporlar</p>
+                    <h4 className="font-semibold text-secondary-900 mb-1 text-sm sm:text-base">Detaylı Raporlama</h4>
+                    <p className="text-secondary-600 text-xs sm:text-sm">Kapsamlı analiz ve PDF raporlar</p>
                   </div>
-            </div>
+                </div>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-primary-50 to-secondary-50 p-8 rounded-2xl">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="w-8 h-8 text-white" />
+            <div className="card">
+              <div className="p-4 sm:p-6 lg:p-8">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                  <div className="text-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                      <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                    </div>
+                    <h4 className="font-bold text-secondary-900 mb-2 text-sm sm:text-base">Performans Artışı</h4>
+                    <p className="text-xs sm:text-sm text-secondary-600">Öğrenci başarısında ölçülebilir iyileşme</p>
                   </div>
-                  <h4 className="font-bold text-secondary-900 mb-2">Performans Artışı</h4>
-                  <p className="text-sm text-secondary-600">Öğrenci başarısında ölçülebilir iyileşme</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Clock className="w-8 h-8 text-white" />
+                  <div className="text-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                      <Clock className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                    </div>
+                    <h4 className="font-bold text-secondary-900 mb-2 text-sm sm:text-base">Zaman Tasarrufu</h4>
+                    <p className="text-xs sm:text-sm text-secondary-600">Otomatik süreçlerle verimlilik</p>
                   </div>
-                  <h4 className="font-bold text-secondary-900 mb-2">Zaman Tasarrufu</h4>
-                  <p className="text-sm text-secondary-600">Otomatik süreçlerle verimlilik</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="w-8 h-8 text-white" />
+                  <div className="text-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                      <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                    </div>
+                    <h4 className="font-bold text-secondary-900 mb-2 text-sm sm:text-base">İletişim</h4>
+                    <p className="text-xs sm:text-sm text-secondary-600">Tüm taraflar arası şeffaf iletişim</p>
                   </div>
-                  <h4 className="font-bold text-secondary-900 mb-2">İletişim</h4>
-                  <p className="text-sm text-secondary-600">Tüm taraflar arası şeffaf iletişim</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Award className="w-8 h-8 text-white" />
+                  <div className="text-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+                      <Award className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                    </div>
+                    <h4 className="font-bold text-secondary-900 mb-2 text-sm sm:text-base">Kalite</h4>
+                    <p className="text-xs sm:text-sm text-secondary-600">Profesyonel eğitim standartları</p>
                   </div>
-                  <h4 className="font-bold text-secondary-900 mb-2">Kalite</h4>
-                  <p className="text-sm text-secondary-600">Profesyonel eğitim standartları</p>
                 </div>
               </div>
             </div>
@@ -832,36 +870,36 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 to-primary-700">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-primary-600 to-primary-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
             Hemen Başlayın
           </h2>
-          <p className="text-xl text-primary-100 mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-primary-100 mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
             Öğrenci koçluğunuzu dijitalleştirin ve daha etkili sonuçlar alın. 
             Ücretsiz deneme ile platformu keşfedin.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/giris" className="bg-white text-primary-600 px-10 py-4 rounded-xl font-semibold text-lg hover:bg-primary-50 transition-colors duration-300 inline-flex items-center justify-center group">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
+            <Link href="/giris" className="btn-primary btn-lg group min-h-[48px] touch-manipulation">
               Ücretsiz Başla
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
-            <Link href="/iletisim" className="border-2 border-white text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-primary-600 transition-colors duration-300">
+            <Link href="/iletisim" className="btn-secondary btn-lg min-h-[48px] touch-manipulation">
               Demo Talep Et
             </Link>
           </div>
-          <div className="mt-8 flex justify-center space-x-8 text-primary-100">
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-6 lg:space-x-8 text-primary-100">
             <div className="flex items-center">
-              <CheckCircle className="w-5 h-5 mr-2" />
-              <span>Ücretsiz</span>
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Ücretsiz</span>
             </div>
             <div className="flex items-center">
-              <CheckCircle className="w-5 h-5 mr-2" />
-              <span>Hızlı Kurulum</span>
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Hızlı Kurulum</span>
             </div>
             <div className="flex items-center">
-              <CheckCircle className="w-5 h-5 mr-2" />
-              <span>Güvenli</span>
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Güvenli</span>
             </div>
           </div>
         </div>
