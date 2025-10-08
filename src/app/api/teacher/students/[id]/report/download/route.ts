@@ -6,7 +6,7 @@ import { ReportGenerationOptions } from '@/lib/models/ReportData';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(
+export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -16,7 +16,7 @@ export async function POST(
     // 1. Authentication check
     const authResult = await getCurrentUser(request);
     if (!authResult) {
-      console.error('New Report API: Authentication failed - No user found');
+      console.error('Report Download API: Authentication failed - No user found');
       return NextResponse.json(
         { error: 'Kimlik doğrulama gerekli. Lütfen giriş yapın.' },
         { status: 401 }
@@ -24,7 +24,7 @@ export async function POST(
     }
 
     if (authResult.role !== 'teacher') {
-      console.error('New Report API: Authorization failed - Invalid role:', authResult.role);
+      console.error('Report Download API: Authorization failed - Invalid role:', authResult.role);
       return NextResponse.json(
         { error: 'Sadece öğretmenler rapor oluşturabilir.' },
         { status: 403 }
@@ -36,32 +36,25 @@ export async function POST(
 
     // Validate student ID
     if (!studentId || studentId.length !== 24) {
-      console.error('New Report API: Invalid student ID format:', studentId);
+      console.error('Report Download API: Invalid student ID format:', studentId);
       return NextResponse.json(
         { error: 'Geçersiz öğrenci ID formatı' },
         { status: 400 }
       );
     }
 
-    console.log('New Report API: Starting report generation', { studentId, teacherId });
+    console.log('Report Download API: Starting report generation', { studentId, teacherId });
 
-    // 2. Parse request body
-    let requestBody;
-    try {
-      requestBody = await request.json();
-    } catch (parseError) {
-      return NextResponse.json(
-        { error: 'Geçersiz istek formatı' },
-        { status: 400 }
-      );
-    }
-
-    // 3. Extract parameters with defaults
-    const startDate = requestBody.startDate 
-      ? new Date(requestBody.startDate) 
+    // 2. Extract parameters from URL
+    const url = new URL(request.url);
+    const startDateParam = url.searchParams.get('startDate');
+    const endDateParam = url.searchParams.get('endDate');
+    
+    const startDate = startDateParam 
+      ? new Date(startDateParam) 
       : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // Son 3 ay
-    const endDate = requestBody.endDate 
-      ? new Date(requestBody.endDate) 
+    const endDate = endDateParam 
+      ? new Date(endDateParam) 
       : new Date();
 
     // Validate dates
@@ -79,16 +72,16 @@ export async function POST(
       );
     }
 
-    // 4. Report generation options
+    // 3. Report generation options
     const options: ReportGenerationOptions = {
-      includeCharts: requestBody.includeCharts !== false,
-      includeDetailedAssignments: requestBody.includeDetailedAssignments !== false,
-      includeGoals: requestBody.includeGoals !== false,
-      includeInsights: requestBody.includeInsights !== false,
-      format: requestBody.format || 'pdf'
+      includeCharts: true,
+      includeDetailedAssignments: true,
+      includeGoals: true,
+      includeInsights: true,
+      format: 'pdf'
     };
 
-    console.log('New Report API: Parameters extracted', {
+    console.log('Report Download API: Parameters extracted', {
       studentId,
       teacherId,
       startDate: startDate.toISOString(),
@@ -96,10 +89,10 @@ export async function POST(
       options
     });
 
-    // 5. Collect report data
+    // 4. Collect report data
     let reportData;
     try {
-      console.log('New Report API: Starting data collection');
+      console.log('Report Download API: Starting data collection');
       reportData = await ReportDataService.collectStudentReportData(
         studentId,
         teacherId,
@@ -107,9 +100,9 @@ export async function POST(
         endDate,
         options
       );
-      console.log('New Report API: Data collection completed successfully');
+      console.log('Report Download API: Data collection completed successfully');
     } catch (dataError) {
-      console.error('New Report API: Data collection failed', dataError);
+      console.error('Report Download API: Data collection failed', dataError);
       return NextResponse.json(
         { 
           error: 'Öğrenci verileri toplanamadı', 
@@ -119,15 +112,15 @@ export async function POST(
       );
     }
 
-    // 6. Generate PDF
+    // 5. Generate PDF
     let pdfBuffer: Buffer;
     try {
-      console.log('New Report API: Starting PDF generation');
+      console.log('Report Download API: Starting PDF generation');
       const pdfGenerator = new SimplePdfGenerator();
       pdfBuffer = await pdfGenerator.generateReport(reportData);
-      console.log('New Report API: PDF generation completed successfully');
+      console.log('Report Download API: PDF generation completed successfully');
     } catch (pdfError) {
-      console.error('New Report API: PDF generation failed', pdfError);
+      console.error('Report Download API: PDF generation failed', pdfError);
       return NextResponse.json(
         { 
           error: 'PDF oluşturulamadı', 
@@ -137,13 +130,13 @@ export async function POST(
       );
     }
 
-    // 7. Generate safe filename
+    // 6. Generate safe filename
     const safeFirstName = reportData.student.firstName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
     const safeLastName = reportData.student.lastName.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]/g, '');
     const dateStr = new Date().toISOString().split('T')[0];
     const filename = `rapor_${safeFirstName}_${safeLastName}_${dateStr}.pdf`;
 
-    console.log('New Report API: Report generation completed successfully', {
+    console.log('Report Download API: Report generation completed successfully', {
       studentId,
       teacherId,
       filename,
@@ -151,7 +144,7 @@ export async function POST(
       pdfSize: pdfBuffer.length
     });
 
-    // 8. Return PDF response
+    // 7. Return PDF response
     return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
@@ -160,12 +153,15 @@ export async function POST(
         'Content-Length': pdfBuffer.length.toString(),
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'X-Report-Generated-At': new Date().toISOString(),
+        'X-Student-ID': studentId,
+        'X-Teacher-ID': teacherId
       }
     });
 
   } catch (error) {
-    console.error('New Report API: Unexpected error', error);
+    console.error('Report Download API: Unexpected error', error);
     return NextResponse.json(
       { 
         error: 'Rapor oluşturulurken beklenmeyen bir hata oluştu', 
@@ -176,32 +172,10 @@ export async function POST(
   }
 }
 
-// GET endpoint for testing
-export async function GET(
+// POST endpoint as fallback
+export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const authResult = await getCurrentUser(request);
-    if (!authResult || authResult.role !== 'teacher') {
-      return NextResponse.json(
-        { error: 'Yetkisiz erişim' },
-        { status: 401 }
-      );
-    }
-
-    return NextResponse.json({
-      message: 'Yeni rapor API\'si çalışıyor',
-      studentId: params.id,
-      teacherId: authResult.id,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('New Report API GET error:', error);
-    return NextResponse.json(
-      { error: 'API test edilemedi' },
-      { status: 500 }
-    );
-  }
+  return GET(request, { params });
 }

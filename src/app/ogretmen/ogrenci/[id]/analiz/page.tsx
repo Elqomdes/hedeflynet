@@ -84,21 +84,13 @@ export default function StudentAnalysisPage() {
     try {
       // console.log('Generating new report for student:', studentId);
       
-      // Use new reliable API
-      const response = await fetch(`/api/teacher/students/${studentId}/report/new`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(), // Son 3 ay
-          endDate: new Date().toISOString(),
-          includeCharts: true,
-          includeDetailedAssignments: true,
-          includeGoals: true,
-          includeInsights: true,
-          format: 'pdf'
-        }),
+      // Use download API with GET method to avoid 405 errors
+      const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+      const endDate = new Date().toISOString();
+      
+      const response = await fetch(`/api/teacher/students/${studentId}/report/download?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
+        method: 'GET',
+        credentials: 'include', // Include cookies for authentication
       });
 
       // console.log('New report response status:', response.status);
@@ -142,7 +134,15 @@ export default function StudentAnalysisPage() {
         }
 
         // Show specific error messages
-        if (errorMessage.includes('bulunamadı')) {
+        if (response.status === 401) {
+          alert('Kimlik doğrulama gerekli. Lütfen giriş yapın ve tekrar deneyin.');
+        } else if (response.status === 403) {
+          alert('Bu işlem için yetkiniz yok. Sadece öğretmenler rapor oluşturabilir.');
+        } else if (response.status === 404) {
+          alert('Öğrenci bulunamadı. Lütfen sayfayı yenileyin.');
+        } else if (response.status === 405) {
+          alert('HTTP 405 hatası. Lütfen sayfayı yenileyin ve tekrar deneyin.');
+        } else if (errorMessage.includes('bulunamadı')) {
           alert('Öğrenci veya öğretmen bulunamadı. Lütfen giriş yaptığınızdan emin olun.');
         } else if (errorMessage.includes('bağlantı')) {
           alert('Veritabanı bağlantı hatası. Lütfen daha sonra tekrar deneyin.');
@@ -152,7 +152,7 @@ export default function StudentAnalysisPage() {
           alert('PDF oluşturulamadı. Lütfen daha sonra tekrar deneyin.');
         } else {
           const finalMessage = details ? `${errorMessage}\n\nDetay: ${details}` : errorMessage;
-          alert(`Rapor oluşturulurken hata oluştu:\n\n${finalMessage}`);
+          alert(`Rapor oluşturulurken hata oluştu (HTTP ${response.status}):\n\n${finalMessage}`);
         }
       }
     } catch (error) {
