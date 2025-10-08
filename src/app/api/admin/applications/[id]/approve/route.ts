@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { TeacherApplication, User } from '@/lib/models';
+import { TeacherApplication, User, FreeTeacherSlot, Subscription } from '@/lib/models';
 import { requireAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -68,14 +68,48 @@ export async function POST(
 
     await teacher.save();
 
+    // Check if there are free teacher slots available
+    const usedSlots = await FreeTeacherSlot.countDocuments({ isActive: true });
+    const isFreeTrial = usedSlots < 50;
+
+    if (isFreeTrial) {
+      // Assign free teacher slot
+      const nextSlotNumber = usedSlots + 1;
+      const freeSlot = new FreeTeacherSlot({
+        teacherId: teacher._id,
+        slotNumber: nextSlotNumber,
+        isActive: true,
+        assignedAt: new Date(),
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
+      });
+      await freeSlot.save();
+
+      // Create free subscription
+      const freeSubscription = new Subscription({
+        teacherId: teacher._id,
+        planType: '12months', // Free trial is 12 months
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+        isActive: true,
+        isFreeTrial: true,
+        originalPrice: 0,
+        paymentStatus: 'paid'
+      });
+      await freeSubscription.save();
+    }
+
     // Update application status
     application.status = 'approved';
     await application.save();
 
     return NextResponse.json({
-      message: 'Başvuru onaylandı ve öğretmen hesabı oluşturuldu',
+      message: isFreeTrial 
+        ? 'Başvuru onaylandı ve öğretmen hesabı oluşturuldu. Ücretsiz deneme slotu atandı.'
+        : 'Başvuru onaylandı ve öğretmen hesabı oluşturuldu. Abonelik gerekli.',
       teacherId: teacher._id,
-      username: teacher.username
+      username: teacher.username,
+      isFreeTrial,
+      slotNumber: isFreeTrial ? usedSlots + 1 : null
     });
   } catch (error) {
     console.error('Application approve error:', error);

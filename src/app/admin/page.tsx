@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, FileText, UserCheck, TrendingUp, Video, BarChart3, Activity } from 'lucide-react';
+import { Users, FileText, UserCheck, TrendingUp, Video, BarChart3, Activity, CreditCard, Gift, AlertTriangle, DollarSign } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -12,7 +12,12 @@ export default function AdminDashboard() {
     // Yeni özellikler için istatistikler
     totalParents: 0,
     videoSessions: 0,
-    systemHealth: 'excellent'
+    systemHealth: 'excellent',
+    // Abonelik istatistikleri
+    activeSubscriptions: 0,
+    freeTrialTeachers: 0,
+    expiredSubscriptions: 0,
+    totalRevenue: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -95,10 +100,60 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Yeni Özellikler v3.4 */}
+      {/* Abonelik İstatistikleri */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-secondary-900 mb-6">Abonelik İstatistikleri</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="card card-hover group animate-scale-in">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                <CreditCard className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-secondary-900 mb-2">Aktif Abonelik</h3>
+              <div className="text-2xl font-bold text-green-600">{stats.activeSubscriptions}</div>
+              <div className="text-sm text-secondary-500">Öğretmen</div>
+            </div>
+          </div>
+
+          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.1s'}}>
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                <Gift className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-secondary-900 mb-2">Ücretsiz Deneme</h3>
+              <div className="text-2xl font-bold text-blue-600">{stats.freeTrialTeachers}</div>
+              <div className="text-sm text-secondary-500">Öğretmen</div>
+            </div>
+          </div>
+
+          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.2s'}}>
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                <AlertTriangle className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-secondary-900 mb-2">Süresi Dolmuş</h3>
+              <div className="text-2xl font-bold text-red-600">{stats.expiredSubscriptions}</div>
+              <div className="text-sm text-secondary-500">Abonelik</div>
+            </div>
+          </div>
+
+          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.3s'}}>
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                <DollarSign className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-secondary-900 mb-2">Toplam Gelir</h3>
+              <div className="text-2xl font-bold text-purple-600">₺{stats.totalRevenue}</div>
+              <div className="text-sm text-secondary-500">Bu Ay</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Platform Özellikleri */}
       <div className="mb-10">
         <h2 className="text-2xl font-bold text-secondary-900 mb-6">Platform Özellikleri</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="card card-hover group animate-scale-in">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
@@ -121,7 +176,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.7s'}}>
+          <div className="card card-hover group animate-scale-in" style={{animationDelay: '0.2s'}}>
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
                 <Activity className="w-8 h-8 text-white" />

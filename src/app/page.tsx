@@ -18,7 +18,12 @@ import {
   Award,
   MessageSquare,
   UserCheck,
-  GraduationCap
+  GraduationCap,
+  Gift,
+  Star,
+  CreditCard,
+  Zap,
+  Crown
 } from 'lucide-react';
 
 interface User {
@@ -28,6 +33,334 @@ interface User {
   role: 'admin' | 'teacher' | 'student' | 'parent';
   email: string;
   phone?: string;
+}
+
+interface FreeTeacherSlotData {
+  totalSlots: number;
+  usedSlots: number;
+  availableSlots: number;
+  recentAssignments: Array<{
+    slotNumber: number;
+    teacherName: string;
+    assignedAt: string;
+  }>;
+}
+
+interface PricingPlan {
+  id: string;
+  name: string;
+  duration: string;
+  price: number;
+  originalPrice: number;
+  discountPercentage?: number;
+  discountName?: string;
+  features: string[];
+  popular: boolean;
+}
+
+interface PricingData {
+  plans: PricingPlan[];
+  activeDiscounts: Array<{
+    id: string;
+    name: string;
+    description: string;
+    discountPercentage: number;
+    endDate: string;
+  }>;
+}
+
+// Free Teacher Progress Section Component
+function FreeTeacherProgressSection() {
+  const [slotData, setSlotData] = useState<FreeTeacherSlotData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSlotData = async () => {
+      try {
+        const response = await fetch('/api/free-teacher-slots');
+        if (response.ok) {
+          const data = await response.json();
+          setSlotData(data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch free teacher slots:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSlotData();
+  }, []);
+
+  if (loading || !slotData) {
+    return (
+      <section className="py-16 bg-gradient-to-r from-green-50 to-emerald-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-96 mx-auto"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const progressPercentage = (slotData.usedSlots / slotData.totalSlots) * 100;
+
+  return (
+    <section className="py-16 bg-gradient-to-r from-green-50 to-emerald-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl mb-6 shadow-lg">
+            <Gift className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
+            İlk 50 Öğretmen Ücretsiz!
+          </h2>
+          <p className="text-lg text-secondary-600 max-w-3xl mx-auto">
+            Platformumuzun açılışında ilk 50 öğretmenimize 1 yıl boyunca ücretsiz erişim imkanı sunuyoruz.
+            Hemen başvurun ve bu fırsattan yararlanın!
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Progress Bar */}
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-secondary-900">İlerleme Durumu</h3>
+                <span className="text-2xl font-bold text-green-600">
+                  {slotData.usedSlots}/{slotData.totalSlots}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-6 mb-4">
+                <div 
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 h-6 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between text-sm text-secondary-600">
+                <span>Kullanılan: {slotData.usedSlots}</span>
+                <span>Kalan: {slotData.availableSlots}</span>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                <div className="text-3xl font-bold text-green-600 mb-2">{slotData.usedSlots}</div>
+                <div className="text-sm text-secondary-600">Kullanılan Slot</div>
+              </div>
+              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                <div className="text-3xl font-bold text-blue-600 mb-2">{slotData.availableSlots}</div>
+                <div className="text-sm text-secondary-600">Kalan Slot</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Assignments */}
+        {slotData.recentAssignments.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <h3 className="text-xl font-bold text-secondary-900 mb-6 text-center">
+              Son Atanan Öğretmenler
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {slotData.recentAssignments.map((assignment, index) => (
+                <div key={index} className="flex items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
+                    <Star className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-secondary-900">{assignment.teacherName}</div>
+                    <div className="text-sm text-secondary-600">Slot #{assignment.slotNumber}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CTA */}
+        <div className="text-center mt-8">
+          <Link 
+            href="/giris" 
+            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+          >
+            <Gift className="w-5 h-5 mr-2" />
+            Ücretsiz Başvuru Yap
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Pricing Section Component
+function PricingSection() {
+  const [pricingData, setPricingData] = useState<PricingData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPricingData = async () => {
+      try {
+        const response = await fetch('/api/pricing');
+        if (response.ok) {
+          const data = await response.json();
+          setPricingData(data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch pricing data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPricingData();
+  }, []);
+
+  if (loading || !pricingData) {
+    return (
+      <section className="py-20 bg-gradient-to-br from-primary-50 to-secondary-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-96 mx-auto"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-20 bg-gradient-to-br from-primary-50 to-secondary-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl mb-6 shadow-lg">
+            <CreditCard className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-4xl font-bold text-secondary-900 mb-4">
+            Abonelik Planları
+          </h2>
+          <p className="text-xl text-secondary-600 max-w-3xl mx-auto">
+            İhtiyaçlarınıza uygun abonelik planını seçin ve öğrenci koçluğunuzu bir üst seviyeye taşıyın
+          </p>
+        </div>
+
+        {/* Active Discounts Banner */}
+        {pricingData.activeDiscounts.length > 0 && (
+          <div className="mb-12">
+            <div className="bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl p-6 text-white text-center shadow-xl">
+              <div className="flex items-center justify-center mb-4">
+                <Zap className="w-8 h-8 mr-3" />
+                <h3 className="text-2xl font-bold">Özel İndirimler!</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {pricingData.activeDiscounts.map((discount) => (
+                  <div key={discount.id} className="bg-white/20 rounded-xl p-4">
+                    <div className="font-bold text-lg">{discount.name}</div>
+                    <div className="text-sm opacity-90">{discount.description}</div>
+                    <div className="text-2xl font-bold mt-2">%{discount.discountPercentage} İndirim</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {pricingData.plans.map((plan, index) => (
+            <div 
+              key={plan.id} 
+              className={`relative bg-white rounded-2xl shadow-xl p-8 transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+                plan.popular ? 'ring-2 ring-primary-500 transform scale-105' : ''
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2 rounded-full text-sm font-bold flex items-center">
+                    <Crown className="w-4 h-4 mr-2" />
+                    En Popüler
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-secondary-900 mb-2">{plan.name}</h3>
+                <p className="text-secondary-600 mb-4">{plan.duration}</p>
+                
+                <div className="mb-4">
+                  {plan.discountPercentage && (
+                    <div className="text-sm text-red-600 font-semibold mb-2">
+                      %{plan.discountPercentage} İndirim - {plan.discountName}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center">
+                    {plan.discountPercentage && (
+                      <span className="text-2xl text-secondary-400 line-through mr-3">
+                        ₺{plan.originalPrice}
+                      </span>
+                    )}
+                    <span className="text-4xl font-bold text-primary-600">
+                      ₺{plan.price}
+                    </span>
+                  </div>
+                  <p className="text-sm text-secondary-500 mt-2">aylık</p>
+                </div>
+              </div>
+
+              <ul className="space-y-4 mb-8">
+                {plan.features.map((feature, featureIndex) => (
+                  <li key={featureIndex} className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-secondary-700">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link 
+                href="/giris" 
+                className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 ${
+                  plan.popular 
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700' 
+                    : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
+                }`}
+              >
+                Planı Seç
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        {/* Additional Info */}
+        <div className="text-center mt-12">
+          <p className="text-secondary-600 mb-4">
+            Tüm planlar 7 gün ücretsiz deneme ile gelir
+          </p>
+          <div className="flex flex-wrap justify-center gap-6 text-sm text-secondary-500">
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+              İstediğiniz zaman iptal
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+              Güvenli ödeme
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+              24/7 destek
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export default function HomePage() {
@@ -73,19 +406,15 @@ export default function HomePage() {
   // Handle redirects after user data is loaded
   useEffect(() => {
     if (!loading && user && mounted) {
-      switch (user.role) {
-        case 'admin':
-          router.push('/admin');
-          break;
-        case 'teacher':
-          router.push('/ogretmen');
-          break;
-        case 'student':
-          router.push('/ogrenci');
-          break;
-        case 'parent':
-          router.push('/veli');
-          break;
+      const redirectPath = {
+        'admin': '/admin',
+        'teacher': '/ogretmen',
+        'student': '/ogrenci',
+        'parent': '/veli'
+      }[user.role];
+      
+      if (redirectPath) {
+        router.push(redirectPath);
       }
     }
   }, [user, loading, mounted, router]);
@@ -143,6 +472,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Free Teacher Slots Progress Section */}
+      <FreeTeacherProgressSection />
+
+      {/* Pricing Section */}
+      <PricingSection />
 
       {/* Core Features Section */}
       <section id="features" className="py-20 bg-white">

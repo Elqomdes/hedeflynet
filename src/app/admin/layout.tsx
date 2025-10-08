@@ -11,7 +11,10 @@ import {
   Menu, 
   X,
   UserCheck,
-  UserPlus
+  UserPlus,
+  CreditCard,
+  Percent,
+  Calendar
 } from 'lucide-react';
 import AuthWrapper from '@/components/AuthWrapper';
 
@@ -53,6 +56,8 @@ export default function AdminLayout({
     { name: 'Dashboard', href: '/admin', icon: Settings },
     { name: 'Öğretmenler', href: '/admin/ogretmenler', icon: Users },
     { name: 'Başvurular', href: '/admin/istekler', icon: FileText },
+    { name: 'Abonelikler', href: '/admin/abonelikler', icon: CreditCard },
+    { name: 'İndirimler', href: '/admin/indirimler', icon: Percent },
   ];
 
   return (
