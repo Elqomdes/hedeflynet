@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import { IUser } from '@/lib/models/User';
 import { ReportDataService } from '@/lib/services/reportDataService';
 import { SimplePdfGenerator } from '@/lib/services/simplePdfGenerator';
 import { FallbackReportService } from '@/lib/services/fallbackReportService';
@@ -33,7 +34,7 @@ export async function POST(
     }
 
     const studentId = params.id;
-    const teacherId = (authResult as any)._id?.toString() || authResult.id;
+    const teacherId = (authResult._id as any).toString();
 
     // Validate student ID
     if (!studentId || studentId.length !== 24) {

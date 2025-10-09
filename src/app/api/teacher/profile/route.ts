@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
+import { IUser } from '@/lib/models/User';
 import bcrypt from 'bcryptjs';
 
 export async function PUT(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function PUT(request: NextRequest) {
     if (!('user' in auth)) {
       return NextResponse.json({ message: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
     }
-    const { user: authUser } = auth as { user: any };
+    const { user: authUser } = auth as { user: IUser };
 
     const { firstName, lastName, email, phone, address, currentPassword, newPassword } = await request.json();
 

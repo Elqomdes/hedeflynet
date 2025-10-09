@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import { IUser } from '@/lib/models/User';
 import { ReportDataService } from '@/lib/services/reportDataService';
 import { FallbackReportService } from '@/lib/services/fallbackReportService';
 import { ReportGenerationOptions } from '@/lib/models/ReportData';
@@ -32,7 +33,7 @@ export async function GET(
     }
 
     const studentId = params.id;
-    const parentId = (authResult as any)._id?.toString() || authResult.id;
+    const parentId = (authResult._id as any).toString();
 
     // Validate student ID
     if (!studentId || studentId.length !== 24) {

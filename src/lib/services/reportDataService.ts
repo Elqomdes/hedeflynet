@@ -1,5 +1,6 @@
 import connectDB from '@/lib/mongodb';
 import { Assignment, AssignmentSubmission, Goal, User, Class } from '@/lib/models';
+import { IUser } from '@/lib/models/User';
 import { StudentReportData, ReportGenerationOptions } from '@/lib/models/ReportData';
 
 // Type for populated assignment submission
@@ -33,6 +34,21 @@ interface PopulatedAssignmentSubmission {
   }>;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Type for populated assignment
+interface PopulatedAssignment {
+  _id: string;
+  title: string;
+  description: string;
+  maxGrade: number;
+  dueDate: Date;
+  classId?: {
+    _id: string;
+    name: string;
+  };
+  teacherId: string;
+  createdAt: Date;
 }
 
 export class ReportDataService {
@@ -239,14 +255,14 @@ export class ReportDataService {
     }).populate('classId', 'name');
 
     // Branşlara göre grupla
-    const subjectGroups: { [key: string]: any[] } = {};
+    const subjectGroups: { [key: string]: PopulatedAssignment[] } = {};
     assignments.forEach(assignment => {
-      const populatedAssignment = assignment as any; // This needs proper typing
+      const populatedAssignment = assignment as any;
       const subjectName = populatedAssignment.classId?.name || 'Genel';
       if (!subjectGroups[subjectName]) {
         subjectGroups[subjectName] = [];
       }
-      subjectGroups[subjectName].push(assignment);
+      subjectGroups[subjectName].push(assignment as any);
     });
 
     const subjectStats = [];

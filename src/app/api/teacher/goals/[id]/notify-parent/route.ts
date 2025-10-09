@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Goal, User, Parent, ParentNotification } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import { IUser } from '@/lib/models/User';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,7 @@ export async function POST(
       );
     }
 
-    const student = goal.studentId as { _id: string; firstName: string; lastName: string };
+    const student = goal.studentId as any;
 
     // Find parent of the student
     const parent = await Parent.findOne({

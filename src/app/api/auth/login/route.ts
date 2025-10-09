@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
+import { IUser } from '@/lib/models/User';
 import { generateToken } from '@/lib/auth';
 import { rateLimit } from '@/lib/rateLimit';
 import { z } from 'zod';
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
         { email: sanitizedUsername }
       ],
       isActive: true 
-    });
+    }) as IUser | null;
 
     // Timing attack protection - always perform password comparison
     let isPasswordValid = false;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import { User, Assignment, AssignmentSubmission, Goal, Class, Report } from '@/lib/models';
+import { IUser } from '@/lib/models/User';
 import bcrypt from 'bcryptjs';
 
 export async function DELETE(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function DELETE(request: NextRequest) {
     if (!('user' in auth)) {
       return NextResponse.json({ message: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
     }
-    const { user: authUser } = auth as { user: any };
+    const { user: authUser } = auth as { user: IUser };
 
     const { password } = await request.json();
 
