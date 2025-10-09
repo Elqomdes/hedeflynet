@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ClientLayout from '@/components/ClientLayout';
 import { AppProvider } from '@/contexts/AppContext';
+import { CacheBusterProvider } from '@/components/CacheBusterProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -39,9 +40,11 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AppProvider>
-          <ClientLayout>
-            {children}
-          </ClientLayout>
+          <CacheBusterProvider>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </CacheBusterProvider>
         </AppProvider>
       </body>
     </html>

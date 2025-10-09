@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { cacheBuster } from '@/lib/cacheBuster';
 
 interface UseDataFetchingOptions {
   enabled?: boolean;
@@ -7,6 +8,7 @@ interface UseDataFetchingOptions {
   cacheTime?: number;
   retry?: number;
   retryDelay?: number;
+  bustCache?: boolean;
 }
 
 interface UseDataFetchingResult<T> {
@@ -30,7 +32,8 @@ export function useDataFetching<T>(
     staleTime = 5 * 60 * 1000, // 5 minutes
     cacheTime = 10 * 60 * 1000, // 10 minutes
     retry = 3,
-    retryDelay = 1000
+    retryDelay = 1000,
+    bustCache = false
   } = options;
 
   const [data, setData] = useState<T | null>(null);
@@ -45,8 +48,8 @@ export function useDataFetching<T>(
   const fetchData = useCallback(async (forceRefresh = false) => {
     if (!enabled || !mountedRef.current) return;
 
-    // Check cache first
-    if (!forceRefresh) {
+    // Check cache first (only if not busting cache)
+    if (!forceRefresh && !bustCache) {
       const cached = clientCache.get(url);
       if (cached && Date.now() - cached.timestamp < cached.ttl) {
         setData(cached.data);
@@ -59,11 +62,13 @@ export function useDataFetching<T>(
     setError(null);
 
     try {
-      const response = await fetch(url, {
+      const fetchUrl = bustCache ? cacheBuster.addCacheBuster(url) : url;
+      
+      const response = await fetch(fetchUrl, {
         // Ensure cookies are sent for auth-protected resources
         credentials: 'include',
         headers: {
-          'Cache-Control': 'no-cache',
+          ...cacheBuster.getCacheBustingHeaders(),
         },
       });
 
@@ -77,12 +82,14 @@ export function useDataFetching<T>(
         setData(result);
         setIsStale(false);
         
-        // Cache the result
-        clientCache.set(url, {
-          data: result,
-          timestamp: Date.now(),
-          ttl: cacheTime
-        });
+        // Cache the result (only if not busting cache)
+        if (!bustCache) {
+          clientCache.set(url, {
+            data: result,
+            timestamp: Date.now(),
+            ttl: cacheTime
+          });
+        }
         
         retryCountRef.current = 0;
       }

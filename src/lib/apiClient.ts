@@ -1,11 +1,13 @@
 import { apiCache } from './cache';
 import { measureApiCall } from './performance';
+import { cacheBuster } from './cacheBuster';
 
 interface ApiClientOptions {
   cache?: boolean;
   cacheTime?: number;
   retries?: number;
   timeout?: number;
+  bustCache?: boolean;
 }
 
 class ApiClient {
@@ -33,14 +35,21 @@ class ApiClient {
         cacheTime = this.defaultOptions.cacheTime,
         retries = this.defaultOptions.retries,
         timeout = this.defaultOptions.timeout,
+        bustCache = false,
         ...fetchOptions
       } = options;
 
-      const url = `${this.baseURL}${endpoint}`;
+      let url = `${this.baseURL}${endpoint}`;
+      
+      // Add cache busting if requested
+      if (bustCache) {
+        url = cacheBuster.addCacheBuster(url);
+      }
+      
       const cacheKey = apiCache.generateKey(endpoint, fetchOptions.body ? JSON.parse(fetchOptions.body as string) : {});
 
-      // Check cache first
-      if (cache && fetchOptions.method !== 'POST' && fetchOptions.method !== 'PUT' && fetchOptions.method !== 'DELETE') {
+      // Check cache first (only if not busting cache)
+      if (cache && !bustCache && fetchOptions.method !== 'POST' && fetchOptions.method !== 'PUT' && fetchOptions.method !== 'DELETE') {
         const cached = apiCache.get(cacheKey);
         if (cached) {
           return cached;
@@ -62,7 +71,7 @@ class ApiClient {
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-              'Cache-Control': 'no-cache',
+              ...cacheBuster.getCacheBustingHeaders(),
               ...fetchOptions.headers,
             },
           });

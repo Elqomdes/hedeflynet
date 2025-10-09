@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useServiceWorker } from '@/hooks/useServiceWorker';
+import { cacheBuster } from '@/lib/cacheBuster';
 
 interface User {
   id: string;
@@ -80,9 +81,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const response = await fetch('/api/auth/me', {
           credentials: 'include',
           headers: { 
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
+            ...cacheBuster.getCacheBustingHeaders()
           },
         });
 
