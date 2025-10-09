@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
-import { User } from '@/lib/models/User';
+import connectDB from '@/lib/mongodb';
+import User from '@/lib/models/User';
 import { getCurrentUser } from '@/lib/auth';
 import { z } from 'zod';
 
@@ -77,7 +77,7 @@ export async function POST(
     }
 
     // Check if student is already added to this parent
-    if (parent.children.includes(studentId)) {
+    if (parent.children && parent.children.includes(studentId as any)) {
       return NextResponse.json(
         { error: 'Bu öğrenci zaten veliye eklenmiş' },
         { status: 400 }
@@ -85,7 +85,10 @@ export async function POST(
     }
 
     // Add student to parent's children array
-    parent.children.push(studentId);
+    if (!parent.children) {
+      parent.children = [];
+    }
+    parent.children.push(studentId as any);
     await parent.save();
 
     return NextResponse.json({
@@ -154,7 +157,9 @@ export async function DELETE(
     }
 
     // Remove student from parent's children array
-    parent.children = parent.children.filter(id => id.toString() !== studentId);
+    if (parent.children) {
+      parent.children = parent.children.filter((id: any) => id.toString() !== studentId);
+    }
     await parent.save();
 
     return NextResponse.json({

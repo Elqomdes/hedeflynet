@@ -10,6 +10,7 @@ export interface IUser extends Document {
   lastName: string;
   phone?: string;
   classId?: mongoose.Types.ObjectId;
+  children?: mongoose.Types.ObjectId[];
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -63,6 +64,10 @@ const UserSchema = new Schema<IUser>({
     ref: 'Class',
     required: false
   },
+  children: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   isActive: {
     type: Boolean,
     default: true
