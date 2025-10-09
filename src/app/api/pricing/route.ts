@@ -53,13 +53,7 @@ export async function GET(request: NextRequest) {
               'Detaylı analiz ve raporlar',
               'Veli portalı erişimi',
               'Video koçluk oturumları',
-              'Öncelikli destek',
-              'Özel rapor şablonları',
-              'API erişimi',
-              'Sınırsız video koçluk',
-              'Özel eğitim materyalleri',
-              'Dedicated hesap yöneticisi',
-              'Özel entegrasyonlar'
+              'Öncelikli destek'
             ],
             popular: false
           },
@@ -77,13 +71,7 @@ export async function GET(request: NextRequest) {
               'Detaylı analiz ve raporlar',
               'Veli portalı erişimi',
               'Video koçluk oturumları',
-              'Öncelikli destek',
-              'Özel rapor şablonları',
-              'API erişimi',
-              'Sınırsız video koçluk',
-              'Özel eğitim materyalleri',
-              'Dedicated hesap yöneticisi',
-              'Özel entegrasyonlar'
+              'Öncelikli destek'
             ],
             popular: true
           },
@@ -101,13 +89,7 @@ export async function GET(request: NextRequest) {
               'Detaylı analiz ve raporlar',
               'Veli portalı erişimi',
               'Video koçluk oturumları',
-              'Öncelikli destek',
-              'Özel rapor şablonları',
-              'API erişimi',
-              'Sınırsız video koçluk',
-              'Özel eğitim materyalleri',
-              'Dedicated hesap yöneticisi',
-              'Özel entegrasyonlar'
+              'Öncelikli destek'
             ],
             popular: false
           }

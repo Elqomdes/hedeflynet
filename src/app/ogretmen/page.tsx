@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, BookOpen, FileText, Target, UserPlus, CheckCircle, Clock, Video, BarChart3 } from 'lucide-react';
+import { Users, BookOpen, FileText, Target, UserPlus, CheckCircle, Clock, Video, BarChart3, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TeacherDashboard() {
@@ -15,7 +15,8 @@ export default function TeacherDashboard() {
     pendingGrading: 0,
     gradingRate: 0,
     // Yeni özellikler için istatistikler
-    videoSessions: 0
+    videoSessions: 0,
+    totalParents: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -87,6 +88,16 @@ export default function TeacherDashboard() {
       href: '/ogretmen/odevler',
       subtitle: `${stats.gradedAssignments} değerlendirildi`,
       description: 'Tamamlanan değerlendirme oranı'
+    },
+    {
+      name: 'Toplam Veli',
+      value: stats.totalParents,
+      icon: UserCheck,
+      color: 'from-indigo-500 to-indigo-600',
+      bgColor: 'bg-indigo-50',
+      borderColor: 'border-indigo-200',
+      href: '/ogretmen/veliler',
+      description: 'Kayıtlı veli sayısı'
     }
   ];
 

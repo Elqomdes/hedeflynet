@@ -14,7 +14,8 @@ import {
   X,
   Home,
   Inbox,
-  Video
+  Video,
+  UserCheck
 } from 'lucide-react';
 import AuthWrapper from '@/components/AuthWrapper';
 
@@ -55,6 +56,7 @@ export default function TeacherLayout({
   const navigation = [
     { name: 'Dashboard', href: '/ogretmen', icon: Home },
     { name: 'Öğrenciler', href: '/ogretmen/ogrenciler', icon: Users },
+    { name: 'Veliler', href: '/ogretmen/veliler', icon: UserCheck },
     { name: 'Sınıflar', href: '/ogretmen/siniflar', icon: BookOpen },
     { name: 'Ödevler', href: '/ogretmen/odevler', icon: FileText },
     { name: 'Teslimler', href: '/ogretmen/teslimler', icon: Inbox },

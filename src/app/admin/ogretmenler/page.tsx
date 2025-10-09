@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, UserCheck, UserX, Mail, Phone, Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Users, UserCheck, UserX, Mail, Phone, Plus, Pencil, Trash2, X, Eye } from 'lucide-react';
+import Link from 'next/link';
 
 interface Teacher {
   _id: string;
@@ -262,6 +263,13 @@ export default function TeachersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-3">
+                      <Link
+                        href={`/admin/ogretmenler/${teacher._id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Detayları Görüntüle"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Link>
                       <button
                         onClick={() => handleToggleStatus(teacher._id, teacher.isActive)}
                         disabled={actionLoading === teacher._id}

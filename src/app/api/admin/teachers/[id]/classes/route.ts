@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
-import { User } from '@/lib/models/User';
+import { User, Class } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(
@@ -28,11 +28,8 @@ export async function GET(
 
     const teacherId = params.id;
 
-    // Get teacher details
-    const teacher = await User.findById(teacherId)
-      .select('_id username email firstName lastName phone isActive createdAt lastLogin')
-      .lean();
-
+    // Check if teacher exists
+    const teacher = await User.findById(teacherId);
     if (!teacher) {
       return NextResponse.json(
         { error: 'Öğretmen bulunamadı' },
@@ -47,10 +44,29 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(teacher);
+    // Get teacher's classes
+    const classes = await Class.find({
+      $or: [
+        { teacherId },
+        { coTeachers: teacherId }
+      ]
+    })
+    .select('_id name description students createdAt')
+    .lean();
+
+    // Add student count to each class
+    const classesWithCount = classes.map(cls => ({
+      ...cls,
+      studentCount: Array.isArray((cls as any).students) ? (cls as any).students.length : 0
+    }));
+
+    return NextResponse.json({
+      success: true,
+      classes: classesWithCount
+    });
 
   } catch (error) {
-    console.error('Get teacher details error:', error);
+    console.error('Get teacher classes error:', error);
     return NextResponse.json(
       { error: 'Sunucu hatası' },
       { status: 500 }

@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     const teacherStudentIds = Array.from(studentIdSet);
 
-    const [totalStudents, totalClasses, totalAssignments, totalGoals, submittedAssignments, gradedAssignments, pendingGrading] = await Promise.all([
+    const [totalStudents, totalClasses, totalAssignments, totalGoals, submittedAssignments, gradedAssignments, pendingGrading, totalParents] = await Promise.all([
       teacherStudentIds.length > 0 ? User.countDocuments({ role: 'student', _id: { $in: teacherStudentIds } }) : Promise.resolve(0),
       Class.countDocuments({ 
         $or: [
@@ -59,7 +59,8 @@ export async function GET(request: NextRequest) {
       AssignmentSubmission.countDocuments({ 
         assignmentId: { $in: await Assignment.find({ teacherId }).distinct('_id') },
         status: 'submitted'
-      })
+      }),
+      User.countDocuments({ role: 'parent' })
     ]);
 
     // Calculate grading rate
@@ -75,7 +76,8 @@ export async function GET(request: NextRequest) {
       submittedAssignments,
       gradedAssignments,
       pendingGrading,
-      gradingRate
+      gradingRate,
+      totalParents
     });
   } catch (error) {
     console.error('Teacher stats error:', error);
