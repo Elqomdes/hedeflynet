@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Target, Calendar, User, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Target, Calendar, User, CheckCircle, Clock, AlertCircle, BookOpen, Users, Zap, Star, Link } from 'lucide-react';
 import WeekCalendar from '@/components/WeekCalendar';
 
 interface Goal {
@@ -11,6 +11,14 @@ interface Goal {
   targetDate: string;
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   progress: number;
+  category: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
+  priority: 'low' | 'medium' | 'high';
+  assignmentId?: {
+    _id: string;
+    title: string;
+    dueDate: string;
+  };
+  successCriteria: string;
   teacherId: {
     firstName: string;
     lastName: string;
@@ -83,6 +91,62 @@ export default function StudentGoals() {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'academic':
+        return <BookOpen className="h-4 w-4" />;
+      case 'behavioral':
+        return <Users className="h-4 w-4" />;
+      case 'skill':
+        return <Zap className="h-4 w-4" />;
+      case 'personal':
+        return <Star className="h-4 w-4" />;
+      default:
+        return <Target className="h-4 w-4" />;
+    }
+  };
+
+  const getCategoryText = (category: string) => {
+    switch (category) {
+      case 'academic':
+        return 'Akademik';
+      case 'behavioral':
+        return 'Davranışsal';
+      case 'skill':
+        return 'Beceri';
+      case 'personal':
+        return 'Kişisel';
+      default:
+        return 'Diğer';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getPriorityText = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'Yüksek';
+      case 'medium':
+        return 'Orta';
+      case 'low':
+        return 'Düşük';
+      default:
+        return 'Belirtilmemiş';
     }
   };
 
@@ -167,12 +231,13 @@ export default function StudentGoals() {
       ) : (
         <div className="grid gap-6">
           {filteredGoals.map((goal) => (
-            <div key={goal._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+            <div key={goal._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3">
+                  {/* Header */}
+                  <div className="flex items-center space-x-3 mb-3">
                     {getStatusIcon(goal)}
-                    <h3 className="text-lg font-medium text-secondary-900">
+                    <h3 className="text-lg font-semibold text-secondary-900">
                       {goal.title}
                     </h3>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(goal)}`}>
@@ -184,59 +249,88 @@ export default function StudentGoals() {
                       </span>
                     )}
                   </div>
+
+                  {/* Category and Priority */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200`}>
+                      {getCategoryIcon(goal.category)}
+                      <span className="ml-1">{getCategoryText(goal.category)}</span>
+                    </span>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getPriorityColor(goal.priority)}`}>
+                      {getPriorityText(goal.priority)}
+                    </span>
+                  </div>
                   
-                  <p className="mt-2 text-sm text-secondary-600">
+                  <p className="text-sm text-secondary-600 mb-4">
                     {goal.description}
                   </p>
+
+                  {/* Success Criteria */}
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-secondary-700 mb-1">Başarı Kriterleri:</h4>
+                    <p className="text-sm text-secondary-600">{goal.successCriteria}</p>
+                  </div>
                   
-                  <div className="mt-4">
+                  {/* Progress */}
+                  <div className="mb-4">
                     <div className="flex items-center justify-between text-sm text-secondary-600 mb-2">
                       <span>İlerleme</span>
-                      <span>{goal.progress}%</span>
+                      <span className="font-medium">{goal.progress}%</span>
                     </div>
-                    <div className="w-full bg-secondary-200 rounded-full h-2">
+                    <div className="w-full bg-secondary-200 rounded-full h-3">
                       <div 
-                        className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                        className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-500"
                         style={{ width: `${goal.progress}%` }}
                       ></div>
                     </div>
                     <div className="mt-3 flex gap-2">
                       <button
                         onClick={() => updateGoal(goal._id, { status: 'completed', progress: 100 })}
-                        className="px-3 py-1 rounded-md text-xs bg-green-600 text-white hover:bg-green-700"
+                        className="px-3 py-1 rounded-md text-xs bg-green-600 text-white hover:bg-green-700 transition-colors"
                         title="Tamamlandı olarak işaretle"
                       >
                         Tamamlandı
                       </button>
                       <button
                         onClick={() => updateGoal(goal._id, { status: 'in_progress' })}
-                        className="px-3 py-1 rounded-md text-xs bg-blue-600 text-white hover:bg-blue-700"
+                        className="px-3 py-1 rounded-md text-xs bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                         title="Devam ediyor olarak işaretle"
                       >
                         Devam Ediyor
                       </button>
                       <button
                         onClick={() => updateGoal(goal._id, { status: 'pending', progress: 0 })}
-                        className="px-3 py-1 rounded-md text-xs bg-orange-500 text-white hover:bg-orange-600"
+                        className="px-3 py-1 rounded-md text-xs bg-orange-500 text-white hover:bg-orange-600 transition-colors"
                         title="Bekliyor olarak işaretle"
                       >
                         Bekliyor
                       </button>
                     </div>
                   </div>
+
+                  {/* Assignment Link */}
+                  {goal.assignmentId && (
+                    <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center">
+                        <Link className="h-4 w-4 text-blue-600 mr-2" />
+                        <span className="text-sm font-medium text-blue-800">Bağlı Ödev:</span>
+                        <span className="text-sm text-blue-700 ml-2">{goal.assignmentId.title}</span>
+                      </div>
+                    </div>
+                  )}
                   
-                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-secondary-500">
+                  {/* Meta Info */}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-500">
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
-                      Hedef Tarihi: {new Date(goal.targetDate).toLocaleDateString('tr-TR')}
+                      {new Date(goal.targetDate).toLocaleDateString('tr-TR')}
                     </div>
                     <div className="flex items-center">
                       <User className="h-4 w-4 mr-1" />
-                      Öğretmen: {goal.teacherId.firstName} {goal.teacherId.lastName}
+                      {goal.teacherId.firstName} {goal.teacherId.lastName}
                     </div>
                   </div>
                 </div>
-                
               </div>
             </div>
           ))}

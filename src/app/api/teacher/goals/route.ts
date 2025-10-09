@@ -44,11 +44,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, targetDate, studentId } = await request.json();
+    const { title, description, targetDate, studentId, category, priority, assignmentId, successCriteria } = await request.json();
 
-    if (!title || !description || !targetDate || !studentId) {
+    if (!title || !description || !targetDate || !studentId || !successCriteria) {
       return NextResponse.json(
-        { error: 'Tüm alanlar gereklidir' },
+        { error: 'Tüm gerekli alanlar doldurulmalıdır' },
         { status: 400 }
       );
     }
@@ -62,7 +62,12 @@ export async function POST(request: NextRequest) {
       description,
       targetDate: new Date(targetDate),
       status: 'pending',
-      progress: 0
+      progress: 0,
+      category: category || 'academic',
+      priority: priority || 'medium',
+      assignmentId: assignmentId || null,
+      successCriteria,
+      parentNotificationSent: false
     });
 
     await goal.save();

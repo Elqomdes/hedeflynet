@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Goal } from '@/lib/models';
+import { Goal, Assignment } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function PUT(
+export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -19,11 +19,11 @@ export async function PUT(
     }
 
     const goalId = params.id;
-    const { title, description, targetDate, studentId, category, priority, assignmentId, successCriteria } = await request.json();
+    const { assignmentId } = await request.json();
 
-    if (!title || !description || !targetDate || !studentId || !successCriteria) {
+    if (!assignmentId) {
       return NextResponse.json(
-        { error: 'Tüm gerekli alanlar doldurulmalıdır' },
+        { error: 'Ödev ID gereklidir' },
         { status: 400 }
       );
     }
@@ -43,25 +43,30 @@ export async function PUT(
       );
     }
 
-    // Update goal
+    // Check if assignment belongs to this teacher
+    const assignment = await Assignment.findOne({
+      _id: assignmentId,
+      teacherId: authResult._id
+    });
+
+    if (!assignment) {
+      return NextResponse.json(
+        { error: 'Ödev bulunamadı veya yetkiniz yok' },
+        { status: 404 }
+      );
+    }
+
+    // Link assignment to goal
     const updatedGoal = await Goal.findByIdAndUpdate(
       goalId,
-      {
-        title,
-        description,
-        targetDate: new Date(targetDate),
-        studentId,
-        category: category || 'academic',
-        priority: priority || 'medium',
-        assignmentId: assignmentId || null,
-        successCriteria
-      },
+      { assignmentId },
       { new: true }
-    ).populate('studentId', 'firstName lastName');
+    ).populate('studentId', 'firstName lastName')
+     .populate('assignmentId', 'title description dueDate');
 
     return NextResponse.json(updatedGoal);
   } catch (error) {
-    console.error('Update goal error:', error);
+    console.error('Link assignment error:', error);
     return NextResponse.json(
       { error: 'Sunucu hatası' },
       { status: 500 }
@@ -99,15 +104,19 @@ export async function DELETE(
       );
     }
 
-    await Goal.findByIdAndDelete(goalId);
+    // Unlink assignment from goal
+    const updatedGoal = await Goal.findByIdAndUpdate(
+      goalId,
+      { $unset: { assignmentId: 1 } },
+      { new: true }
+    ).populate('studentId', 'firstName lastName');
 
-    return NextResponse.json({ message: 'Hedef başarıyla silindi' });
+    return NextResponse.json(updatedGoal);
   } catch (error) {
-    console.error('Delete goal error:', error);
+    console.error('Unlink assignment error:', error);
     return NextResponse.json(
       { error: 'Sunucu hatası' },
       { status: 500 }
     );
   }
 }
-
