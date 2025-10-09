@@ -325,27 +325,27 @@ export default function TeachersPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-secondary-600">Ad</label>
-                  <input className="input" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} />
+                  <input className="input-field" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">Soyad</label>
-                  <input className="input" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
+                  <input className="input-field" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">E-posta</label>
-                  <input className="input" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                  <input className="input-field" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">Telefon</label>
-                  <input className="input" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                  <input className="input-field" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">Kullanıcı Adı</label>
-                  <input className="input" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
+                  <input className="input-field" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">Şifre</label>
-                  <input className="input" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  <input className="input-field" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                 </div>
               </div>
             </div>
@@ -371,27 +371,27 @@ export default function TeachersPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-secondary-600">Ad</label>
-                  <input className="input" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} />
+                  <input className="input-field" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">Soyad</label>
-                  <input className="input" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
+                  <input className="input-field" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">E-posta</label>
-                  <input className="input" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                  <input className="input-field" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">Telefon</label>
-                  <input className="input" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                  <input className="input-field" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">Kullanıcı Adı</label>
-                  <input className="input" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
+                  <input className="input-field" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-secondary-600">Şifre (değiştirmek için)</label>
-                  <input className="input" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  <input className="input-field" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                 </div>
               </div>
             </div>
