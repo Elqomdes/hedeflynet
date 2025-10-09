@@ -61,10 +61,14 @@ export default function TeacherGoals() {
       });
       if (response.ok) {
         const data = await response.json();
-        setGoals(data);
+        setGoals(data || []);
+      } else {
+        console.error('Goals fetch failed:', response.status);
+        setGoals([]);
       }
     } catch (error) {
       console.error('Goals fetch error:', error);
+      setGoals([]);
     } finally {
       setLoading(false);
     }
@@ -81,10 +85,14 @@ export default function TeacherGoals() {
       });
       if (response.ok) {
         const data = await response.json();
-        setStudents(data);
+        setStudents(data || []);
+      } else {
+        console.error('Students fetch failed:', response.status);
+        setStudents([]);
       }
     } catch (error) {
       console.error('Students fetch error:', error);
+      setStudents([]);
     }
   };
 
@@ -99,10 +107,14 @@ export default function TeacherGoals() {
       });
       if (response.ok) {
         const data = await response.json();
-        setAssignments(data);
+        setAssignments(data || []);
+      } else {
+        console.error('Assignments fetch failed:', response.status);
+        setAssignments([]);
       }
     } catch (error) {
       console.error('Assignments fetch error:', error);
+      setAssignments([]);
     }
   };
 

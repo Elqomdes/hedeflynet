@@ -59,6 +59,13 @@ export async function PUT(
       { new: true }
     ).populate('studentId', 'firstName lastName');
 
+    if (!updatedGoal) {
+      return NextResponse.json(
+        { error: 'Hedef güncellenemedi' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(updatedGoal);
   } catch (error) {
     console.error('Update goal error:', error);

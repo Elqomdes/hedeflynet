@@ -46,10 +46,14 @@ export default function StudentGoals() {
       });
       if (response.ok) {
         const data = await response.json();
-        setGoals(data);
+        setGoals(data || []);
+      } else {
+        console.error('Goals fetch failed:', response.status);
+        setGoals([]);
       }
     } catch (error) {
       console.error('Goals fetch error:', error);
+      setGoals([]);
     } finally {
       setLoading(false);
     }

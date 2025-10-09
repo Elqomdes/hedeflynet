@@ -64,6 +64,13 @@ export async function POST(
     ).populate('studentId', 'firstName lastName')
      .populate('assignmentId', 'title description dueDate');
 
+    if (!updatedGoal) {
+      return NextResponse.json(
+        { error: 'Hedef güncellenemedi' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(updatedGoal);
   } catch (error) {
     console.error('Link assignment error:', error);
@@ -110,6 +117,13 @@ export async function DELETE(
       { $unset: { assignmentId: 1 } },
       { new: true }
     ).populate('studentId', 'firstName lastName');
+
+    if (!updatedGoal) {
+      return NextResponse.json(
+        { error: 'Hedef güncellenemedi' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(updatedGoal);
   } catch (error) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Goal, User, Parent } from '@/lib/models';
+import { Goal, User, Parent, ParentNotification } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -36,9 +36,19 @@ export async function POST(
       );
     }
 
+    // Type guard for populated studentId
+    if (!goal.studentId || typeof goal.studentId === 'string') {
+      return NextResponse.json(
+        { error: 'Öğrenci bilgisi yüklenemedi' },
+        { status: 500 }
+      );
+    }
+
+    const student = goal.studentId as { _id: string; firstName: string; lastName: string };
+
     // Find parent of the student
     const parent = await Parent.findOne({
-      children: goal.studentId._id
+      children: student._id
     }).populate('userId', 'firstName lastName email');
 
     if (!parent) {
@@ -51,29 +61,22 @@ export async function POST(
     // Create notification for parent
     const notification = {
       parentId: parent._id,
-      studentId: goal.studentId._id,
+      studentId: student._id,
       type: 'goal_achieved' as const,
       title: `Hedef Güncellemesi - ${goal.title}`,
-      message: message || `${goal.studentId.firstName} ${goal.studentId.lastName} öğrencisinin "${goal.title}" hedefi ${goal.status === 'completed' ? 'tamamlandı' : 'güncellendi'}. İlerleme: %${goal.progress}`,
+      message: message || `${student.firstName} ${student.lastName} öğrencisinin "${goal.title}" hedefi ${goal.status === 'completed' ? 'tamamlandı' : 'güncellendi'}. İlerleme: %${goal.progress}`,
       priority: goal.priority === 'high' ? 'high' : 'medium' as const,
       data: {
         goalId: goal._id,
         goalTitle: goal.title,
         goalStatus: goal.status,
         goalProgress: goal.progress,
-        studentName: `${goal.studentId.firstName} ${goal.studentId.lastName}`
+        studentName: `${student.firstName} ${student.lastName}`
       }
     };
 
-    // Create parent notification
-    const parentNotification = await Parent.updateOne(
-      { _id: parent._id },
-      {
-        $push: {
-          notifications: notification
-        }
-      }
-    );
+    // Create parent notification using ParentNotification model
+    const parentNotification = await ParentNotification.create(notification);
 
     // Mark goal as notification sent
     await Goal.findByIdAndUpdate(goalId, {

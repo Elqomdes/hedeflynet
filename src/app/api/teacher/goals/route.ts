@@ -76,6 +76,13 @@ export async function POST(request: NextRequest) {
     const populatedGoal = await Goal.findById(goal._id)
       .populate('studentId', 'firstName lastName');
 
+    if (!populatedGoal) {
+      return NextResponse.json(
+        { error: 'Hedef oluşturuldu ancak yüklenemedi' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(populatedGoal, { status: 201 });
   } catch (error) {
     console.error('Create goal error:', error);
