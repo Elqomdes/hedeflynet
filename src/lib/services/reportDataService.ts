@@ -166,29 +166,34 @@ export class ReportDataService {
    * Ödev istatistiklerini hesaplar
    */
   private static async calculateAssignmentStats(studentId: string, startDate: Date, endDate: Date) {
-    const totalAssignments = await Assignment.countDocuments({
+    // Tüm ödevleri al (tarih aralığındaki)
+    const allAssignments = await Assignment.find({
       studentId,
-      createdAt: { $gte: startDate, $lte: endDate }
+      dueDate: { $gte: startDate, $lte: endDate }
     });
 
+    const totalAssignments = allAssignments.length;
+
+    // Bu ödevlerin teslim edilenlerini say
+    const assignmentIds = allAssignments.map(a => a._id);
     const submittedAssignments = await AssignmentSubmission.countDocuments({
+      assignmentId: { $in: assignmentIds },
       studentId,
-      status: { $in: ['submitted', 'graded', 'completed'] },
-      submittedAt: { $gte: startDate, $lte: endDate }
+      status: { $in: ['submitted', 'graded', 'completed'] }
     });
 
     const gradedAssignments = await AssignmentSubmission.countDocuments({
+      assignmentId: { $in: assignmentIds },
       studentId,
-      status: { $in: ['graded', 'completed'] },
-      submittedAt: { $gte: startDate, $lte: endDate }
+      status: { $in: ['graded', 'completed'] }
     });
 
     // Ortalama not hesapla
     const gradedSubmissions = await AssignmentSubmission.find({
+      assignmentId: { $in: assignmentIds },
       studentId,
       status: { $in: ['graded', 'completed'] },
-      grade: { $exists: true, $ne: null },
-      submittedAt: { $gte: startDate, $lte: endDate }
+      grade: { $exists: true, $ne: null }
     }).populate('assignmentId', 'maxGrade');
 
     let averageGrade = 0;
@@ -223,17 +228,21 @@ export class ReportDataService {
    * Hedef istatistiklerini hesaplar
    */
   private static async calculateGoalStats(studentId: string, startDate: Date, endDate: Date) {
-    const totalGoals = await Goal.countDocuments({
+    // Tüm hedefleri al (tarih aralığında oluşturulan veya güncellenen)
+    const allGoals = await Goal.find({
       studentId,
-      createdAt: { $gte: startDate, $lte: endDate }
+      $or: [
+        { createdAt: { $gte: startDate, $lte: endDate } },
+        { updatedAt: { $gte: startDate, $lte: endDate } }
+      ]
     });
 
-    const completedGoals = await Goal.countDocuments({
-      studentId,
-      status: 'completed',
-      updatedAt: { $gte: startDate, $lte: endDate }
-    });
+    const totalGoals = allGoals.length;
 
+    // Bu hedeflerden tamamlananları say
+    const completedGoals = allGoals.filter(goal => goal.status === 'completed').length;
+
+    // İlerleme yüzdesi hesapla
     const goalsProgress = totalGoals > 0 
       ? Math.round((completedGoals / totalGoals) * 100)
       : 0;
@@ -251,7 +260,7 @@ export class ReportDataService {
   private static async calculateSubjectStats(studentId: string, startDate: Date, endDate: Date) {
     const assignments = await Assignment.find({
       studentId,
-      createdAt: { $gte: startDate, $lte: endDate }
+      dueDate: { $gte: startDate, $lte: endDate }
     }).populate('classId', 'name');
 
     // Branşlara göre grupla
@@ -329,7 +338,7 @@ export class ReportDataService {
       
       const monthAssignments = await Assignment.countDocuments({
         studentId,
-        createdAt: { $gte: monthStart, $lte: monthEnd }
+        dueDate: { $gte: monthStart, $lte: monthEnd }
       });
 
       const monthGoalsCompleted = await Goal.countDocuments({
@@ -482,9 +491,13 @@ export class ReportDataService {
       ? subjectStats.reduce((sum, s) => sum + s.completionRate, 0) / subjectStats.length
       : 0;
 
-    // Genel performans (0-100 arası)
+    // Genel performans hesaplama - daha dengeli formül
+    // Ödev tamamlama %40, ortalama not %30, hedef ilerlemesi %20, branş ortalaması %10
     const overallPerformance = Math.round(
-      (assignmentCompletion + averageGrade + gradingRate + goalsProgress + subjectAverage) / 5
+      (assignmentCompletion * 0.4) + 
+      (averageGrade * 0.3) + 
+      (goalsProgress * 0.2) + 
+      (subjectAverage * 0.1)
     );
 
     return {
@@ -492,7 +505,7 @@ export class ReportDataService {
       averageGrade,
       gradingRate,
       goalsProgress,
-      overallPerformance
+      overallPerformance: Math.min(100, Math.max(0, overallPerformance)) // 0-100 arasında sınırla
     };
   }
 }

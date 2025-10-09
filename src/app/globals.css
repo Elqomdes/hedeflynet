@@ -115,8 +115,22 @@
   }
 }
 
+/* Page setup for printing */
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
 /* Print styles for reports */
 @media print {
+  /* Preserve on-screen colors and backgrounds */
+  html, body {
+    -webkit-print-color-adjust: exact !important; /* Chrome/Safari */
+    print-color-adjust: exact !important; /* Modern spec */
+    color-adjust: exact !important; /* Legacy */
+    background: transparent !important;
+  }
+
   .print\\:bg-white {
     background-color: white !important;
   }
@@ -171,11 +185,7 @@
     display: none !important;
   }
   
-  /* Ensure text is readable */
-  * {
-    color: black !important;
-    background: white !important;
-  }
+  /* Respect original colors; do NOT force monochrome */
   
   /* Optimize spacing for print */
   .print\\:space-y-2 > * + * {
@@ -188,6 +198,28 @@
   
   .print\\:space-y-6 > * + * {
     margin-top: 1.5rem !important;
+  }
+
+  /* Avoid breaking important blocks across pages */
+  .page-break-inside-avoid,
+  .card,
+  .section,
+  .table,
+  table,
+  tr,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Optional utility to hide elements in print */
+  .no-print {
+    display: none !important;
   }
 }
 
