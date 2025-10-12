@@ -61,13 +61,20 @@ export async function GET(request: NextRequest) {
       isActive: true
     })
       .select('-password')
+      .populate('classId', 'name')
       .sort({ createdAt: -1 })
       .lean();
 
-    // Cache the result for 2 minutes
-    apiCache.set(cacheKey, students, 2 * 60 * 1000);
+    // Add class names to students
+    const studentsWithClassNames = students.map(student => ({
+      ...student,
+      className: (student as any).classId?.name || null
+    }));
 
-    return NextResponse.json(students);
+    // Cache the result for 2 minutes
+    apiCache.set(cacheKey, studentsWithClassNames, 2 * 60 * 1000);
+
+    return NextResponse.json(studentsWithClassNames);
   } catch (error) {
     logger.error('Students fetch error', { error });
     return NextResponse.json(

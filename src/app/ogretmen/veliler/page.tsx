@@ -93,7 +93,9 @@ export default function ParentsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setStudents(data.students || []);
+        setStudents(data || []);
+      } else {
+        console.error('Fetch students failed:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Fetch students error:', error);
