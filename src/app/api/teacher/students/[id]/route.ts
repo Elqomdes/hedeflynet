@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { User, Class } from '@/lib/models';
+import User from '@/lib/models/User';
+import Class from '@/lib/models/Class';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -10,6 +11,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Authentication check
     const authResult = await getCurrentUser(request);
     if (!authResult || authResult.role !== 'teacher') {
       return NextResponse.json(
@@ -18,10 +20,22 @@ export async function GET(
       );
     }
 
-    await connectDB();
+    const teacherId = authResult._id;
+    const studentId = params.id;
 
-    const student = await User.findById(params.id)
-      .select('-password');
+    // Connect to MongoDB
+    const connection = await connectDB();
+    if (!connection) {
+      return NextResponse.json(
+        { error: 'Veritabanı bağlantısı kurulamadı' },
+        { status: 500 }
+      );
+    }
+
+    // Get student details
+    const student = await User.findById(studentId)
+      .select('-password')
+      .lean();
 
     if (!student) {
       return NextResponse.json(
@@ -32,29 +46,31 @@ export async function GET(
 
     if (student.role !== 'student') {
       return NextResponse.json(
-        { error: 'Bu kullanıcı öğrenci değil' },
+        { error: 'Bu kullanıcı bir öğrenci değil' },
         { status: 400 }
       );
     }
 
-    // Authorization: ensure this student belongs to one of teacher's classes
-    const teacherId = authResult._id;
-    const isInTeachersClasses = await Class.exists({
+    // Check if student belongs to teacher's classes
+    const classes = await Class.find({
       $or: [
         { teacherId },
         { coTeachers: teacherId }
       ],
-      students: student._id
+      students: studentId
+    }).select('name').lean();
+
+    // Add class information to student
+    const studentWithClass = {
+      ...student,
+      className: classes.length > 0 ? classes[0].name : null
+    };
+
+    return NextResponse.json({
+      success: true,
+      student: studentWithClass
     });
 
-    if (!isInTeachersClasses) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Student not assigned to this teacher' },
-        { status: 403 }
-      );
-    }
-
-    return NextResponse.json(student);
   } catch (error) {
     console.error('Get student error:', error);
     return NextResponse.json(

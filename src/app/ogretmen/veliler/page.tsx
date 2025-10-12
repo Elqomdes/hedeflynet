@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, Search, Plus, Edit, Trash2, Eye, Phone, Mail, User, UserMinus, UserX } from 'lucide-react';
+import { UserPlus, Users, Search, Plus, Edit, Trash2, Eye, Phone, Mail, User, UserMinus, UserX, GraduationCap, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Parent {
   _id: string;
@@ -11,6 +11,7 @@ interface Parent {
   lastName: string;
   phone: string;
   children: string[];
+  childrenDetails?: Student[];
   isActive: boolean;
   createdAt: string;
 }
@@ -20,6 +21,8 @@ interface Student {
   firstName: string;
   lastName: string;
   email: string;
+  classId?: string;
+  className?: string;
 }
 
 interface NewParent {
@@ -41,6 +44,7 @@ export default function ParentsPage() {
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedParents, setExpandedParents] = useState<Set<string>>(new Set());
   const [newParent, setNewParent] = useState<NewParent>({
     username: '',
     email: '',
@@ -231,6 +235,16 @@ export default function ParentsPage() {
     }
   };
 
+  const toggleParentExpansion = (parentId: string) => {
+    const newExpanded = new Set(expandedParents);
+    if (newExpanded.has(parentId)) {
+      newExpanded.delete(parentId);
+    } else {
+      newExpanded.add(parentId);
+    }
+    setExpandedParents(newExpanded);
+  };
+
   const filteredParents = parents.filter(parent =>
     parent.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     parent.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -296,7 +310,7 @@ export default function ParentsPage() {
                     İletişim
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
-                    Çocuk Sayısı
+                    Öğrenciler
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
                     Durum
@@ -308,88 +322,150 @@ export default function ParentsPage() {
               </thead>
               <tbody className="bg-white divide-y divide-secondary-200">
                 {filteredParents.map((parent) => (
-                  <tr key={parent._id} className="hover:bg-secondary-50 transition-colors duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                            <User className="h-5 w-5 text-primary-600" />
+                  <>
+                    <tr key={parent._id} className="hover:bg-secondary-50 transition-colors duration-150">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                              <User className="h-5 w-5 text-primary-600" />
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-secondary-900">
+                              {parent.firstName} {parent.lastName}
+                            </div>
+                            <div className="text-sm text-secondary-500">
+                              @{parent.username}
+                            </div>
                           </div>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-secondary-900">
-                            {parent.firstName} {parent.lastName}
-                          </div>
-                          <div className="text-sm text-secondary-500">
-                            @{parent.username}
-                          </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-secondary-900 flex items-center">
+                          <Mail className="w-4 h-4 mr-2 text-secondary-400" />
+                          {parent.email}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-secondary-900 flex items-center">
-                        <Mail className="w-4 h-4 mr-2 text-secondary-400" />
-                        {parent.email}
-                      </div>
-                      {parent.phone && (
-                        <div className="text-sm text-secondary-500 flex items-center mt-1">
-                          <Phone className="w-4 h-4 mr-2 text-secondary-400" />
-                          {parent.phone}
+                        {parent.phone && (
+                          <div className="text-sm text-secondary-500 flex items-center mt-1">
+                            <Phone className="w-4 h-4 mr-2 text-secondary-400" />
+                            {parent.phone}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-1">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <GraduationCap className="w-3 h-3 mr-1" />
+                              {parent.children.length} öğrenci
+                            </span>
+                            {parent.children.length > 0 && (
+                              <button
+                                onClick={() => toggleParentExpansion(parent._id)}
+                                className="text-blue-600 hover:text-blue-900 transition-colors duration-150 p-1"
+                                title={expandedParents.has(parent._id) ? "Öğrencileri Gizle" : "Öğrencileri Göster"}
+                              >
+                                {expandedParents.has(parent._id) ? (
+                                  <ChevronDown className="w-4 h-4" />
+                                ) : (
+                                  <ChevronRight className="w-4 h-4" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => {
+                              setSelectedParent(parent);
+                              setShowAddChildModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-900 transition-colors duration-150 p-1"
+                            title="Öğrenci Ekle"
+                          >
+                            <UserPlus className="w-4 h-4" />
+                          </button>
                         </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {parent.children.length} çocuk
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          parent.isActive 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {parent.isActive ? 'Aktif' : 'Pasif'}
                         </span>
-                        <button
-                          onClick={() => {
-                            setSelectedParent(parent);
-                            setShowAddChildModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
-                          title="Öğrenci Ekle"
-                        >
-                          <UserPlus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        parent.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {parent.isActive ? 'Aktif' : 'Pasif'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => {/* View parent details */}}
-                          className="text-primary-600 hover:text-primary-900 transition-colors duration-150"
-                          title="Görüntüle"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {/* Edit parent */}}
-                          className="text-secondary-600 hover:text-secondary-900 transition-colors duration-150"
-                          title="Düzenle"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteParent(parent._id)}
-                          className="text-red-600 hover:text-red-900 transition-colors duration-150"
-                          title="Sil"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {/* View parent details */}}
+                            className="text-primary-600 hover:text-primary-900 transition-colors duration-150"
+                            title="Görüntüle"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {/* Edit parent */}}
+                            className="text-secondary-600 hover:text-secondary-900 transition-colors duration-150"
+                            title="Düzenle"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteParent(parent._id)}
+                            className="text-red-600 hover:text-red-900 transition-colors duration-150"
+                            title="Sil"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {/* Expanded Student Details */}
+                    {expandedParents.has(parent._id) && parent.childrenDetails && parent.childrenDetails.length > 0 && (
+                      <tr className="bg-blue-50">
+                        <td colSpan={5} className="px-6 py-4">
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-medium text-secondary-900 flex items-center">
+                              <GraduationCap className="w-4 h-4 mr-2 text-blue-600" />
+                              Bağlı Öğrenciler
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {parent.childrenDetails.map((student) => (
+                                <div key={student._id} className="bg-white rounded-lg border border-blue-200 p-3 flex items-center justify-between">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                      <GraduationCap className="h-4 w-4 text-blue-600" />
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-medium text-secondary-900">
+                                        {student.firstName} {student.lastName}
+                                      </div>
+                                      <div className="text-xs text-secondary-500">
+                                        {student.email}
+                                      </div>
+                                      {student.className && (
+                                        <div className="text-xs text-blue-600">
+                                          {student.className}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => handleRemoveChild(parent._id, student._id)}
+                                    className="text-red-500 hover:text-red-700 transition-colors duration-150 p-1"
+                                    title="Öğrenciyi Çıkar"
+                                  >
+                                    <UserX className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 ))}
               </tbody>
             </table>
@@ -500,6 +576,67 @@ export default function ParentsPage() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    Öğrenciler (İsteğe Bağlı)
+                  </label>
+                  <div className="space-y-2 max-h-40 overflow-y-auto border border-secondary-200 rounded-lg p-3">
+                    {students.map((student) => (
+                      <label key={student._id} className="flex items-center space-x-3 cursor-pointer hover:bg-secondary-50 p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={newParent.children.includes(student._id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setNewParent({
+                                ...newParent,
+                                children: [...newParent.children, student._id]
+                              });
+                            } else {
+                              setNewParent({
+                                ...newParent,
+                                children: newParent.children.filter(id => id !== student._id)
+                              });
+                            }
+                          }}
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                        />
+                        <div className="flex items-center space-x-2">
+                          <GraduationCap className="w-4 h-4 text-blue-600" />
+                          <div>
+                            <div className="text-sm font-medium text-secondary-900">
+                              {student.firstName} {student.lastName}
+                            </div>
+                            <div className="text-xs text-secondary-500">
+                              {student.email}
+                            </div>
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                    {students.length === 0 && (
+                      <div className="text-center py-4 text-secondary-500 text-sm">
+                        Henüz öğrenci yok
+                      </div>
+                    )}
+                  </div>
+                  {newParent.children.length > 0 && (
+                    <div className="mt-2">
+                      <div className="text-xs text-secondary-600 mb-1">Seçilen öğrenciler:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {newParent.children.map((childId) => {
+                          const student = students.find(s => s._id === childId);
+                          return student ? (
+                            <span key={childId} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                              {student.firstName} {student.lastName}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
@@ -525,7 +662,7 @@ export default function ParentsPage() {
       {/* Add Child Modal */}
       {showAddChildModal && selectedParent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-secondary-900">
@@ -548,25 +685,38 @@ export default function ParentsPage() {
                 {students
                   .filter(student => !selectedParent.children.includes(student._id))
                   .map((student) => (
-                    <div key={student._id} className="flex items-center justify-between p-3 border border-secondary-200 rounded-lg">
-                      <div>
-                        <div className="font-medium text-secondary-900">
-                          {student.firstName} {student.lastName}
+                    <div key={student._id} className="flex items-center justify-between p-4 border border-secondary-200 rounded-lg hover:bg-secondary-50 transition-colors duration-150">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <GraduationCap className="h-5 w-5 text-blue-600" />
                         </div>
-                        <div className="text-sm text-secondary-500">{student.email}</div>
+                        <div>
+                          <div className="font-medium text-secondary-900">
+                            {student.firstName} {student.lastName}
+                          </div>
+                          <div className="text-sm text-secondary-500">{student.email}</div>
+                          {student.className && (
+                            <div className="text-xs text-blue-600">
+                              {student.className}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <button
                         onClick={() => handleAddChild(student._id)}
-                        className="px-3 py-1 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-150"
+                        className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-150 flex items-center space-x-1"
                       >
-                        Ekle
+                        <UserPlus className="w-4 h-4" />
+                        <span>Ekle</span>
                       </button>
                     </div>
                   ))}
                 
                 {students.filter(student => !selectedParent.children.includes(student._id)).length === 0 && (
-                  <div className="text-center py-8 text-secondary-500">
-                    Eklenebilecek öğrenci yok
+                  <div className="text-center py-12">
+                    <GraduationCap className="w-16 h-16 text-secondary-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-secondary-900 mb-2">Eklenebilecek öğrenci yok</h3>
+                    <p className="text-secondary-600">Tüm öğrenciler zaten bu veliye bağlı</p>
                   </div>
                 )}
               </div>

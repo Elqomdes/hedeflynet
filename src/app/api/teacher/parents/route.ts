@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/lib/models/User';
+import Class from '@/lib/models/Class';
 import { getCurrentUser } from '@/lib/auth';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
@@ -26,6 +27,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const teacherId = authResult._id;
+
     // Connect to MongoDB
     const connection = await connectDB();
     if (!connection) {
@@ -40,9 +43,67 @@ export async function GET(request: NextRequest) {
       .select('_id username email firstName lastName phone children isActive createdAt')
       .sort({ createdAt: -1 });
 
+    // Get teacher's classes to filter students
+    const classes = await Class.find({
+      $or: [
+        { teacherId },
+        { coTeachers: teacherId }
+      ]
+    }).select('students').lean();
+
+    const teacherStudentIds = new Set<string>();
+    for (const cls of classes) {
+      if (Array.isArray((cls as any).students)) {
+        for (const sid of (cls as any).students) {
+          teacherStudentIds.add(String(sid));
+        }
+      }
+    }
+
+    // Add children details for each parent
+    const parentsWithChildrenDetails = await Promise.all(
+      parents.map(async (parent) => {
+        if (parent.children && parent.children.length > 0) {
+          // Filter children to only include teacher's students
+          const relevantChildren = parent.children.filter((childId: any) => 
+            teacherStudentIds.has(String(childId))
+          );
+
+          if (relevantChildren.length > 0) {
+            const childrenDetails = await User.find({
+              _id: { $in: relevantChildren },
+              role: 'student'
+            })
+              .select('_id firstName lastName email classId')
+              .lean();
+
+            // Add class names to children
+            const childrenWithClassNames = await Promise.all(
+              childrenDetails.map(async (child) => {
+                if (child.classId) {
+                  const classInfo = await Class.findById(child.classId).select('name').lean();
+                  return {
+                    ...child,
+                    className: classInfo?.name || null
+                  };
+                }
+                return child;
+              })
+            );
+
+            return {
+              ...parent.toObject(),
+              childrenDetails: childrenWithClassNames
+            };
+          }
+        }
+        return parent.toObject();
+      })
+    );
+
     return NextResponse.json({
       success: true,
-      parents: parents
+      parents: parentsWithChildrenDetails
     });
 
   } catch (error) {

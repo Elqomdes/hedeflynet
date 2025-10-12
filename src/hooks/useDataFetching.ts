@@ -113,7 +113,7 @@ export function useDataFetching<T>(
         setLoading(false);
       }
     }
-  }, [url, enabled, staleTime, cacheTime, retry, retryDelay]);
+  }, [url, enabled, staleTime, cacheTime, retry, retryDelay, bustCache]);
 
   const refetch = useCallback(() => {
     return fetchData(true);

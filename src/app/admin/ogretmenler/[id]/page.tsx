@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -87,13 +87,7 @@ export default function TeacherDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'students' | 'parents' | 'classes' | 'stats'>('students');
 
-  useEffect(() => {
-    if (teacherId) {
-      fetchTeacherDetails();
-    }
-  }, [teacherId]);
-
-  const fetchTeacherDetails = async () => {
+  const fetchTeacherDetails = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -137,7 +131,13 @@ export default function TeacherDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [teacherId]);
+
+  useEffect(() => {
+    if (teacherId) {
+      fetchTeacherDetails();
+    }
+  }, [teacherId, fetchTeacherDetails]);
 
   const handleToggleStudentStatus = async (studentId: string, currentStatus: boolean) => {
     setActionLoading(studentId);
