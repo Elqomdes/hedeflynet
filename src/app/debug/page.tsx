@@ -32,6 +32,32 @@ export default function DebugPage() {
     }
   };
 
+  const clearData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/test-clear-data', { method: 'POST' });
+      const data = await response.json();
+      setResults({ type: 'clear', data });
+    } catch (error) {
+      setResults({ type: 'clear', error: error instanceof Error ? error.message : 'Unknown error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/test-login', { method: 'POST' });
+      const data = await response.json();
+      setResults({ type: 'login', data });
+    } catch (error) {
+      setResults({ type: 'login', error: error instanceof Error ? error.message : 'Unknown error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const testDatabaseOperations = async () => {
     setLoading(true);
     try {
@@ -63,7 +89,7 @@ export default function DebugPage() {
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">MongoDB Debug Sayfası</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <button
             onClick={testHealthCheck}
             disabled={loading}
@@ -81,11 +107,29 @@ export default function DebugPage() {
           </button>
           
           <button
+            onClick={testLogin}
+            disabled={loading}
+            className="bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 text-white px-4 py-2 rounded-lg font-medium"
+          >
+            {loading ? 'Test Ediliyor...' : 'Login Test Et'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <button
             onClick={createSampleData}
             disabled={loading}
             className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white px-4 py-2 rounded-lg font-medium"
           >
             {loading ? 'Oluşturuluyor...' : 'Test Verisi Oluştur'}
+          </button>
+          
+          <button
+            onClick={clearData}
+            disabled={loading}
+            className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-4 py-2 rounded-lg font-medium"
+          >
+            {loading ? 'Temizleniyor...' : 'Veriyi Temizle'}
           </button>
           
           <button
@@ -103,6 +147,8 @@ export default function DebugPage() {
               Test Sonuçları - {results.type === 'mongodb' ? 'MongoDB Bağlantısı' : 
                                results.type === 'database' ? 'Veritabanı İşlemleri' : 
                                results.type === 'sample' ? 'Test Verisi Oluşturma' :
+                               results.type === 'clear' ? 'Veri Temizleme' :
+                               results.type === 'login' ? 'Login Testi' :
                                'Health Check'}
             </h2>
             

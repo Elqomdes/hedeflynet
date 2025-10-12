@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User, Class } from '@/lib/models';
-import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,11 +23,10 @@ export async function POST() {
     }
 
     // Create a teacher
-    const hashedPassword = await bcrypt.hash('123456', 12);
     const teacher = new User({
       username: 'test_teacher',
       email: 'teacher@test.com',
-      password: hashedPassword,
+      password: '123456', // Let the pre-save hook hash it
       role: 'teacher',
       firstName: 'Test',
       lastName: 'Teacher',
@@ -45,7 +43,7 @@ export async function POST() {
       const student = new User({
         username: `student${i}`,
         email: `student${i}@test.com`,
-        password: hashedPassword,
+        password: '123456', // Let the pre-save hook hash it
         role: 'student',
         firstName: `Student`,
         lastName: `${i}`,
@@ -80,7 +78,7 @@ export async function POST() {
       const parent = new User({
         username: `parent${i}`,
         email: `parent${i}@test.com`,
-        password: hashedPassword,
+        password: '123456', // Let the pre-save hook hash it
         role: 'parent',
         firstName: `Parent`,
         lastName: `${i}`,
