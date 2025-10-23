@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Target, BookOpen, CheckCircle, Calendar, Clock, Star, TrendingUp, Award, BookOpenCheck, Users, Zap } from 'lucide-react';
+import { FileText, Target, BookOpen, CheckCircle, Calendar, Clock, Star, TrendingUp, Award, BookOpenCheck, Users, Zap, Video, Inbox, Settings, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import WeekCalendar from '@/components/WeekCalendar';
 
@@ -40,7 +40,10 @@ export default function StudentDashboard() {
     totalGoals: 0,
     completedGoals: 0,
     totalPlans: 0,
-    completedPlans: 0
+    completedPlans: 0,
+    totalClasses: 0,
+    videoSessions: 0,
+    averageGrade: 0
   });
   const [goals, setGoals] = useState<Goal[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -184,6 +187,33 @@ export default function StudentDashboard() {
       color: 'bg-purple-500',
       href: '/ogrenci/planlar',
       subtitle: `${stats.completedPlans} tamamlandı`
+    },
+    {
+      name: 'Sınıflarım',
+      value: stats.totalClasses,
+      completed: stats.totalClasses,
+      icon: Users,
+      color: 'bg-indigo-500',
+      href: '/ogrenci/siniflar',
+      subtitle: 'Aktif sınıflar'
+    },
+    {
+      name: 'Video Koçluk',
+      value: stats.videoSessions,
+      completed: stats.videoSessions,
+      icon: Video,
+      color: 'bg-teal-500',
+      href: '/ogrenci/video-koçluk',
+      subtitle: 'Video oturumu'
+    },
+    {
+      name: 'Ortalama Not',
+      value: stats.averageGrade > 0 ? stats.averageGrade.toFixed(1) : 'N/A',
+      completed: stats.averageGrade,
+      icon: Star,
+      color: 'bg-yellow-500',
+      href: '/ogrenci/analiz',
+      subtitle: 'Genel performans'
     }
   ];
 
@@ -213,6 +243,68 @@ export default function StudentDashboard() {
               emptyText="Bu hafta için etkinlik yok" 
             />
           </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-secondary-900 mb-6">Hızlı Erişim</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Link href="/ogrenci/odevler" className="group animate-scale-in">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <FileText className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2 group-hover:text-primary-600 transition-colors duration-300">Ödevlerim</h3>
+                <p className="text-secondary-600 mb-2">Ödevlerinizi görüntüleyin ve teslim edin</p>
+                <div className="text-2xl font-bold text-blue-600">{stats.totalAssignments}</div>
+                <div className="text-sm text-secondary-500">Toplam Ödev</div>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/ogrenci/teslimler" className="group animate-scale-in" style={{animationDelay: '0.1s'}}>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <Inbox className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2 group-hover:text-primary-600 transition-colors duration-300">Teslimlerim</h3>
+                <p className="text-secondary-600 mb-2">Teslim ettiğiniz ödevleri görüntüleyin</p>
+                <div className="text-2xl font-bold text-green-600">{stats.submittedAssignments}</div>
+                <div className="text-sm text-secondary-500">Teslim Edilen</div>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/ogrenci/video-koçluk" className="group animate-scale-in" style={{animationDelay: '0.2s'}}>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <Video className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2 group-hover:text-primary-600 transition-colors duration-300">Video Koçluk</h3>
+                <p className="text-secondary-600 mb-2">Video oturumlarınızı takip edin</p>
+                <div className="text-2xl font-bold text-teal-600">{stats.videoSessions}</div>
+                <div className="text-sm text-secondary-500">Video Oturumu</div>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/ogrenci/profil" className="group animate-scale-in" style={{animationDelay: '0.3s'}}>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
+                  <Settings className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-secondary-900 mb-2 group-hover:text-primary-600 transition-colors duration-300">Profilim</h3>
+                <p className="text-secondary-600 mb-2">Profil bilgilerinizi düzenleyin</p>
+                <div className="text-2xl font-bold text-purple-600">⚙️</div>
+                <div className="text-sm text-secondary-500">Ayarlar</div>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
 

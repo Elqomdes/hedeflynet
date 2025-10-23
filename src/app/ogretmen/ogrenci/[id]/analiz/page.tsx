@@ -200,53 +200,52 @@ export default function StudentAnalysisPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Assignment Status Distribution */}
+        {/* Assignment Status Distribution - Enhanced with Goals and Assignments */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
             Ödev Durum Dağılımı
           </h3>
-          <div className="h-64">
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Teslim Edildi', value: analysisData.submittedAssignments, color: '#3B82F6' },
-                    { name: 'Değerlendirildi', value: analysisData.gradedAssignments, color: '#10B981' },
-                    { name: 'Bekliyor', value: Math.max(0, (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0)), color: '#F59E0B' }
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {[
-                    { name: 'Teslim Edildi', value: analysisData.submittedAssignments, color: '#3B82F6' },
-                    { name: 'Değerlendirildi', value: analysisData.gradedAssignments, color: '#10B981' },
-                    { name: 'Bekliyor', value: Math.max(0, (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0)), color: '#F59E0B' }
-                  ].map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value, name) => [`${value}`, name as string]} />
-                <Legend formatter={(value) => {
-                  if (value === 'Teslim Edildi') return 'Teslim Edildi (mavi)';
-                  if (value === 'Değerlendirildi') return 'Değerlendirildi (yeşil)';
-                  if (value === 'Bekliyor') return 'Bekliyor (turuncu)';
-                  return value;
-                }} />
-              </PieChart>
+              <BarChart 
+                data={[
+                  { 
+                    category: 'Ödevler', 
+                    teslim: analysisData.submittedAssignments || 0, 
+                    degerlendirildi: analysisData.gradedAssignments || 0,
+                    bekliyor: Math.max(0, (analysisData.totalAssignments || 0) - (analysisData.submittedAssignments || 0))
+                  },
+                  { 
+                    category: 'Hedefler', 
+                    teslim: Math.round((analysisData.goalsProgress || 0) * 0.8), 
+                    degerlendirildi: Math.round((analysisData.goalsProgress || 0) * 0.6),
+                    bekliyor: Math.max(0, 100 - (analysisData.goalsProgress || 0))
+                  }
+                ]}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="category" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value, name) => [`${value}`, name as string]}
+                  labelFormatter={(label) => `Kategori: ${label}`}
+                />
+                <Legend />
+                <Bar dataKey="teslim" stackId="a" fill="#3B82F6" name="Teslim Edildi" />
+                <Bar dataKey="degerlendirildi" stackId="a" fill="#10B981" name="Değerlendirildi" />
+                <Bar dataKey="bekliyor" stackId="a" fill="#F59E0B" name="Bekliyor" />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Bar Chart: Ödev başlığına göre adet */}
+        {/* Radar Chart: Başlığa Göre Ödev Dağılımı */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
             Başlığa Göre Ödev Dağılımı
           </h3>
-          <div className="h-64">
+          <div className="h-80">
             {(() => {
               // Get chart data - use real data if available, otherwise create fallback
               let chartData: Array<{ title: string; count: number }> = [];
@@ -260,32 +259,38 @@ export default function StudentAnalysisPage() {
               }
               
               if (chartData.length > 0) {
-                const processedData = chartData.map((item, index) => ({ 
-                  title: item.title && item.title.length > 15 ? item.title.slice(0, 15) + '...' : (item.title || 'Başlıksız'), 
+                // Prepare data for radar chart - limit to top 8 items for better visualization
+                const topItems = chartData.slice(0, 8);
+                const maxCount = Math.max(...topItems.map(item => item.count));
+                
+                const radarData = topItems.map((item, index) => ({
+                  subject: item.title && item.title.length > 12 ? item.title.slice(0, 12) + '...' : (item.title || 'Başlıksız'),
                   fullTitle: item.title || 'Başlıksız',
-                  count: item.count || 0,
-                  index: index
+                  A: item.count || 0,
+                  fullMark: maxCount
                 }));
 
                 return (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart 
-                      data={processedData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="title" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={100}
-                        interval={0}
-                        fontSize={12}
+                    <RadarChart data={radarData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                      <PolarGrid stroke="#e5e7eb" />
+                      <PolarAngleAxis 
+                        dataKey="subject" 
+                        tick={{ fontSize: 11 }}
+                        className="text-xs"
+                      />
+                      <PolarRadiusAxis 
+                        angle={90} 
+                        domain={[0, maxCount]} 
                         tick={{ fontSize: 10 }}
                       />
-                      <YAxis 
-                        tick={{ fontSize: 12 }}
-                        label={{ value: 'Ödev Adedi', angle: -90, position: 'insideLeft' }}
+                      <Radar
+                        name="Ödev Adedi"
+                        dataKey="A"
+                        stroke="#3B82F6"
+                        fill="#3B82F6"
+                        fillOpacity={0.3}
+                        strokeWidth={2}
                       />
                       <Tooltip 
                         formatter={(value, name) => [`${value}`, 'Ödev Adedi']}
@@ -303,14 +308,7 @@ export default function StudentAnalysisPage() {
                           fontSize: '12px'
                         }}
                       />
-                      <Bar 
-                        dataKey="count" 
-                        fill="#3B82F6" 
-                        name="Ödev Adedi" 
-                        radius={[4, 4, 0, 0]}
-                        maxBarSize={50}
-                      />
-                    </BarChart>
+                    </RadarChart>
                   </ResponsiveContainer>
                 );
               } else {

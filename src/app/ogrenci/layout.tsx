@@ -12,7 +12,12 @@ import {
   Menu, 
   X,
   Home,
-  User
+  User,
+  Video,
+  Inbox,
+  Users,
+  UserCheck,
+  Settings
 } from 'lucide-react';
 import AuthWrapper from '@/components/AuthWrapper';
 
@@ -53,9 +58,13 @@ export default function StudentLayout({
   const navigation = [
     { name: 'Dashboard', href: '/ogrenci', icon: Home },
     { name: 'Ödevlerim', href: '/ogrenci/odevler', icon: FileText },
+    { name: 'Teslimlerim', href: '/ogrenci/teslimler', icon: Inbox },
     { name: 'Hedeflerim', href: '/ogrenci/hedefler', icon: Target },
     { name: 'Planlarım', href: '/ogrenci/planlar', icon: BookOpen },
+    { name: 'Sınıflarım', href: '/ogrenci/siniflar', icon: Users },
+    { name: 'Video Koçluk', href: '/ogrenci/video-koçluk', icon: Video },
     { name: 'Analizim', href: '/ogrenci/analiz', icon: BarChart3 },
+    { name: 'Profilim', href: '/ogrenci/profil', icon: Settings },
   ];
 
   return (
