@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Goal } from '@/lib/models';
+import { Goal, Assignment } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +24,29 @@ export async function GET(request: NextRequest) {
       .populate('teacherId', 'firstName lastName')
       .sort({ targetDate: 1 });
 
-    return NextResponse.json(goals);
+    // Get assignments linked to these goals
+    const goalIds = goals.map(goal => goal._id);
+    const assignments = await Assignment.find({ goalId: { $in: goalIds } })
+      .select('_id title dueDate type maxGrade goalId')
+      .sort({ dueDate: 1 });
+
+    // Group assignments by goalId
+    const assignmentsByGoal = assignments.reduce((acc, assignment) => {
+      const goalId = assignment.goalId.toString();
+      if (!acc[goalId]) {
+        acc[goalId] = [];
+      }
+      acc[goalId].push(assignment);
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    // Add assignments to goals
+    const goalsWithAssignments = goals.map(goal => ({
+      ...goal.toObject(),
+      assignments: assignmentsByGoal[goal._id.toString()] || []
+    }));
+
+    return NextResponse.json(goalsWithAssignments);
   } catch (error) {
     console.error('Student goals error:', error);
     return NextResponse.json(

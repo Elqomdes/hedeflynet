@@ -60,6 +60,7 @@ export default function TeacherAssignments() {
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
+  const [goals, setGoals] = useState<any[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [gradingSubmission, setGradingSubmission] = useState<Submission | null>(null);
@@ -74,6 +75,7 @@ export default function TeacherAssignments() {
     fetchAssignments();
     fetchClasses();
     fetchStudents();
+    fetchGoals();
   }, []);
 
   const fetchAssignments = async () => {
@@ -127,6 +129,22 @@ export default function TeacherAssignments() {
       }
     } catch (error) {
       console.error('Students fetch error:', error);
+    }
+  };
+
+  const fetchGoals = async () => {
+    try {
+      const response = await fetch('/api/teacher/goals', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setGoals(data || []);
+      }
+    } catch (error) {
+      console.error('Goals fetch error:', error);
     }
   };
 
@@ -437,11 +455,7 @@ export default function TeacherAssignments() {
                   studentId: formData.get('studentId'),
                   dueDate: formData.get('dueDate'),
                   maxGrade: formData.get('maxGrade') ? parseInt(formData.get('maxGrade') as string) : 100,
-                  publishAt: formData.get('publishAt') ? new Date(formData.get('publishAt') as string).toISOString() : undefined,
-                  closeAt: formData.get('closeAt') ? new Date(formData.get('closeAt') as string).toISOString() : undefined,
-                  allowLate: { policy: allowLatePolicy, penaltyPercent },
-                  maxAttempts: formData.get('maxAttempts') ? parseInt(formData.get('maxAttempts') as string) : undefined,
-                  tags: (formData.get('tags') as string || '').split(',').map(t => t.trim()).filter(Boolean),
+                  goalId: formData.get('goalId') || null,
                   attachments: []
                 };
 
@@ -525,41 +539,21 @@ export default function TeacherAssignments() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-secondary-700">Yayınlama Tarihi</label>
-                      <input type="datetime-local" name="publishAt" className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-secondary-700">Kapanış Tarihi</label>
-                      <input type="datetime-local" name="closeAt" className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-secondary-700">Geç Teslim Politikası</label>
-                      <select value={allowLatePolicy} onChange={(e) => setAllowLatePolicy(e.target.value as any)} className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
-                        <option value="no">Geç teslim yok</option>
-                        <option value="untilClose">Kapanışa kadar</option>
-                        <option value="always">Her zaman</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-secondary-700">Geç Teslim Cezası (%)</label>
-                      <input type="number" min="0" max="100" value={penaltyPercent} onChange={(e) => setPenaltyPercent(parseInt(e.target.value) || 0)} className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-secondary-700">Maksimum Deneme</label>
-                      <input type="number" name="maxAttempts" min="1" className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-secondary-700">Etiketler (virgülle ayırın)</label>
-                      <input type="text" name="tags" placeholder="matematik, geometri" className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700">
+                      Hedef Seçimi (Opsiyonel)
+                    </label>
+                    <select
+                      name="goalId"
+                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    >
+                      <option value="">Hedef seçin (opsiyonel)</option>
+                      {goals.map((goal) => (
+                        <option key={goal._id} value={goal._id}>
+                          {goal.title} - {goal.studentId.firstName} {goal.studentId.lastName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   
                   <div>

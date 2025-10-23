@@ -30,10 +30,7 @@ export const AssignmentCreateSchema = z.object({
   attachments: z.array(z.any()).optional(),
   dueDate: z.union([z.string(), z.date()]),
   maxGrade: z.number().min(1).max(100).optional(),
-  publishAt: z.union([z.string(), z.date()]).optional(),
-  closeAt: z.union([z.string(), z.date()]).optional(),
-  allowLate: AssignmentAllowLateSchema.optional(),
-  maxAttempts: z.number().min(1).optional(),
+  goalId: z.string().optional(),
   tags: z.array(z.string()).optional(),
   rubricId: z.string().optional(),
 }).superRefine((val, ctx) => {

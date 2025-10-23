@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, publishAt, closeAt, allowLate, maxAttempts, tags, rubricId } = parsed.data;
+    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, goalId, tags, rubricId } = parsed.data;
 
     await connectDB();
 
@@ -80,10 +80,7 @@ export async function POST(request: NextRequest) {
           attachments: attachments || [],
           dueDate: new Date(dueDate),
           maxGrade: maxGrade ?? 100,
-          publishAt: publishAt ? new Date(publishAt) : undefined,
-          closeAt: closeAt ? new Date(closeAt) : undefined,
-          allowLate: allowLate || undefined,
-          maxAttempts: maxAttempts || undefined,
+          goalId: goalId || undefined,
           tags: Array.isArray(tags) ? tags : undefined,
           rubricId: rubricId || undefined
         });
@@ -108,10 +105,7 @@ export async function POST(request: NextRequest) {
         attachments: attachments || [],
         dueDate: new Date(dueDate),
         maxGrade: maxGrade ?? 100,
-        publishAt: publishAt ? new Date(publishAt) : undefined,
-        closeAt: closeAt ? new Date(closeAt) : undefined,
-        allowLate: allowLate || undefined,
-        maxAttempts: maxAttempts || undefined,
+        goalId: goalId || undefined,
         tags: Array.isArray(tags) ? tags : undefined,
         rubricId: rubricId || undefined
       });

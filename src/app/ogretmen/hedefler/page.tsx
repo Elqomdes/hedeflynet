@@ -18,6 +18,13 @@ interface Goal {
     title: string;
     dueDate: string;
   };
+  assignments?: {
+    _id: string;
+    title: string;
+    dueDate: string;
+    type: 'individual' | 'class';
+    maxGrade?: number;
+  }[];
   successCriteria: string;
   parentNotificationSent: boolean;
   studentId: {
@@ -558,8 +565,33 @@ export default function TeacherGoals() {
                     </div>
                   </div>
 
-                  {/* Assignment Link */}
-                  {goal.assignmentId && (
+                  {/* Assignment Links */}
+                  {goal.assignments && goal.assignments.length > 0 && (
+                    <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center mb-2">
+                        <Link className="h-4 w-4 text-blue-600 mr-2" />
+                        <span className="text-sm font-medium text-blue-800">Bağlı Ödevler:</span>
+                      </div>
+                      <div className="space-y-2">
+                        {goal.assignments.map((assignment) => (
+                          <div key={assignment._id} className="flex items-center justify-between bg-white p-2 rounded border border-blue-100">
+                            <div className="flex items-center">
+                              <span className="text-sm text-blue-700 font-medium">{assignment.title}</span>
+                              <span className="ml-2 text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                                {assignment.type === 'individual' ? 'Bireysel' : 'Sınıf'}
+                              </span>
+                            </div>
+                            <div className="text-xs text-blue-600">
+                              Teslim: {new Date(assignment.dueDate).toLocaleDateString('tr-TR')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Legacy Assignment Link (for backward compatibility) */}
+                  {goal.assignmentId && !goal.assignments && (
                     <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="flex items-center">
                         <Link className="h-4 w-4 text-blue-600 mr-2" />

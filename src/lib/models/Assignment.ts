@@ -23,6 +23,7 @@ export interface IAssignment extends Document {
   maxAttempts?: number; // undefined means unlimited
   tags?: string[];
   rubricId?: mongoose.Types.ObjectId;
+  goalId?: mongoose.Types.ObjectId; // Linked goal
   createdAt: Date;
   updatedAt: Date;
 }
@@ -115,6 +116,10 @@ const AssignmentSchema = new Schema<IAssignment>({
   rubricId: {
     type: Schema.Types.ObjectId,
     ref: 'Rubric'
+  },
+  goalId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Goal'
   }
 }, {
   timestamps: true
