@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "NEXT_PUBLIC_BUILD_HASH=$(date +%s) next build",
+    "build:win": "set NEXT_PUBLIC_BUILD_HASH=%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%time:~6,2% && next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

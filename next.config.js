@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Build hash for cache busting
+  generateBuildId: async () => {
+    return `build-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  },
   images: {
     domains: ['localhost'],
     formats: ['image/webp', 'image/avif'],

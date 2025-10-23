@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import ClientLayout from '@/components/ClientLayout';
 import { AppProvider } from '@/contexts/AppContext';
 import { CacheBusterProvider } from '@/components/CacheBusterProvider';
+import { CacheUpdateNotification } from '@/components/CacheUpdateNotification';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -44,6 +45,7 @@ export default function RootLayout({
             <ClientLayout>
               {children}
             </ClientLayout>
+            <CacheUpdateNotification />
           </CacheBusterProvider>
         </AppProvider>
       </body>

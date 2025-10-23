@@ -21,7 +21,9 @@ class CacheBuster {
   }
 
   private generateVersion(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    // Timestamp + random string + build hash
+    const buildHash = process.env.NEXT_PUBLIC_BUILD_HASH || 'dev';
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${buildHash}`;
   }
 
   /**
@@ -47,6 +49,15 @@ class CacheBuster {
       
       // Memory cache'i temizle
       this.clearMemoryCache();
+
+      // Session storage'ı temizle
+      this.clearSessionCache();
+
+      // IndexedDB cache'i temizle
+      this.clearIndexedDBCache();
+
+      // Force reload if needed
+      this.forceReloadIfNeeded();
     }
   }
 
@@ -74,6 +85,59 @@ class CacheBuster {
     if (typeof window !== 'undefined') {
       (window as any).__CACHE__ = {};
       (window as any).__API_CACHE__ = {};
+    }
+  }
+
+  /**
+   * Session storage'ı temizler
+   */
+  private clearSessionCache(): void {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && (key.includes('cache') || key.includes('version') || key.includes('bust'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => sessionStorage.removeItem(key));
+    }
+  }
+
+  /**
+   * IndexedDB cache'i temizler
+   */
+  private clearIndexedDBCache(): void {
+    if (typeof window !== 'undefined' && 'indexedDB' in window) {
+      // IndexedDB'deki cache veritabanlarını temizle
+      const dbNames = ['cache', 'version', 'bust'];
+      dbNames.forEach(dbName => {
+        try {
+          indexedDB.deleteDatabase(dbName);
+        } catch (error) {
+          console.warn(`Failed to delete IndexedDB database: ${dbName}`, error);
+        }
+      });
+    }
+  }
+
+  /**
+   * Gerekirse sayfayı zorla yeniler
+   */
+  private forceReloadIfNeeded(): void {
+    if (typeof window !== 'undefined') {
+      // Kritik güncellemeler için sayfayı yenile
+      const lastReload = localStorage.getItem('lastCacheBust');
+      const now = Date.now();
+      
+      if (!lastReload || (now - parseInt(lastReload)) > 5 * 60 * 1000) { // 5 dakikada bir
+        localStorage.setItem('lastCacheBust', now.toString());
+        
+        // Sayfayı yenile
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      }
     }
   }
 
