@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    await connectDB();
+    
     const user = await getCurrentUser(request);
     
     if (!user) {

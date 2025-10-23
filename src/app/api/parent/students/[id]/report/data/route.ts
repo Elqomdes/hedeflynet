@@ -4,6 +4,7 @@ import { IUser } from '@/lib/models/User';
 import { ReportDataService } from '@/lib/services/reportDataService';
 import { FallbackReportService } from '@/lib/services/fallbackReportService';
 import { ReportGenerationOptions } from '@/lib/models/ReportData';
+import connectDB from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,10 @@ export async function GET(
 
     console.log('Parent Report Data API: Starting data collection', { studentId, parentId });
 
-    // 2. Extract parameters from URL
+    // 2. Database connection
+    await connectDB();
+
+    // 3. Extract parameters from URL
     const url = new URL(request.url);
     const startDateParam = url.searchParams.get('startDate');
     const endDateParam = url.searchParams.get('endDate');
