@@ -68,7 +68,7 @@ export async function POST() {
 
     // Update students with classId
     for (const student of students) {
-      student.classId = class1._id;
+      student.classId = class1._id as any;
       await student.save();
     }
 
@@ -114,7 +114,7 @@ export async function POST() {
           id: p._id,
           name: `${p.firstName} ${p.lastName}`,
           email: p.email,
-          childrenCount: p.children.length
+          childrenCount: p.children?.length || 0
         }))
       },
       timestamp: new Date().toISOString()

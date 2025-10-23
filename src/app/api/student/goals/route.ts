@@ -32,18 +32,20 @@ export async function GET(request: NextRequest) {
 
     // Group assignments by goalId
     const assignmentsByGoal = assignments.reduce((acc, assignment) => {
-      const goalId = assignment.goalId.toString();
-      if (!acc[goalId]) {
-        acc[goalId] = [];
+      if (assignment.goalId) {
+        const goalId = assignment.goalId.toString();
+        if (!acc[goalId]) {
+          acc[goalId] = [];
+        }
+        acc[goalId].push(assignment);
       }
-      acc[goalId].push(assignment);
       return acc;
     }, {} as Record<string, any[]>);
 
     // Add assignments to goals
     const goalsWithAssignments = goals.map(goal => ({
       ...goal.toObject(),
-      assignments: assignmentsByGoal[goal._id.toString()] || []
+      assignments: assignmentsByGoal[(goal._id as any).toString()] || []
     }));
 
     return NextResponse.json(goalsWithAssignments);
