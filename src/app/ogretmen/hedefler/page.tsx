@@ -363,6 +363,20 @@ export default function TeacherGoals() {
     status: g.status
   }));
 
+  // Add assignments to calendar items
+  const assignmentItems = filteredGoals
+    .filter(g => !selectedStudentId || g.studentId._id === selectedStudentId)
+    .flatMap(g => 
+      g.assignments?.map(assignment => ({
+        _id: `assignment-${assignment._id}`,
+        title: `📝 ${assignment.title}`,
+        date: assignment.dueDate,
+        status: 'pending' as const
+      })) || []
+    );
+
+  const allWeekItems = [...weekItems, ...assignmentItems];
+
   const isOverdue = (targetDate: string) => {
     return new Date(targetDate) < new Date() && !goals.find(g => g.targetDate === targetDate)?.status.includes('completed');
   };
@@ -491,7 +505,7 @@ export default function TeacherGoals() {
 
       <div>
         <WeekCalendar
-          items={weekItems}
+          items={allWeekItems}
           onSelectDate={(iso) => { if (!selectedStudentId) return; setSelectedDate(iso); setShowCreateForm(true); }}
           emptyText={selectedStudentId ? 'Hedef yok' : 'Öğrenci seçiniz'}
         />

@@ -173,6 +173,19 @@ export default function StudentGoals() {
     status: g.status
   }));
 
+  // Add assignments to calendar items
+  const assignmentItems = filteredGoals
+    .flatMap(g => 
+      g.assignments?.map(assignment => ({
+        _id: `assignment-${assignment._id}`,
+        title: `📝 ${assignment.title}`,
+        date: new Date(assignment.dueDate).toISOString().split('T')[0],
+        status: 'pending' as const
+      })) || []
+    );
+
+  const allWeekItems = [...weekItems, ...assignmentItems];
+
   const isOverdue = (targetDate: string) => {
     return new Date(targetDate) < new Date() && !goals.find(g => g.targetDate === targetDate)?.status.includes('completed');
   };
@@ -225,7 +238,7 @@ export default function StudentGoals() {
       </div>
 
       <div>
-        <WeekCalendar items={weekItems} readOnly emptyText="Hedef yok" />
+        <WeekCalendar items={allWeekItems} readOnly emptyText="Hedef yok" />
       </div>
 
       {filteredGoals.length === 0 ? (
