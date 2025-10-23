@@ -364,7 +364,7 @@ export default function TeacherGoals() {
   }));
 
   // Add assignments to calendar items
-  const assignmentItems = filteredGoals
+  const assignmentItems = (filteredGoals || [])
     .filter(g => !selectedStudentId || g.studentId._id === selectedStudentId)
     .flatMap(g => 
       g.assignments?.map(assignment => ({

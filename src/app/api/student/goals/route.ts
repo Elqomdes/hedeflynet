@@ -25,10 +25,10 @@ export async function GET(request: NextRequest) {
       .sort({ targetDate: 1 });
 
     // Get assignments linked to these goals
-    const goalIds = goals.map(goal => goal._id);
-    const assignments = await Assignment.find({ goalId: { $in: goalIds } })
+    const goalIds = (goals || []).map(goal => goal._id);
+    const assignments = goalIds.length > 0 ? await Assignment.find({ goalId: { $in: goalIds } })
       .select('_id title dueDate type maxGrade goalId')
-      .sort({ dueDate: 1 });
+      .sort({ dueDate: 1 }) : [];
 
     // Group assignments by goalId
     const assignmentsByGoal = assignments.reduce((acc, assignment) => {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     }, {} as Record<string, any[]>);
 
     // Add assignments to goals
-    const goalsWithAssignments = goals.map(goal => ({
+    const goalsWithAssignments = (goals || []).map(goal => ({
       ...goal.toObject(),
       assignments: assignmentsByGoal[(goal._id as any).toString()] || []
     }));

@@ -123,14 +123,14 @@ export default function StudentDashboard() {
     : 0;
 
   // Calendar items for goals and assignments
-  const goalItems = goals.map(goal => ({
+  const goalItems = (goals || []).map(goal => ({
     _id: goal._id,
     title: goal.title,
     date: new Date(goal.targetDate).toISOString().split('T')[0],
     status: goal.status
   }));
 
-  const assignmentItems = assignments.map(assignment => ({
+  const assignmentItems = (assignments || []).map(assignment => ({
     _id: `assignment-${assignment._id}`,
     title: `📝 ${assignment.title}`,
     date: new Date(assignment.dueDate).toISOString().split('T')[0],
@@ -140,7 +140,7 @@ export default function StudentDashboard() {
   const allCalendarItems = [...goalItems, ...assignmentItems];
 
   // Recent assignments (next 7 days)
-  const upcomingAssignments = assignments
+  const upcomingAssignments = (assignments || [])
     .filter(assignment => {
       const dueDate = new Date(assignment.dueDate);
       const now = new Date();
@@ -152,7 +152,7 @@ export default function StudentDashboard() {
     .slice(0, 5);
 
   // Recent goals
-  const recentGoals = goals
+  const recentGoals = (goals || [])
     .filter(goal => goal.status !== 'completed')
     .sort((a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime())
     .slice(0, 3);

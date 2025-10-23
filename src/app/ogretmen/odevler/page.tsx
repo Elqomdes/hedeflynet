@@ -552,17 +552,17 @@ export default function TeacherAssignments() {
                       className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     >
                       <option value="">Hedef seçin (opsiyonel)</option>
-                      {goals.length === 0 ? (
+                      {(goals || []).length === 0 ? (
                         <option value="" disabled>Hedef bulunamadı</option>
                       ) : (
-                        goals.map((goal) => (
+                        (goals || []).map((goal) => (
                           <option key={goal._id} value={goal._id}>
                             {goal.title} - {goal.studentId.firstName} {goal.studentId.lastName}
                           </option>
                         ))
                       )}
                     </select>
-                    {goals.length === 0 && (
+                    {(goals || []).length === 0 && (
                       <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                         <p className="text-sm text-yellow-800">
                           <strong>Hedef bulunamadı!</strong> Önce hedefler sayfasından hedef oluşturun.
@@ -575,9 +575,9 @@ export default function TeacherAssignments() {
                         </a>
                       </div>
                     )}
-                    {goals.length > 0 && (
+                    {(goals || []).length > 0 && (
                       <p className="mt-1 text-sm text-green-600">
-                        {goals.length} hedef bulundu
+                        {(goals || []).length} hedef bulundu
                       </p>
                     )}
                   </div>
