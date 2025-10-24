@@ -47,14 +47,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Assignment creation request body:', JSON.stringify(body, null, 2));
+    
     const parsed = AssignmentCreateSchema.safeParse(body);
     if (!parsed.success) {
+      console.log('Validation errors:', JSON.stringify(parsed.error.flatten(), null, 2));
       return NextResponse.json(
         { error: 'Geçersiz giriş verileri', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
-    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, goalId, tags, rubricId, category, priority, successCriteria } = parsed.data;
+    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, tags, rubricId, category, priority, successCriteria } = parsed.data;
 
     await connectDB();
 
@@ -80,7 +83,6 @@ export async function POST(request: NextRequest) {
           attachments: attachments || [],
           dueDate: new Date(dueDate),
           maxGrade: maxGrade ?? 100,
-          goalId: goalId || undefined,
           tags: Array.isArray(tags) ? tags : undefined,
           rubricId: rubricId || undefined,
           // Goal-like properties
@@ -109,7 +111,6 @@ export async function POST(request: NextRequest) {
         attachments: attachments || [],
         dueDate: new Date(dueDate),
         maxGrade: maxGrade ?? 100,
-        goalId: goalId || undefined,
         tags: Array.isArray(tags) ? tags : undefined,
         rubricId: rubricId || undefined,
         // Goal-like properties

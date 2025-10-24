@@ -443,7 +443,6 @@ export default function TeacherAssignments() {
                   studentId: formData.get('studentId'),
                   dueDate: formData.get('dueDate'),
                   maxGrade: formData.get('maxGrade') ? parseInt(formData.get('maxGrade') as string) : 100,
-                  goalId: formData.get('goalId') || null,
                   // Goal-like properties
                   category: formData.get('category') || 'academic',
                   priority: formData.get('priority') || 'medium',

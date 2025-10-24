@@ -25,18 +25,22 @@ export const AssignmentCreateSchema = z.object({
   title: z.string().trim().min(1),
   description: z.string().trim().min(1),
   type: z.enum(['class', 'individual']),
-  classId: z.string().optional(),
-  studentId: z.string().optional(),
+  classId: z.string().optional().or(z.literal('').transform(() => undefined)),
+  studentId: z.string().optional().or(z.literal('').transform(() => undefined)),
   attachments: z.array(z.any()).optional(),
-  dueDate: z.union([z.string(), z.date()]),
+  dueDate: z.union([z.string(), z.date()]).transform((val) => {
+    if (typeof val === 'string') {
+      return new Date(val);
+    }
+    return val;
+  }),
   maxGrade: z.number().min(1).max(100).optional(),
-  goalId: z.string().optional(),
   tags: z.array(z.string()).optional(),
   rubricId: z.string().optional(),
   // Goal-like properties
   category: z.enum(['academic', 'behavioral', 'skill', 'personal', 'other']).optional(),
   priority: z.enum(['low', 'medium', 'high']).optional(),
-  successCriteria: z.string().trim().max(500).optional(),
+  successCriteria: z.string().trim().max(500).optional().or(z.literal('').transform(() => undefined)),
 }).superRefine((val, ctx) => {
   if (val.type === 'class' && !val.classId) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Sınıf ödevi için sınıf seçilmelidir', path: ['classId'] });
