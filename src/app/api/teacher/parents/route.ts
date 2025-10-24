@@ -171,7 +171,8 @@ export async function POST(request: NextRequest) {
       email,
       phone: phone || '',
       password: hashedPassword,
-      children: children || []
+      children: children || [],
+      isActive: true
     });
 
     return NextResponse.json({

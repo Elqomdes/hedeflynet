@@ -116,9 +116,9 @@ const ParentSchema = new Schema<IParent>({
   },
   phone: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
-    match: [/^[0-9+\-\s()]+$/, 'Geçerli bir telefon numarası giriniz']
+    match: [/^[0-9+\-\s()]*$/, 'Geçerli bir telefon numarası giriniz']
   },
   password: {
     type: String,
