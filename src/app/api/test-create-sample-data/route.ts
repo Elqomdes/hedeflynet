@@ -72,21 +72,18 @@ export async function POST() {
       await student.save();
     }
 
-    // Create parents
+    // Create parents using Parent model
+    const { Parent } = await import('@/lib/models/Parent');
     const parents = [];
     for (let i = 1; i <= 3; i++) {
-      const parent = new User({
-        username: `parent${i}`,
-        email: `parent${i}@test.com`,
-        password: '123456', // Let the pre-save hook hash it
-        role: 'parent',
+      const parent = await Parent.create({
         firstName: `Parent`,
         lastName: `${i}`,
+        email: `parent${i}@test.com`,
         phone: `0555123456${i + 10}`,
-        children: i === 1 ? [students[0]._id, students[1]._id] : [students[i + 1]._id],
-        isActive: true
+        password: '123456',
+        children: i === 1 ? [students[0]._id, students[1]._id] : [students[i + 1]._id]
       });
-      await parent.save();
       parents.push(parent);
       console.log(`Parent ${i} created:`, parent._id);
     }

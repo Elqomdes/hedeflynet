@@ -16,10 +16,22 @@ export function authMiddleware(request: NextRequest) {
   }
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/ogrenci', '/ogretmen', '/admin'];
+  const protectedRoutes = ['/ogrenci', '/ogretmen', '/admin', '/veli'];
   
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
-    // Lightweight SSR-side guard: if no cookie, redirect to login
+    // Check for parent token first (for /veli routes)
+    if (pathname.startsWith('/veli')) {
+      const parentToken = request.cookies.get('parent-token');
+      if (!parentToken) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/giris';
+        url.searchParams.set('redirectTo', pathname);
+        return NextResponse.redirect(url);
+      }
+      return NextResponse.next();
+    }
+    
+    // Check for regular auth token for other protected routes
     const token = request.cookies.get('auth-token');
     if (!token) {
       const url = request.nextUrl.clone();

@@ -141,6 +141,14 @@ export class ParentService {
   }
 
   /**
+   * Check if parent exists by email
+   */
+  async findParentByEmail(email: string): Promise<IParent | null> {
+    await connectDB();
+    return await Parent.findOne({ email, isActive: true });
+  }
+
+  /**
    * Get parent dashboard data
    */
   async getParentDashboard(parentId: string): Promise<ParentDashboardData> {

@@ -4,7 +4,7 @@ import { IUser } from '@/lib/models/User';
 import { ReportDataService } from '@/lib/services/reportDataService';
 import { SimplePdfGenerator } from '@/lib/services/simplePdfGenerator';
 import { FallbackReportService } from '@/lib/services/fallbackReportService';
-import { ReportGenerationOptions } from '@/lib/models/ReportData';
+import { ReportGenerationOptions } from '@/lib/types/report';
 
 export const dynamic = 'force-dynamic';
 

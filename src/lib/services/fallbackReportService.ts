@@ -1,4 +1,4 @@
-import { StudentReportData } from '@/lib/models/ReportData';
+import { StudentReportData } from '@/lib/types/report';
 
 export class FallbackReportService {
   /**

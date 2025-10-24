@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import { StudentReportData } from '@/lib/models/ReportData';
+import { StudentReportData } from '@/lib/types/report';
 
 export class SimplePdfGenerator {
   private doc: jsPDF;

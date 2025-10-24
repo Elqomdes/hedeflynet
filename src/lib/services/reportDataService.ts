@@ -1,7 +1,7 @@
 import connectDB from '@/lib/mongodb';
 import { Assignment, AssignmentSubmission, User, Class } from '@/lib/models';
 import { IUser } from '@/lib/models/User';
-import { StudentReportData, ReportGenerationOptions } from '@/lib/models/ReportData';
+import { StudentReportData, ReportGenerationOptions } from '@/lib/types/report';
 
 // Type for populated assignment submission
 interface PopulatedAssignmentSubmission {

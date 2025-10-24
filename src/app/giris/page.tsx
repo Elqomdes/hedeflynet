@@ -8,11 +8,13 @@ import { Eye, EyeOff, LogIn } from 'lucide-react';
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     username: '',
-    password: ''
+    password: '',
+    email: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [userType, setUserType] = useState<'teacher' | 'student' | 'parent'>('teacher');
 
   const router = useRouter();
 
@@ -31,20 +33,32 @@ export default function LoginPage() {
     setError('');
 
     // Input validation
-    if (!formData.username || formData.username.trim().length === 0) {
-      setError('Kullanıcı adı veya e-posta gereklidir');
-      setIsLoading(false);
-      return;
+    if (userType === 'parent') {
+      if (!formData.email || formData.email.trim().length === 0) {
+        setError('E-posta gereklidir');
+        setIsLoading(false);
+        return;
+      }
+      if (!formData.email.includes('@')) {
+        setError('Geçerli bir e-posta adresi giriniz');
+        setIsLoading(false);
+        return;
+      }
+    } else {
+      if (!formData.username || formData.username.trim().length === 0) {
+        setError('Kullanıcı adı veya e-posta gereklidir');
+        setIsLoading(false);
+        return;
+      }
+      if (formData.username.trim().length < 3) {
+        setError('Kullanıcı adı en az 3 karakter olmalıdır');
+        setIsLoading(false);
+        return;
+      }
     }
 
     if (!formData.password || formData.password.length === 0) {
       setError('Şifre gereklidir');
-      setIsLoading(false);
-      return;
-    }
-
-    if (formData.username.trim().length < 3) {
-      setError('Kullanıcı adı en az 3 karakter olmalıdır');
       setIsLoading(false);
       return;
     }
@@ -56,26 +70,46 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await fetch('/api/auth/login', {
+      let endpoint = '/api/auth/login';
+      let body = {
+        username: formData.username.trim(),
+        password: formData.password
+      };
+
+      // Use parent login endpoint for parents
+      if (userType === 'parent') {
+        endpoint = '/api/parent/auth/login';
+        body = {
+          email: formData.email.trim(),
+          password: formData.password
+        };
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          username: formData.username.trim(),
-          password: formData.password
-        }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         // Clear form data
-        setFormData({ username: '', password: '' });
+        setFormData({ username: '', password: '', email: '' });
         setIsLoading(false);
         
-        // Always redirect to homepage after successful login
-        router.push('/');
+        // Redirect based on user type
+        if (userType === 'parent') {
+          router.push('/veli');
+        } else if (userType === 'student') {
+          router.push('/ogrenci');
+        } else if (userType === 'teacher') {
+          router.push('/ogretmen');
+        } else {
+          router.push('/');
+        }
       } else {
         setError(data.error || 'Giriş yapılamadı');
         setIsLoading(false);
@@ -114,19 +148,62 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* User Type Selection */}
             <div>
-              <label htmlFor="username" className="block text-sm font-semibold text-secondary-700 mb-3">
-                Kullanıcı Adı veya E-posta
+              <label className="block text-sm font-semibold text-secondary-700 mb-3">
+                Giriş Türü
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setUserType('teacher')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    userType === 'teacher'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
+                  }`}
+                >
+                  Öğretmen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserType('student')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    userType === 'student'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
+                  }`}
+                >
+                  Öğrenci
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserType('parent')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    userType === 'parent'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
+                  }`}
+                >
+                  Veli
+                </button>
+              </div>
+            </div>
+
+            {/* Username/Email Field */}
+            <div>
+              <label htmlFor={userType === 'parent' ? 'email' : 'username'} className="block text-sm font-semibold text-secondary-700 mb-3">
+                {userType === 'parent' ? 'E-posta' : 'Kullanıcı Adı veya E-posta'}
               </label>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id={userType === 'parent' ? 'email' : 'username'}
+                name={userType === 'parent' ? 'email' : 'username'}
+                type={userType === 'parent' ? 'email' : 'text'}
                 required
-                value={formData.username}
+                value={userType === 'parent' ? formData.email : formData.username}
                 onChange={handleChange}
                 className="input-field"
-                placeholder="Kullanıcı adınız veya e-posta adresiniz"
+                placeholder={userType === 'parent' ? 'E-posta adresiniz' : 'Kullanıcı adınız veya e-posta adresiniz'}
               />
             </div>
 
@@ -178,13 +255,21 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center space-y-2">
             <p className="text-secondary-600">
               Öğretmen olmak için{' '}
               <Link href="/iletisim" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors duration-200">
                 başvuru yapın
               </Link>
             </p>
+            {userType === 'parent' && (
+              <p className="text-secondary-600">
+                Veli hesabınız yok mu?{' '}
+                <Link href="/veli/kayit" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors duration-200">
+                  Kayıt olun
+                </Link>
+              </p>
+            )}
           </div>
         </div>
       </div>

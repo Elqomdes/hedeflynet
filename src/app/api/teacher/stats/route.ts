@@ -59,7 +59,11 @@ export async function GET(request: NextRequest) {
         assignmentId: { $in: await Assignment.find({ teacherId }).distinct('_id') },
         status: 'submitted'
       }),
-      User.countDocuments({ role: 'parent' })
+      // Parent count - using Parent model
+      (async () => {
+        const { Parent } = await import('@/lib/models/Parent');
+        return Parent.countDocuments({ isActive: true });
+      })()
     ]);
 
     // Calculate grading rate

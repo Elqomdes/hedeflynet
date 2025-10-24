@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-import { User, Assignment, AssignmentSubmission, Class, Report, Goal } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission, Class, Goal } from '@/lib/models';
 import { IUser } from '@/lib/models/User';
 import bcrypt from 'bcryptjs';
 
@@ -48,8 +48,7 @@ export async function DELETE(request: NextRequest) {
     // Delete classes
     await Class.deleteMany({ teacherId });
 
-    // Delete reports
-    await Report.deleteMany({ teacherId });
+    // Note: Reports are generated dynamically, no need to delete
 
     // Finally delete the user account
     await User.findByIdAndDelete(teacherId);

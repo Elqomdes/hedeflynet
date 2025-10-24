@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
-import { IUser } from '@/lib/models/User';
+import { getCurrentParent } from '@/lib/auth';
 import { ReportDataService } from '@/lib/services/reportDataService';
 import { FallbackReportService } from '@/lib/services/fallbackReportService';
-import { ReportGenerationOptions } from '@/lib/models/ReportData';
+import { ReportGenerationOptions } from '@/lib/types/report';
 import connectDB from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
@@ -15,26 +14,18 @@ export async function GET(
   const startTime = Date.now();
   
   try {
-    // 1. Authentication check
-    const authResult = await getCurrentUser(request);
-    if (!authResult) {
-      console.error('Parent Report Data API: Authentication failed - No user found');
+    // 1. Authentication check - use parent-specific auth
+    const parent = await getCurrentParent(request);
+    if (!parent) {
+      console.error('Parent Report Data API: Authentication failed - No parent found');
       return NextResponse.json(
         { error: 'Kimlik doğrulama gerekli. Lütfen giriş yapın.' },
         { status: 401 }
       );
     }
 
-    if (authResult.role !== 'parent') {
-      console.error('Parent Report Data API: Authorization failed - Invalid role:', authResult.role);
-      return NextResponse.json(
-        { error: 'Sadece veliler çocuklarının raporlarını görüntüleyebilir.' },
-        { status: 403 }
-      );
-    }
-
     const studentId = params.id;
-    const parentId = (authResult._id as any).toString();
+    const parentId = (parent._id as any).toString();
 
     // Validate student ID
     if (!studentId || studentId.length !== 24) {

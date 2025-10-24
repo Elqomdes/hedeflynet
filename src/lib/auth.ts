@@ -98,3 +98,31 @@ export function requireAuth(roles?: string[]) {
     return { user };
   };
 }
+
+export async function getCurrentParent(request: NextRequest) {
+  try {
+    const token = request.cookies.get('parent-token')?.value;
+    
+    if (!token) {
+      return null;
+    }
+
+    const payload = verifyToken(token);
+    if (!payload) {
+      return null;
+    }
+
+    await connectDB();
+    const { Parent } = await import('./models/Parent');
+    const parent = await Parent.findById(payload.parentId).select('-password');
+    
+    if (!parent || !parent.isActive) {
+      return null;
+    }
+
+    return parent;
+  } catch (error) {
+    console.error('Parent auth error:', error);
+    return null;
+  }
+}

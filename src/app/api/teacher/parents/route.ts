@@ -39,8 +39,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all parents
-    const parents = await User.find({ role: 'parent' })
-      .select('_id username email firstName lastName phone children isActive createdAt')
+    const { Parent } = await import('@/lib/models/Parent');
+    const parents = await Parent.find({ isActive: true })
+      .select('_id email firstName lastName phone children isActive createdAt')
       .sort({ createdAt: -1 });
 
     // Get teacher's classes to filter students
@@ -161,31 +162,26 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create and save parent
-    const parent = new User({
-      username,
-      email,
-      password: hashedPassword,
-      role: 'parent',
+    // Create and save parent using Parent model
+    const { Parent } = await import('@/lib/models/Parent');
+    const parent = await Parent.create({
       firstName,
       lastName,
+      email,
       phone: phone || '',
-      children: children || [],
-      isActive: true
+      password: hashedPassword,
+      children: children || []
     });
-
-    await parent.save();
 
     return NextResponse.json({
       success: true,
       message: 'Veli başarıyla oluşturuldu',
       parent: {
         id: parent._id,
-        username: parent.username,
         email: parent.email,
         firstName: parent.firstName,
         lastName: parent.lastName,
-        role: parent.role
+        children: parent.children
       }
     });
 

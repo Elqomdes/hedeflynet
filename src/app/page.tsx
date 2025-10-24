@@ -30,7 +30,7 @@ interface User {
   id: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'teacher' | 'student' | 'parent';
+  role: 'admin' | 'teacher' | 'student';
   email: string;
   phone?: string;
 }

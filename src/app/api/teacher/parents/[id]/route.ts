@@ -29,7 +29,8 @@ export async function DELETE(
     const parentId = params.id;
 
     // Check if parent exists
-    const parent = await User.findById(parentId);
+    const { Parent } = await import('@/lib/models/Parent');
+    const parent = await Parent.findById(parentId);
     if (!parent) {
       return NextResponse.json(
         { error: 'Veli bulunamadı' },
@@ -37,16 +38,8 @@ export async function DELETE(
       );
     }
 
-    // Check if parent role
-    if (parent.role !== 'parent') {
-      return NextResponse.json(
-        { error: 'Bu kullanıcı bir veli değil' },
-        { status: 400 }
-      );
-    }
-
     // Delete parent
-    await User.findByIdAndDelete(parentId);
+    await Parent.findByIdAndDelete(parentId);
 
     return NextResponse.json({
       success: true,
@@ -88,21 +81,15 @@ export async function GET(
     const parentId = params.id;
 
     // Get parent details
-    const parent = await User.findById(parentId)
-      .select('_id username email firstName lastName phone children isActive createdAt')
+    const { Parent } = await import('@/lib/models/Parent');
+    const parent = await Parent.findById(parentId)
+      .select('_id email firstName lastName phone children isActive createdAt')
       .populate('children', 'firstName lastName email');
 
     if (!parent) {
       return NextResponse.json(
         { error: 'Veli bulunamadı' },
         { status: 404 }
-      );
-    }
-
-    if (parent.role !== 'parent') {
-      return NextResponse.json(
-        { error: 'Bu kullanıcı bir veli değil' },
-        { status: 400 }
       );
     }
 
