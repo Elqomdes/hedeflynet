@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-import { User, Assignment, AssignmentSubmission, Class, Report } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission, Class, Report, Goal } from '@/lib/models';
 import { IUser } from '@/lib/models/User';
 import bcrypt from 'bcryptjs';
 

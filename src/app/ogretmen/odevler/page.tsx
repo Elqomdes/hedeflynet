@@ -275,7 +275,7 @@ export default function TeacherAssignments() {
     _id: assignment._id,
     title: `📝 ${assignment.title}`,
     date: new Date(assignment.dueDate).toISOString().split('T')[0],
-    status: 'assignment',
+    status: 'assignment' as const,
     studentName: assignment.studentId ? `${assignment.studentId.firstName} ${assignment.studentId.lastName}` : 'Sınıf Ödevi',
     type: assignment.type
   }));

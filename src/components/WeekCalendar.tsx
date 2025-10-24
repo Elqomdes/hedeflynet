@@ -8,7 +8,7 @@ type CalendarItem = {
   date: string; // ISO string: yyyy-mm-dd or full ISO with time
   status?: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'submitted' | 'late' | 'graded' | 'assignment';
   studentName?: string;
-  type?: string;
+  type?: 'individual' | 'class';
 };
 
 interface WeekCalendarProps {

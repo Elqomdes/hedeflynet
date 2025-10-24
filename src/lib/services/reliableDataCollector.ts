@@ -1,4 +1,4 @@
-import { User, Assignment, AssignmentSubmission, Class } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission, Class, Goal } from '@/lib/models';
 import { ReliableReportData } from './reliablePdfGenerator';
 
 export interface DataCollectionParams {

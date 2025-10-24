@@ -6,7 +6,7 @@ import {
   IParentNotification,
   IParentReport
 } from '@/lib/models/Parent';
-import { User, Assignment, AssignmentSubmission } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission, Goal } from '@/lib/models';
 import connectDB from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 
