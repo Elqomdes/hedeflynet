@@ -23,6 +23,7 @@ export interface IParent extends Document {
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 export interface IParentNotification extends Document {

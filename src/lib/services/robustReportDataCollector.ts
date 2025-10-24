@@ -195,7 +195,7 @@ export class RobustReportDataCollector {
       firstName: student.firstName || 'Bilinmeyen',
       lastName: student.lastName || 'Öğrenci',
       email: student.email || '',
-      classId: (student as any).classId?.toString(),
+      classId: student.classId?.toString(),
       isActive: student.isActive
     };
   }
@@ -227,8 +227,8 @@ export class RobustReportDataCollector {
   private static async getStudentClass(studentId: string) {
     try {
       const student = await User.findById(studentId).select('classId');
-      if (student && (student as any).classId) {
-        const classData = await Class.findById((student as any).classId);
+      if (student && student.classId) {
+        const classData = await Class.findById(student.classId);
         if (classData) {
           return {
             _id: (classData._id as any).toString(),

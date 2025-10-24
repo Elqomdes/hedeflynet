@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
           { email: sanitizedUsername }
         ],
         isActive: true 
-      }) as IUser | null,
+      }),
       Parent.findOne({ 
         $or: [
           { username: sanitizedUsername },
           { email: sanitizedUsername }
         ],
         isActive: true 
-      }) as IParent | null
+      })
     ]);
 
     // Timing attack protection - always perform password comparison
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     let cookieName;
     
     if (userRole === 'parent') {
-      token = generateToken((parent!._id as any).toString(), parent!.username, 'parent');
+      token = generateToken(parent!._id.toString(), parent!.username, 'parent');
       cookieName = 'parent-token';
     } else {
       token = generateToken((user!._id as any).toString(), user!.username, userRole);

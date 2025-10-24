@@ -194,20 +194,8 @@ export async function POST(request: NextRequest) {
       console.log('Report API: Starting robust data collection');
       const robustData = await RobustReportDataCollector.collectStudentData(analysisData);
       
-      // Convert robust data to legacy format for compatibility
-      reportData = {
-        student: robustData.student,
-        teacher: robustData.teacher,
-        performance: robustData.performance,
-        subjectStats: robustData.subjectStats,
-        monthlyProgress: robustData.monthlyProgress,
-        goals: robustData.goals,
-        assignments: robustData.assignments,
-        recommendations: robustData.recommendations,
-        strengths: robustData.strengths,
-        areasForImprovement: robustData.areasForImprovement,
-        class: robustData.class
-      };
+      // Use robust data directly
+      reportData = robustData;
       
       console.log('Report API: Robust data collection completed successfully');
     } catch (robustError) {
@@ -244,7 +232,7 @@ export async function POST(request: NextRequest) {
       
       if (useRobustSystem) {
         const pdfGenerator = new AdvancedPdfGenerator();
-        pdfBuffer = await pdfGenerator.generateReport(reportData as any);
+        pdfBuffer = await pdfGenerator.generateReport(reportData);
       } else {
         // Try advanced PDF first, fallback to simple PDF
         try {

@@ -99,12 +99,15 @@ export class ReportDataCollector {
           firstName: studentData.firstName || 'Bilinmeyen',
           lastName: studentData.lastName || 'Öğrenci',
           email: studentData.email || '',
-          classId: studentClassData?._id?.toString()
+          classId: studentClassData?._id?.toString(),
+          isActive: studentData.isActive
         },
         teacher: {
+          _id: (teacherData._id as any).toString(),
           firstName: teacherData.firstName || 'Bilinmeyen',
           lastName: teacherData.lastName || 'Öğretmen',
-          email: teacherData.email || ''
+          email: teacherData.email || '',
+          isActive: teacherData.isActive
         },
         performance,
         subjectStats,
@@ -262,8 +265,8 @@ export class ReportDataCollector {
     try {
       console.log('ReportDataCollector: Getting student class', studentId);
       const student = await User.findById(studentId).select('classId');
-      if (student && (student as any).classId) {
-        const classData = await Class.findById((student as any).classId);
+      if (student && student.classId) {
+        const classData = await Class.findById(student.classId);
         console.log('ReportDataCollector: Class found', classData ? classData._id : 'null');
         return classData;
       }

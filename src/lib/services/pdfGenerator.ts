@@ -7,13 +7,16 @@ export interface ReportData {
     _id: string;
     firstName: string;
     lastName: string;
-    email?: string;
+    email: string;
     classId?: string;
+    isActive: boolean;
   };
   teacher: {
+    _id: string;
     firstName: string;
     lastName: string;
-    email?: string;
+    email: string;
+    isActive: boolean;
   };
   performance: {
     assignmentCompletion: number;
