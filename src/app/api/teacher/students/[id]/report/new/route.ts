@@ -85,8 +85,6 @@ export async function POST(
     const options: ReportGenerationOptions = {
       includeCharts: requestBody.includeCharts !== false,
       includeDetailedAssignments: requestBody.includeDetailedAssignments !== false,
-      includeGoals: requestBody.includeGoals !== false,
-      includeInsights: requestBody.includeInsights !== false,
       format: requestBody.format || 'pdf'
     };
 

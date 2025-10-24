@@ -81,8 +81,6 @@ export async function GET(
     const options: ReportGenerationOptions = {
       includeCharts: true,
       includeDetailedAssignments: true,
-      includeGoals: true,
-      includeInsights: true,
       format: 'json'
     };
 
