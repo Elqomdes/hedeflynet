@@ -24,12 +24,6 @@ interface Assignment {
   classId?: {
     name: string;
   };
-  // Goal-like properties
-  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
-  priority?: 'low' | 'medium' | 'high';
-  successCriteria?: string;
-  progress?: number; // 0-100
-  goalId?: string; // If this assignment is linked to a goal
   submission?: {
     status: 'pending' | 'submitted' | 'completed' | 'late' | 'graded';
     submittedAt?: string;

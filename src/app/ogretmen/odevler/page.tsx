@@ -624,10 +624,6 @@ export default function TeacherAssignments() {
                   studentId: formData.get('studentId'),
                   dueDate: formData.get('dueDate'),
                   maxGrade: formData.get('maxGrade') ? parseInt(formData.get('maxGrade') as string) : 100,
-                  // Goal-like properties
-                  category: formData.get('category') || 'academic',
-                  priority: formData.get('priority') || 'medium',
-                  successCriteria: formData.get('successCriteria') || '',
                   attachments: []
                 };
 
@@ -763,57 +759,6 @@ export default function TeacherAssignments() {
                     </select>
                   </div>
 
-                  {/* Goal-like properties */}
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-secondary-700 mb-3">Hedef Özellikleri</h4>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-secondary-700">
-                          Kategori
-                        </label>
-                        <select
-                          name="category"
-                          defaultValue={editingAssignment?.category || 'academic'}
-                          className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        >
-                          <option value="academic">Akademik</option>
-                          <option value="behavioral">Davranışsal</option>
-                          <option value="skill">Beceri</option>
-                          <option value="personal">Kişisel</option>
-                          <option value="other">Diğer</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-secondary-700">
-                          Öncelik
-                        </label>
-                        <select
-                          name="priority"
-                          defaultValue={editingAssignment?.priority || 'medium'}
-                          className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        >
-                          <option value="low">Düşük</option>
-                          <option value="medium">Orta</option>
-                          <option value="high">Yüksek</option>
-                        </select>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-secondary-700">
-                        Başarı Kriterleri
-                      </label>
-                      <textarea
-                        name="successCriteria"
-                        defaultValue={editingAssignment?.successCriteria || ''}
-                        rows={3}
-                        className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="Bu ödevin başarı kriterlerini açıklayın..."
-                      />
-                    </div>
-                  </div>
                 </div>
                 
                 <div className="mt-6 flex justify-end space-x-3">

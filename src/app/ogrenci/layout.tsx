@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { 
   BookOpen, 
   FileText, 
-  Target, 
   BarChart3, 
   LogOut, 
   Menu, 

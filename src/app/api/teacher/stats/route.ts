@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { User, Class, Assignment, AssignmentSubmission, Goal } from '@/lib/models';
+import { User, Class, Assignment, AssignmentSubmission } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     const teacherStudentIds = Array.from(studentIdSet);
 
-    const [totalStudents, totalClasses, totalAssignments, totalGoals, submittedAssignments, gradedAssignments, pendingGrading, totalParents] = await Promise.all([
+    const [totalStudents, totalClasses, totalAssignments, submittedAssignments, gradedAssignments, pendingGrading, totalParents] = await Promise.all([
       teacherStudentIds.length > 0 ? User.countDocuments({ role: 'student', _id: { $in: teacherStudentIds } }) : Promise.resolve(0),
       Class.countDocuments({ 
         $or: [
@@ -47,7 +47,6 @@ export async function GET(request: NextRequest) {
         ]
       }),
       Assignment.countDocuments({ teacherId }),
-      Goal.countDocuments({ teacherId }),
       AssignmentSubmission.countDocuments({ 
         assignmentId: { $in: await Assignment.find({ teacherId }).distinct('_id') },
         status: 'submitted'
@@ -72,7 +71,6 @@ export async function GET(request: NextRequest) {
       totalStudents,
       totalClasses,
       totalAssignments,
-      totalGoals,
       submittedAssignments,
       gradedAssignments,
       pendingGrading,

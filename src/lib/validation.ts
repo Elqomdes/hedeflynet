@@ -37,10 +37,6 @@ export const AssignmentCreateSchema = z.object({
   maxGrade: z.number().min(1).max(100).optional(),
   tags: z.array(z.string()).optional(),
   rubricId: z.string().optional(),
-  // Goal-like properties
-  category: z.enum(['academic', 'behavioral', 'skill', 'personal', 'other']).optional(),
-  priority: z.enum(['low', 'medium', 'high']).optional(),
-  successCriteria: z.string().trim().max(500).optional().or(z.literal('').transform(() => undefined)),
 }).superRefine((val, ctx) => {
   if (val.type === 'class' && !val.classId) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Sınıf ödevi için sınıf seçilmelidir', path: ['classId'] });

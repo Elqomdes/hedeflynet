@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, BookOpen, FileText, Target, UserPlus, CheckCircle, Clock, Video, BarChart3, UserCheck } from 'lucide-react';
+import { Users, BookOpen, FileText, UserPlus, CheckCircle, Clock, Video, BarChart3, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TeacherDashboard() {
@@ -9,7 +9,6 @@ export default function TeacherDashboard() {
     totalStudents: 0,
     totalClasses: 0,
     totalAssignments: 0,
-    totalGoals: 0,
     submittedAssignments: 0,
     gradedAssignments: 0,
     pendingGrading: 0,
@@ -376,23 +375,6 @@ export default function TeacherDashboard() {
                 </p>
               </div>
               <div className="text-warning-600 group-hover:translate-x-1 transition-transform duration-300">
-                →
-              </div>
-            </Link>
-            <Link
-              href="/ogretmen/hedefler"
-              className="flex items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-xl hover:from-purple-100 hover:to-purple-200 hover:shadow-md transition-all duration-300 group"
-            >
-              <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl group-hover:from-purple-600 group-hover:to-purple-700 transition-all duration-300 shadow-lg">
-                <Target className="h-6 w-6 text-white" />
-              </div>
-              <div className="ml-4 flex-1">
-                <p className="font-semibold text-secondary-900 group-hover:text-purple-600 transition-colors duration-300">Hedef Belirle</p>
-                <p className="text-sm text-secondary-600">
-                  Öğrenci hedefleri oluşturun ve takip edin
-                </p>
-              </div>
-              <div className="text-purple-600 group-hover:translate-x-1 transition-transform duration-300">
                 →
               </div>
             </Link>
