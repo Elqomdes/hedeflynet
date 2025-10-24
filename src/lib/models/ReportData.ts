@@ -20,6 +20,7 @@ export interface StudentReportData {
     assignmentCompletion: number;
     averageGrade: number;
     gradingRate: number;
+    goalsProgress: number;
     overallPerformance: number;
   };
   statistics: {
@@ -27,7 +28,22 @@ export interface StudentReportData {
     submittedAssignments: number;
     gradedAssignments: number;
     pendingAssignments: number;
+    totalGoals: number;
+    completedGoals: number;
   };
+  subjects: Array<{
+    name: string;
+    averageGrade: number;
+    assignmentsCompleted: number;
+    assignmentsTotal: number;
+    trend: 'improving' | 'stable' | 'declining';
+  }>;
+  monthlyProgress: Array<{
+    month: string;
+    assignmentsCompleted: number;
+    averageGrade: number;
+    goalsAchieved: number;
+  }>;
   recentAssignments: Array<{
     title: string;
     dueDate: string;
@@ -35,6 +51,19 @@ export interface StudentReportData {
     grade?: number;
     maxGrade: number;
   }>;
+  goals: Array<{
+    id: string;
+    title: string;
+    description: string;
+    targetDate: string;
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+    progress: number;
+  }>;
+  insights: {
+    strengths: string[];
+    areasForImprovement: string[];
+    recommendations: string[];
+  };
   generatedAt: string;
 }
 

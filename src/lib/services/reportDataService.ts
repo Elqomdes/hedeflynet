@@ -122,13 +122,23 @@ export class ReportDataService {
           totalAssignments: assignmentStats.totalAssignments,
           submittedAssignments: assignmentStats.submittedAssignments,
           gradedAssignments: assignmentStats.gradedAssignments,
-          pendingAssignments: assignmentStats.totalAssignments - assignmentStats.submittedAssignments
+          pendingAssignments: assignmentStats.totalAssignments - assignmentStats.submittedAssignments,
+          totalGoals: 0,
+          completedGoals: 0
         },
+        subjects: [],
+        monthlyProgress: [],
         recentAssignments: recentAssignments.map(assignment => ({
           ...assignment,
           status: assignment.status as 'completed' | 'submitted' | 'graded' | 'pending',
           maxGrade: assignment.maxGrade || 100
         })),
+        goals: [],
+        insights: {
+          strengths: ['Veri analizi tamamlandı'],
+          areasForImprovement: ['Daha fazla ödev tamamlanabilir'],
+          recommendations: ['Düzenli çalışma programı önerilir']
+        },
         generatedAt: new Date().toISOString()
       };
 
@@ -250,6 +260,7 @@ export class ReportDataService {
       assignmentCompletion,
       averageGrade,
       gradingRate,
+      goalsProgress: 0, // Will be calculated separately if needed
       overallPerformance: Math.min(100, Math.max(0, overallPerformance)) // 0-100 arasında sınırla
     };
   }

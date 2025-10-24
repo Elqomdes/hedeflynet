@@ -201,11 +201,12 @@ export class SimplePdfGenerator {
       }
 
       this.doc.text(subject.name.length > 15 ? subject.name.substring(0, 15) + '...' : subject.name, this.margin, this.currentY);
-      this.doc.text(subject.totalAssignments.toString(), this.margin + 40, this.currentY);
-      this.doc.text(subject.submittedAssignments.toString(), this.margin + 60, this.currentY);
-      this.doc.text(subject.gradedAssignments.toString(), this.margin + 80, this.currentY);
+      this.doc.text(subject.assignmentsTotal.toString(), this.margin + 40, this.currentY);
+      this.doc.text(subject.assignmentsCompleted.toString(), this.margin + 60, this.currentY);
+      this.doc.text(subject.assignmentsCompleted.toString(), this.margin + 80, this.currentY);
       this.doc.text(subject.averageGrade.toString(), this.margin + 120, this.currentY);
-      this.doc.text(subject.completionRate.toString(), this.margin + 150, this.currentY);
+      const completionRate = subject.assignmentsTotal > 0 ? Math.round((subject.assignmentsCompleted / subject.assignmentsTotal) * 100) : 0;
+      this.doc.text(completionRate.toString() + '%', this.margin + 150, this.currentY);
       this.currentY += 6;
     }
 
@@ -240,8 +241,8 @@ export class SimplePdfGenerator {
       }
 
       this.doc.text(month.month, this.margin, this.currentY);
-      this.doc.text(month.assignments.toString(), this.margin + 40, this.currentY);
-      this.doc.text(month.goalsCompleted.toString(), this.margin + 60, this.currentY);
+      this.doc.text(month.assignmentsCompleted.toString(), this.margin + 40, this.currentY);
+      this.doc.text(month.goalsAchieved.toString(), this.margin + 60, this.currentY);
       this.doc.text(month.averageGrade.toString(), this.margin + 80, this.currentY);
       this.currentY += 6;
     }
