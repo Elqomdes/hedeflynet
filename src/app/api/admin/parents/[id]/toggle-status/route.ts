@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import User from '@/lib/models/User';
+import { Parent } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { z } from 'zod';
 
@@ -45,18 +45,11 @@ export async function POST(
     const parentId = params.id;
 
     // Check if parent exists
-    const parent = await User.findById(parentId);
+    const parent = await Parent.findById(parentId);
     if (!parent) {
       return NextResponse.json(
         { error: 'Veli bulunamadı' },
         { status: 404 }
-      );
-    }
-
-    if (parent.role !== 'parent') {
-      return NextResponse.json(
-        { error: 'Bu kullanıcı bir veli değil' },
-        { status: 400 }
       );
     }
 

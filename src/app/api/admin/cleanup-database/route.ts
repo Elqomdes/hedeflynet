@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const results = {
-      deletedCollections: [],
-      errors: []
+      deletedCollections: [] as string[],
+      errors: [] as string[]
     };
 
     try {
@@ -27,13 +27,15 @@ export async function POST(request: NextRequest) {
       const mongoose = await import('mongoose');
       const db = mongoose.connection.db;
 
-      // Check if reports collection exists and delete it
-      const collections = await db.listCollections().toArray();
-      const reportCollection = collections.find(col => col.name === 'reports');
-      
-      if (reportCollection) {
-        await db.collection('reports').drop();
-        results.deletedCollections.push('reports');
+      if (db) {
+        // Check if reports collection exists and delete it
+        const collections = await db.listCollections().toArray();
+        const reportCollection = collections.find(col => col.name === 'reports');
+        
+        if (reportCollection) {
+          await db.collection('reports').drop();
+          results.deletedCollections.push('reports');
+        }
       }
 
       // Check for any documents with role: 'parent' in users collection

@@ -82,7 +82,7 @@ export default function LoginPage() {
         body = {
           email: formData.email.trim(),
           password: formData.password
-        };
+        } as any;
       }
 
       const response = await fetch(endpoint, {

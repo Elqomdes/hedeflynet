@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { User, Report } from '@/lib/models';
+import { User } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import PDFGenerator, { ReportData } from '@/lib/services/pdfGenerator';
 import ReportDataCollector, { StudentAnalysisData } from '@/lib/services/reportDataCollector';
