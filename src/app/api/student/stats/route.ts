@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Assignment, AssignmentSubmission, Goal, Plan } from '@/lib/models';
+import { Assignment, AssignmentSubmission } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     const studentId = authResult._id;
 
-    const [totalAssignments, completedAssignments, submittedAssignments, gradedAssignments, totalGoals, completedGoals, totalPlans, completedPlans] = await Promise.all([
+    const [totalAssignments, completedAssignments, submittedAssignments, gradedAssignments] = await Promise.all([
       Assignment.countDocuments({ studentId }),
       AssignmentSubmission.countDocuments({ 
         studentId, 
@@ -32,16 +32,6 @@ export async function GET(request: NextRequest) {
       AssignmentSubmission.countDocuments({ 
         studentId, 
         status: 'graded' 
-      }),
-      Goal.countDocuments({ studentId }),
-      Goal.countDocuments({ 
-        studentId, 
-        status: 'completed' 
-      }),
-      Plan.countDocuments({ studentId }),
-      Plan.countDocuments({ 
-        studentId,
-        'tasks.completed': true
       })
     ]);
 
@@ -49,11 +39,7 @@ export async function GET(request: NextRequest) {
       totalAssignments,
       completedAssignments,
       submittedAssignments,
-      gradedAssignments,
-      totalGoals,
-      completedGoals,
-      totalPlans,
-      completedPlans
+      gradedAssignments
     });
   } catch (error) {
     console.error('Student stats error:', error);

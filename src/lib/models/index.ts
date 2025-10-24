@@ -4,7 +4,6 @@ export { default as Class } from './Class';
 export { default as Assignment } from './Assignment';
 export { default as AssignmentSubmission } from './AssignmentSubmission';
 export { default as Goal } from './Goal';
-export { default as Plan } from './Plan';
 export { default as Report } from './Report';
 export type { StudentReportData, ReportGenerationOptions } from './ReportData';
 export { default as Subscription } from './Subscription';

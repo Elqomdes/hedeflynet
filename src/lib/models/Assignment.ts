@@ -24,6 +24,11 @@ export interface IAssignment extends Document {
   tags?: string[];
   rubricId?: mongoose.Types.ObjectId;
   goalId?: mongoose.Types.ObjectId; // Linked goal
+  // Goal-like properties
+  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
+  priority?: 'low' | 'medium' | 'high';
+  successCriteria?: string;
+  progress?: number; // 0-100
   createdAt: Date;
   updatedAt: Date;
 }
@@ -120,6 +125,28 @@ const AssignmentSchema = new Schema<IAssignment>({
   goalId: {
     type: Schema.Types.ObjectId,
     ref: 'Goal'
+  },
+  // Goal-like properties
+  category: {
+    type: String,
+    enum: ['academic', 'behavioral', 'skill', 'personal', 'other'],
+    default: 'academic'
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high'],
+    default: 'medium'
+  },
+  successCriteria: {
+    type: String,
+    trim: true,
+    maxlength: 500
+  },
+  progress: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 0
   }
 }, {
   timestamps: true

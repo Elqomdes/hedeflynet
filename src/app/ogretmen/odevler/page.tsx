@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye } from 'lucide-react';
+import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye, Target, BookOpen, Zap } from 'lucide-react';
 
 interface Attachment {
   type: 'pdf' | 'video' | 'link';
@@ -26,6 +26,11 @@ interface Assignment {
     firstName: string;
     lastName: string;
   };
+  // Goal-like properties
+  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
+  priority?: 'low' | 'medium' | 'high';
+  successCriteria?: string;
+  progress?: number; // 0-100
   createdAt: string;
   updatedAt: string;
 }
@@ -60,7 +65,6 @@ export default function TeacherAssignments() {
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
-  const [goals, setGoals] = useState<any[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [gradingSubmission, setGradingSubmission] = useState<Submission | null>(null);
@@ -75,7 +79,6 @@ export default function TeacherAssignments() {
     fetchAssignments();
     fetchClasses();
     fetchStudents();
-    fetchGoals();
   }, []);
 
   const fetchAssignments = async () => {
@@ -132,25 +135,6 @@ export default function TeacherAssignments() {
     }
   };
 
-  const fetchGoals = async () => {
-    try {
-      const response = await fetch('/api/teacher/goals', {
-        credentials: 'include',
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setGoals(data || []);
-      } else {
-        console.error('Goals fetch failed:', response.status);
-        setGoals([]);
-      }
-    } catch (error) {
-      console.error('Goals fetch error:', error);
-      setGoals([]);
-    }
-  };
 
   const handleDeleteAssignment = async (assignmentId: string) => {
     if (!confirm('Bu ödevi silmek istediğinizden emin misiniz?')) {
@@ -460,6 +444,10 @@ export default function TeacherAssignments() {
                   dueDate: formData.get('dueDate'),
                   maxGrade: formData.get('maxGrade') ? parseInt(formData.get('maxGrade') as string) : 100,
                   goalId: formData.get('goalId') || null,
+                  // Goal-like properties
+                  category: formData.get('category') || 'academic',
+                  priority: formData.get('priority') || 'medium',
+                  successCriteria: formData.get('successCriteria') || '',
                   attachments: []
                 };
 
@@ -543,44 +531,6 @@ export default function TeacherAssignments() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Hedef Seçimi (Opsiyonel)
-                    </label>
-                    <select
-                      name="goalId"
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                    >
-                      <option value="">Hedef seçin (opsiyonel)</option>
-                      {(goals || []).length === 0 ? (
-                        <option value="" disabled>Hedef bulunamadı</option>
-                      ) : (
-                        (goals || []).map((goal) => (
-                          <option key={goal._id} value={goal._id}>
-                            {goal.title} - {goal.studentId.firstName} {goal.studentId.lastName}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                    {(goals || []).length === 0 && (
-                      <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                        <p className="text-sm text-yellow-800">
-                          <strong>Hedef bulunamadı!</strong> Önce hedefler sayfasından hedef oluşturun.
-                        </p>
-                        <a 
-                          href="/ogretmen/hedefler" 
-                          className="text-sm text-yellow-700 underline hover:text-yellow-900"
-                        >
-                          Hedefler sayfasına git →
-                        </a>
-                      </div>
-                    )}
-                    {(goals || []).length > 0 && (
-                      <p className="mt-1 text-sm text-green-600">
-                        {(goals || []).length} hedef bulundu
-                      </p>
-                    )}
-                  </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-secondary-700">
@@ -628,6 +578,58 @@ export default function TeacherAssignments() {
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  {/* Goal-like properties */}
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium text-secondary-700 mb-3">Hedef Özellikleri</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-secondary-700">
+                          Kategori
+                        </label>
+                        <select
+                          name="category"
+                          defaultValue={editingAssignment?.category || 'academic'}
+                          className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        >
+                          <option value="academic">Akademik</option>
+                          <option value="behavioral">Davranışsal</option>
+                          <option value="skill">Beceri</option>
+                          <option value="personal">Kişisel</option>
+                          <option value="other">Diğer</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-secondary-700">
+                          Öncelik
+                        </label>
+                        <select
+                          name="priority"
+                          defaultValue={editingAssignment?.priority || 'medium'}
+                          className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        >
+                          <option value="low">Düşük</option>
+                          <option value="medium">Orta</option>
+                          <option value="high">Yüksek</option>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-secondary-700">
+                        Başarı Kriterleri
+                      </label>
+                      <textarea
+                        name="successCriteria"
+                        defaultValue={editingAssignment?.successCriteria || ''}
+                        rows={3}
+                        className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Bu ödevin başarı kriterlerini açıklayın..."
+                      />
+                    </div>
                   </div>
                 </div>
                 

@@ -37,21 +37,15 @@ export default function StudentDashboard() {
     completedAssignments: 0,
     submittedAssignments: 0,
     gradedAssignments: 0,
-    totalGoals: 0,
-    completedGoals: 0,
-    totalPlans: 0,
-    completedPlans: 0,
     totalClasses: 0,
     videoSessions: 0,
     averageGrade: 0
   });
-  const [goals, setGoals] = useState<Goal[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStats();
-    fetchGoals();
     fetchAssignments();
   }, []);
 
@@ -67,21 +61,6 @@ export default function StudentDashboard() {
     }
   };
 
-  const fetchGoals = async () => {
-    try {
-      const response = await fetch('/api/student/goals', {
-        credentials: 'include',
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setGoals(data || []);
-      }
-    } catch (error) {
-      console.error('Goals fetch error:', error);
-    }
-  };
 
   const fetchAssignments = async () => {
     try {
@@ -121,18 +100,8 @@ export default function StudentDashboard() {
     ? Math.round((stats.gradedAssignments / stats.submittedAssignments) * 100)
     : 0;
 
-  const goalCompletionRate = stats.totalGoals > 0 
-    ? Math.round((stats.completedGoals / stats.totalGoals) * 100)
-    : 0;
 
-  // Calendar items for goals and assignments
-  const goalItems = (goals || []).map(goal => ({
-    _id: goal._id,
-    title: goal.title,
-    date: new Date(goal.targetDate).toISOString().split('T')[0],
-    status: goal.status
-  }));
-
+  // Calendar items for assignments
   const assignmentItems = (assignments || []).map(assignment => ({
     _id: `assignment-${assignment._id}`,
     title: `📝 ${assignment.title}`,
@@ -140,7 +109,7 @@ export default function StudentDashboard() {
     status: assignment.submission?.status || 'pending'
   }));
 
-  const allCalendarItems = [...goalItems, ...assignmentItems];
+  const allCalendarItems = [...assignmentItems];
 
   // Recent assignments (next 7 days)
   const upcomingAssignments = (assignments || [])
@@ -154,11 +123,6 @@ export default function StudentDashboard() {
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 5);
 
-  // Recent goals
-  const recentGoals = (goals || [])
-    .filter(goal => goal.status !== 'completed')
-    .sort((a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime())
-    .slice(0, 3);
 
   const statCards = [
     {
@@ -169,24 +133,6 @@ export default function StudentDashboard() {
       color: 'bg-blue-500',
       href: '/ogrenci/odevler',
       subtitle: `${stats.gradedAssignments} değerlendirildi`
-    },
-    {
-      name: 'Hedeflerim',
-      value: stats.totalGoals,
-      completed: stats.completedGoals,
-      icon: Target,
-      color: 'bg-green-500',
-      href: '/ogrenci/hedefler',
-      subtitle: `${stats.completedGoals} tamamlandı`
-    },
-    {
-      name: 'Planlarım',
-      value: stats.totalPlans,
-      completed: stats.completedPlans,
-      icon: BookOpen,
-      color: 'bg-purple-500',
-      href: '/ogrenci/planlar',
-      subtitle: `${stats.completedPlans} tamamlandı`
     },
     {
       name: 'Sınıflarım',
@@ -222,7 +168,7 @@ export default function StudentDashboard() {
       <div className="mb-10">
         <h1 className="text-4xl font-bold text-secondary-900 mb-3">Öğrenci Dashboard</h1>
         <p className="text-lg text-secondary-600">
-          Ödevlerinizi takip edin, hedeflerinize ulaşın ve ilerlemenizi görün
+          Ödevlerinizi takip edin ve ilerlemenizi görün
         </p>
       </div>
 
@@ -366,37 +312,10 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        <div className="card card-hover animate-scale-in" style={{animationDelay: '0.2s'}}>
-          <div className="card-header">
-            <h3 className="card-title">
-              Hedef Tamamlama Oranı
-            </h3>
-          </div>
-          <div className="flex items-center">
-            <div className="flex-1">
-              <div className="flex justify-between text-sm text-secondary-600 mb-3">
-                <span>Tamamlanan</span>
-                <span className="font-semibold">{stats.completedGoals}/{stats.totalGoals}</span>
-              </div>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill progress-warning"
-                  style={{ width: `${goalCompletionRate}%` }}
-                ></div>
-              </div>
-              <p className="text-sm text-secondary-600 mt-3">
-                %{goalCompletionRate} tamamlandı
-              </p>
-            </div>
-            <div className="ml-6 text-4xl font-bold text-warning-600">
-              {goalCompletionRate}%
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         {statCards.map((stat, index) => (
           <Link key={stat.name} href={stat.href} className="card card-hover group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
             <div className="flex items-center">
@@ -454,49 +373,6 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        <div className="card animate-slide-up" style={{animationDelay: '0.1s'}}>
-          <div className="card-header">
-            <h3 className="card-title flex items-center">
-              <Target className="h-5 w-5 mr-2" />
-              Aktif Hedefler
-            </h3>
-          </div>
-          <div className="space-y-3">
-            {recentGoals.length === 0 ? (
-              <div className="text-center py-4">
-                <Target className="h-8 w-8 text-secondary-400 mx-auto mb-2" />
-                <p className="text-sm text-secondary-500">Aktif hedef yok</p>
-              </div>
-            ) : (
-              recentGoals.map((goal) => (
-                <div key={goal._id} className="p-3 bg-green-50 rounded-xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-secondary-900">{goal.title}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      goal.status === 'completed' 
-                        ? 'bg-green-100 text-green-800' 
-                        : goal.status === 'in_progress'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {goal.status === 'completed' ? 'Tamamlandı' : 
-                       goal.status === 'in_progress' ? 'Devam Ediyor' : 'Bekliyor'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 bg-secondary-200 rounded-full h-2 mr-3">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${goal.progress}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-xs text-secondary-600">{goal.progress}%</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
 
         <div className="card animate-slide-up" style={{animationDelay: '0.2s'}}>
           <div className="card-header">
@@ -517,34 +393,6 @@ export default function StudentDashboard() {
                 <p className="font-semibold text-secondary-900 text-sm">Ödevlerim</p>
                 <p className="text-xs text-secondary-600">
                   {stats.totalAssignments} ödev
-                </p>
-              </div>
-            </Link>
-            <Link
-              href="/ogrenci/hedefler"
-              className="flex items-center p-3 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-300 group"
-            >
-              <div className="p-2 bg-success-500 rounded-lg group-hover:bg-success-600 transition-colors duration-300">
-                <Target className="h-5 w-5 text-white" />
-              </div>
-              <div className="ml-3">
-                <p className="font-semibold text-secondary-900 text-sm">Hedeflerim</p>
-                <p className="text-xs text-secondary-600">
-                  {stats.totalGoals} hedef
-                </p>
-              </div>
-            </Link>
-            <Link
-              href="/ogrenci/planlar"
-              className="flex items-center p-3 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-xl hover:from-purple-100 hover:to-purple-200 transition-all duration-300 group"
-            >
-              <div className="p-2 bg-purple-500 rounded-lg group-hover:bg-purple-600 transition-colors duration-300">
-                <BookOpen className="h-5 w-5 text-white" />
-              </div>
-              <div className="ml-3">
-                <p className="font-semibold text-secondary-900 text-sm">Planlarım</p>
-                <p className="text-xs text-secondary-600">
-                  {stats.totalPlans} plan
                 </p>
               </div>
             </Link>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Clock, CheckCircle, AlertCircle, Download, ExternalLink, Star, MessageSquare } from 'lucide-react';
+import { FileText, Clock, CheckCircle, AlertCircle, Download, ExternalLink, Star, MessageSquare, Target, BookOpen, Users, Zap, Calendar, User } from 'lucide-react';
 
 interface Assignment {
   _id: string;
@@ -24,6 +24,12 @@ interface Assignment {
   classId?: {
     name: string;
   };
+  // Goal-like properties
+  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
+  priority?: 'low' | 'medium' | 'high';
+  successCriteria?: string;
+  progress?: number; // 0-100
+  goalId?: string; // If this assignment is linked to a goal
   submission?: {
     status: 'pending' | 'submitted' | 'completed' | 'late' | 'graded';
     submittedAt?: string;
@@ -46,6 +52,7 @@ export default function StudentAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'completed' | 'graded'>('all');
+  const [updatingProgress, setUpdatingProgress] = useState<string | null>(null);
   const [submittingAssignment, setSubmittingAssignment] = useState<string | null>(null);
   const [submissionContent, setSubmissionContent] = useState('');
 
@@ -138,6 +145,91 @@ export default function StudentAssignments() {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
+  // Goal-like helper functions
+  const getCategoryIcon = (category?: string) => {
+    switch (category) {
+      case 'academic':
+        return <BookOpen className="h-4 w-4" />;
+      case 'behavioral':
+        return <Users className="h-4 w-4" />;
+      case 'skill':
+        return <Zap className="h-4 w-4" />;
+      case 'personal':
+        return <Star className="h-4 w-4" />;
+      default:
+        return <Target className="h-4 w-4" />;
+    }
+  };
+
+  const getCategoryText = (category?: string) => {
+    switch (category) {
+      case 'academic':
+        return 'Akademik';
+      case 'behavioral':
+        return 'Davranışsal';
+      case 'skill':
+        return 'Beceri';
+      case 'personal':
+        return 'Kişisel';
+      default:
+        return 'Genel';
+    }
+  };
+
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getPriorityText = (priority?: string) => {
+    switch (priority) {
+      case 'high':
+        return 'Yüksek';
+      case 'medium':
+        return 'Orta';
+      case 'low':
+        return 'Düşük';
+      default:
+        return 'Belirtilmemiş';
+    }
+  };
+
+  const updateProgress = async (assignmentId: string, progress: number) => {
+    try {
+      setUpdatingProgress(assignmentId);
+      const response = await fetch(`/api/student/assignments/${assignmentId}/progress`, {
+        method: 'PATCH',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+        body: JSON.stringify({ progress })
+      });
+
+      if (response.ok) {
+        fetchAssignments(); // Refresh the list
+      } else {
+        const error = await response.json();
+        alert(error.error || 'İlerleme güncellenemedi');
+      }
+    } catch (error) {
+      console.error('Progress update error:', error);
+      alert('İlerleme güncellenemedi');
+    } finally {
+      setUpdatingProgress(null);
     }
   };
 
@@ -279,6 +371,73 @@ export default function StudentAssignments() {
                   <p className="mt-2 text-sm text-secondary-600">
                     {assignment.description}
                   </p>
+
+                  {/* Category and Priority */}
+                  {(assignment.category || assignment.priority) && (
+                    <div className="flex items-center gap-2 mb-3">
+                      {assignment.category && (
+                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200`}>
+                          {getCategoryIcon(assignment.category)}
+                          <span className="ml-1">{getCategoryText(assignment.category)}</span>
+                        </span>
+                      )}
+                      {assignment.priority && (
+                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getPriorityColor(assignment.priority)}`}>
+                          {getPriorityText(assignment.priority)}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Success Criteria */}
+                  {assignment.successCriteria && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <h4 className="text-sm font-medium text-secondary-700 mb-1">Başarı Kriterleri:</h4>
+                      <p className="text-sm text-secondary-600">{assignment.successCriteria}</p>
+                    </div>
+                  )}
+
+                  {/* Progress Bar */}
+                  {assignment.progress !== undefined && (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between text-sm text-secondary-600 mb-2">
+                        <span>İlerleme</span>
+                        <span className="font-medium">{assignment.progress}%</span>
+                      </div>
+                      <div className="w-full bg-secondary-200 rounded-full h-3">
+                        <div 
+                          className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-500"
+                          style={{ width: `${assignment.progress}%` }}
+                        ></div>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          onClick={() => updateProgress(assignment._id, 100)}
+                          disabled={updatingProgress === assignment._id}
+                          className="px-3 py-1 rounded-md text-xs bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+                          title="Tamamlandı olarak işaretle"
+                        >
+                          {updatingProgress === assignment._id ? 'Güncelleniyor...' : 'Tamamlandı'}
+                        </button>
+                        <button
+                          onClick={() => updateProgress(assignment._id, 75)}
+                          disabled={updatingProgress === assignment._id}
+                          className="px-3 py-1 rounded-md text-xs bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
+                          title="İyi ilerleme olarak işaretle"
+                        >
+                          İyi İlerleme
+                        </button>
+                        <button
+                          onClick={() => updateProgress(assignment._id, 50)}
+                          disabled={updatingProgress === assignment._id}
+                          className="px-3 py-1 rounded-md text-xs bg-yellow-600 text-white hover:bg-yellow-700 transition-colors disabled:opacity-50"
+                          title="Orta ilerleme olarak işaretle"
+                        >
+                          Orta İlerleme
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-secondary-500">
                     <div className="flex items-center">

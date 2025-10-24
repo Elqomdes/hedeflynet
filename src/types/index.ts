@@ -132,24 +132,6 @@ export interface Goal {
   updatedAt: Date;
 }
 
-export interface Plan {
-  _id: string;
-  studentId: string;
-  teacherId: string;
-  title: string;
-  description: string;
-  type: 'daily' | 'weekly' | 'monthly';
-  startDate: Date;
-  endDate: Date;
-  tasks: {
-    title: string;
-    description: string;
-    completed: boolean;
-    dueDate: Date;
-  }[];
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 export interface Report {
   _id: string;

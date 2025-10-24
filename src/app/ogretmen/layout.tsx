@@ -60,7 +60,6 @@ export default function TeacherLayout({
     { name: 'Sınıflar', href: '/ogretmen/siniflar', icon: BookOpen },
     { name: 'Ödevler', href: '/ogretmen/odevler', icon: FileText },
     { name: 'Teslimler', href: '/ogretmen/teslimler', icon: Inbox },
-    { name: 'Hedefler', href: '/ogretmen/hedefler', icon: Target },
     { name: 'Detaylı Analiz', href: '/ogretmen/analiz', icon: BarChart3 },
     { name: 'Video Koçluk', href: '/ogretmen/video-koçluk', icon: Video },
   ];
