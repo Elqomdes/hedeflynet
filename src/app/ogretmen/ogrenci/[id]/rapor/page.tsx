@@ -8,18 +8,13 @@ import {
   Share2, 
   Calendar, 
   User, 
-  Target, 
   BarChart3, 
-  TrendingUp,
   Clock,
   CheckCircle,
   AlertCircle,
-  Star,
-  BookOpen,
   Award,
   Loader2,
   Printer,
-  Eye,
   RefreshCw
 } from 'lucide-react';
 
@@ -45,7 +40,6 @@ interface StudentReportData {
     assignmentCompletion: number;
     averageGrade: number;
     gradingRate: number;
-    goalsProgress: number;
     overallPerformance: number;
   };
   statistics: {
@@ -53,41 +47,13 @@ interface StudentReportData {
     submittedAssignments: number;
     gradedAssignments: number;
     pendingAssignments: number;
-    totalGoals: number;
-    completedGoals: number;
   };
-  subjects: Array<{
-    subjectName: string;
-    totalAssignments: number;
-    submittedAssignments: number;
-    gradedAssignments: number;
-    completionRate: number;
-    averageGrade: number;
-  }>;
-  monthlyProgress: Array<{
-    month: string;
-    assignments: number;
-    goalsCompleted: number;
-    averageGrade: number;
-  }>;
   recentAssignments: Array<{
     title: string;
     dueDate: string;
     status: string;
     grade?: number;
   }>;
-  goals: Array<{
-    title: string;
-    description: string;
-    status: string;
-    dueDate: string;
-    completedAt?: string;
-  }>;
-  insights: {
-    strengths: string[];
-    areasForImprovement: string[];
-    recommendations: string[];
-  };
   generatedAt: string;
 }
 
@@ -352,14 +318,14 @@ export default function StudentReportPage() {
 
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 text-center hover:shadow-xl transition-shadow print:shadow-none">
             <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Target className="h-8 w-8 text-white" />
+              <CheckCircle className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Hedef İlerlemesi</h3>
+            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Değerlendirme Oranı</h3>
             <p className="text-3xl font-bold text-gray-900 mb-1">
-              %{Math.round(reportData.performance.goalsProgress)}
+              %{Math.round(reportData.performance.gradingRate)}
             </p>
             <p className="text-xs text-gray-500">
-              {reportData.statistics.completedGoals} / {reportData.statistics.totalGoals} hedef
+              {reportData.statistics.gradedAssignments} / {reportData.statistics.submittedAssignments} değerlendirildi
             </p>
           </div>
 
@@ -386,79 +352,6 @@ export default function StudentReportPage() {
           </div>
         </div>
 
-        {/* Subject Performance */}
-        {reportData.subjects && reportData.subjects.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 mb-8 overflow-hidden print:shadow-none">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
-              <h3 className="text-xl font-bold text-white flex items-center">
-                <BookOpen className="w-6 h-6 mr-3" />
-                Branş Bazlı Performans
-              </h3>
-            </div>
-            <div className="p-6">
-              <div className="space-y-6">
-                {reportData.subjects.map((subject, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow print:shadow-none">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-lg font-semibold text-gray-900">{subject.subjectName}</h4>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span>Tamamlama: %{Math.round(subject.completionRate)}</span>
-                        <span>Ortalama: {Math.round(subject.averageGrade)}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-1 bg-gray-200 rounded-full h-3">
-                        <div 
-                          className="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500"
-                          style={{ width: `${subject.completionRate}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-700 w-12 text-right">
-                        %{Math.round(subject.completionRate)}
-                      </span>
-                    </div>
-                    <div className="mt-2 text-xs text-gray-500">
-                      {subject.submittedAssignments} / {subject.totalAssignments} ödev teslim edildi
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Goals Section */}
-        {reportData.goals && reportData.goals.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 mb-8 overflow-hidden print:shadow-none">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
-              <h3 className="text-xl font-bold text-white flex items-center">
-                <Target className="w-6 h-6 mr-3" />
-                Hedefler ve İlerleme
-              </h3>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {reportData.goals.slice(0, 5).map((goal, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-900">{goal.title}</h4>
-                      <div className="flex items-center space-x-2">
-                        {getStatusIcon(goal.status)}
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(goal.status)}`}>
-                          {getStatusText(goal.status)}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">{goal.description}</p>
-                    {goal.dueDate && (
-                      <p className="text-xs text-gray-500">Bitiş Tarihi: {goal.dueDate}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Recent Assignments */}
         {reportData.recentAssignments && reportData.recentAssignments.length > 0 && (
@@ -495,67 +388,37 @@ export default function StudentReportPage() {
           </div>
         )}
 
-        {/* Insights */}
-        {reportData.insights && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 mb-8 overflow-hidden print:shadow-none">
-            <div className="bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-4">
-              <h3 className="text-xl font-bold text-white flex items-center">
-                <Star className="w-6 h-6 mr-3" />
-                Değerlendirme ve Öneriler
-              </h3>
-            </div>
-            <div className="p-6">
-              {reportData.insights.recommendations && reportData.insights.recommendations.length > 0 && (
-                <div className="mb-6">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                    <Star className="w-5 h-5 text-blue-500 mr-2" />
-                    Öneriler
-                  </h4>
-                  <div className="space-y-2">
-                    {reportData.insights.recommendations.map((recommendation, index) => (
-                      <div key={index} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-gray-700">{recommendation}</p>
-                      </div>
-                    ))}
-                  </div>
+        {/* Assignment Statistics */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 mb-8 overflow-hidden print:shadow-none">
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-4">
+            <h3 className="text-xl font-bold text-white flex items-center">
+              <BarChart3 className="w-6 h-6 mr-3" />
+              Ödev İstatistikleri
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600 mb-1">
+                  {reportData.statistics.totalAssignments}
                 </div>
-              )}
-              
-              {reportData.insights.strengths && reportData.insights.strengths.length > 0 && (
-                <div className="mb-6">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                    Güçlü Yönler
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {reportData.insights.strengths.map((strength, index) => (
-                      <span key={index} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                        {strength}
-                      </span>
-                    ))}
-                  </div>
+                <div className="text-sm text-gray-600">Toplam Ödev</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600 mb-1">
+                  {reportData.statistics.submittedAssignments}
                 </div>
-              )}
-
-              {reportData.insights.areasForImprovement && reportData.insights.areasForImprovement.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                    <TrendingUp className="w-5 h-5 text-orange-500 mr-2" />
-                    Geliştirilmesi Gereken Alanlar
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {reportData.insights.areasForImprovement.map((area, index) => (
-                      <span key={index} className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm">
-                        {area}
-                      </span>
-                    ))}
-                  </div>
+                <div className="text-sm text-gray-600">Teslim Edilen</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600 mb-1">
+                  {reportData.statistics.gradedAssignments}
                 </div>
-              )}
+                <div className="text-sm text-gray-600">Değerlendirilen</div>
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
