@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, goalId, tags, rubricId } = parsed.data;
+    const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, goalId, tags, rubricId, category, priority, successCriteria } = parsed.data;
 
     await connectDB();
 
@@ -82,7 +82,11 @@ export async function POST(request: NextRequest) {
           maxGrade: maxGrade ?? 100,
           goalId: goalId || undefined,
           tags: Array.isArray(tags) ? tags : undefined,
-          rubricId: rubricId || undefined
+          rubricId: rubricId || undefined,
+          // Goal-like properties
+          category: category || 'academic',
+          priority: priority || 'medium',
+          successCriteria: successCriteria || undefined
         });
         await assignment.save();
         assignments.push(assignment);
@@ -107,7 +111,11 @@ export async function POST(request: NextRequest) {
         maxGrade: maxGrade ?? 100,
         goalId: goalId || undefined,
         tags: Array.isArray(tags) ? tags : undefined,
-        rubricId: rubricId || undefined
+        rubricId: rubricId || undefined,
+        // Goal-like properties
+        category: category || 'academic',
+        priority: priority || 'medium',
+        successCriteria: successCriteria || undefined
       });
 
       await assignment.save();

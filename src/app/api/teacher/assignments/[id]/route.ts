@@ -56,7 +56,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, dueDate, attachments, maxGrade } = body;
+    const { title, description, dueDate, attachments, maxGrade, category, priority, successCriteria } = body;
 
     if (maxGrade !== undefined && (typeof maxGrade !== 'number' || maxGrade < 1 || maxGrade > 100)) {
       return NextResponse.json(
@@ -81,6 +81,9 @@ export async function PUT(
     if (dueDate !== undefined) assignment.dueDate = new Date(dueDate);
     if (attachments !== undefined) assignment.attachments = attachments;
     if (maxGrade !== undefined) assignment.maxGrade = maxGrade;
+    if (category !== undefined) assignment.category = category;
+    if (priority !== undefined) assignment.priority = priority;
+    if (successCriteria !== undefined) assignment.successCriteria = successCriteria;
 
     await assignment.save();
 
