@@ -23,6 +23,10 @@ export interface IAssignment extends Document {
   maxAttempts?: number; // undefined means unlimited
   tags?: string[];
   rubricId?: mongoose.Types.ObjectId;
+  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
+  priority?: 'low' | 'medium' | 'high';
+  successCriteria?: string;
+  progress?: number; // 0-100
   createdAt: Date;
   updatedAt: Date;
 }
@@ -116,6 +120,23 @@ const AssignmentSchema = new Schema<IAssignment>({
     type: Schema.Types.ObjectId,
     ref: 'Rubric'
   },
+  category: {
+    type: String,
+    enum: ['academic', 'behavioral', 'skill', 'personal', 'other']
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high']
+  },
+  successCriteria: {
+    type: String,
+    maxlength: 500
+  },
+  progress: {
+    type: Number,
+    min: 0,
+    max: 100
+  }
 }, {
   timestamps: true
 });

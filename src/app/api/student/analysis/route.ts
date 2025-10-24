@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import Assignment from '@/lib/models/Assignment';
 import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
+import { Goal } from '@/lib/models';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,6 +58,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Get goals progress
+    const totalGoals = await Goal.countDocuments({ studentId });
+    const completedGoals = await Goal.countDocuments({ 
+      studentId, 
+      status: 'completed' 
+    });
+    const goalsProgress = totalGoals > 0 
+      ? Math.round((completedGoals / totalGoals) * 100)
+      : 0;
 
     // Get subject statistics
     const assignments = await Assignment.find({ studentId }).populate('classId', 'name');

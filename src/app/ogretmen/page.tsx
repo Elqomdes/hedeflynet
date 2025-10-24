@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, BookOpen, FileText, UserPlus, CheckCircle, Clock, Video, BarChart3, UserCheck } from 'lucide-react';
+import { Users, BookOpen, FileText, UserPlus, CheckCircle, Clock, Video, BarChart3, UserCheck, Target } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TeacherDashboard() {

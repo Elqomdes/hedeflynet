@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
+import { Goal } from '@/lib/models';
 
 export const dynamic = 'force-dynamic';
 

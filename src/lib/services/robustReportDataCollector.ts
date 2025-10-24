@@ -1,4 +1,4 @@
-import { User, Assignment, AssignmentSubmission, Class } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission, Class, Goal } from '@/lib/models';
 import { ReportData } from './pdfGenerator';
 
 export interface StudentAnalysisData {
@@ -311,13 +311,34 @@ export class RobustReportDataCollector {
     }
   }
 
+  private static async getGoals(studentId: string, dateFilter: any) {
+    try {
+      const goals = await Goal.find({
+        studentId,
+        createdAt: dateFilter
+      }).sort({ createdAt: -1 });
+      
+      return goals.map(goal => ({
+        title: goal.title || 'Başlıksız Hedef',
+        description: goal.description || '',
+        status: (goal.status === 'completed' ? 'completed' : goal.status === 'in_progress' ? 'in_progress' : 'pending') as 'completed' | 'in_progress' | 'pending',
+        progress: goal.progress || 0,
+        dueDate: goal.targetDate ? goal.targetDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+      }));
+    } catch (error) {
+      console.warn('RobustReportDataCollector: Error getting goals', error);
+      return [];
+    }
+  }
+
 
   private static calculateMetrics(data: any) {
-    const { assignments, submissions } = data;
+    const { assignments, submissions, goals } = data;
 
     // Ensure arrays exist and are valid
     const safeAssignments = Array.isArray(assignments) ? assignments : [];
     const safeSubmissions = Array.isArray(submissions) ? submissions : [];
+    const safeGoals = Array.isArray(goals) ? goals : [];
 
     // Performance metrics
     const totalAssignments = safeAssignments.length;
@@ -476,6 +497,7 @@ export class RobustReportDataCollector {
     const recommendations: string[] = [];
     const strengths: string[] = [];
     const areasForImprovement: string[] = [];
+    const safeGoals = Array.isArray(goals) ? goals : [];
 
     // Ensure performance and subjectStats exist
     if (!performance) {

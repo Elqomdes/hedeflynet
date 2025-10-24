@@ -40,6 +40,10 @@ interface Assignment {
     }[];
     attempt?: number;
   } | null;
+  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
+  priority?: 'low' | 'medium' | 'high';
+  successCriteria?: string;
+  progress?: number; // 0-100
 }
 
 export default function StudentAssignments() {
