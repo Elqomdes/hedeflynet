@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye, Target, BookOpen, Zap } from 'lucide-react';
-import WeekCalendar from '@/components/WeekCalendar';
+import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye, Target, BookOpen, Zap, BarChart3 } from 'lucide-react';
 
 interface Attachment {
   type: 'pdf' | 'video' | 'link';
@@ -270,15 +269,6 @@ export default function TeacherAssignments() {
     .filter(a => (showOnlyOverdue ? isOverdue(a.dueDate) : true))
     .sort((a, b) => new Date(a[sortBy]).getTime() - new Date(b[sortBy]).getTime());
 
-  // Calendar items for assignments
-  const calendarItems = filteredAssignments.map(assignment => ({
-    _id: assignment._id,
-    title: `📝 ${assignment.title}`,
-    date: new Date(assignment.dueDate).toISOString().split('T')[0],
-    status: 'assignment' as const,
-    studentName: assignment.studentId ? `${assignment.studentId.firstName} ${assignment.studentId.lastName}` : 'Sınıf Ödevi',
-    type: assignment.type
-  }));
 
   const isOverdue = (dueDate: string) => {
     return new Date(dueDate) < new Date();
@@ -347,22 +337,50 @@ export default function TeacherAssignments() {
         </div>
       </div>
 
-      {/* Calendar Section */}
+      {/* Assignment Summary Section */}
       <div className="mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
           <div className="px-6 py-4 border-b border-secondary-200">
             <h3 className="text-lg font-semibold text-secondary-900 flex items-center">
-              <Calendar className="h-5 w-5 mr-2" />
-              Haftalık Takvim
+              <BarChart3 className="h-5 w-5 mr-2" />
+              Ödev Özeti
             </h3>
-            <p className="text-sm text-secondary-600">Verilen ödevlerin takvimi</p>
+            <p className="text-sm text-secondary-600">Verilen ödevlerin genel durumu</p>
           </div>
           <div className="p-6">
-            <WeekCalendar 
-              items={calendarItems} 
-              readOnly 
-              emptyText="Bu hafta için ödev yok" 
-            />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="flex items-center">
+                  <FileText className="h-8 w-8 text-blue-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-blue-900">Toplam Ödev</p>
+                    <p className="text-2xl font-bold text-blue-600">{filteredAssignments.length}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="flex items-center">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-green-900">Sınıf Ödevleri</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {filteredAssignments.filter(a => a.type === 'class').length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <div className="flex items-center">
+                  <User className="h-8 w-8 text-purple-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-purple-900">Bireysel Ödevler</p>
+                    <p className="text-2xl font-bold text-purple-600">
+                      {filteredAssignments.filter(a => a.type === 'individual').length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
