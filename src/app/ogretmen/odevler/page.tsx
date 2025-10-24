@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye, Target, BookOpen, Zap, BarChart3 } from 'lucide-react';
+import WeekCalendar from '@/components/WeekCalendar';
 
 interface Attachment {
   type: 'pdf' | 'video' | 'link';
@@ -62,6 +63,8 @@ export default function TeacherAssignments() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'individual' | 'class'>('all');
   const [studentFilter, setStudentFilter] = useState<string>('all');
+  const [selectedStudentForCalendar, setSelectedStudentForCalendar] = useState<string>('');
+  const [showStudentCalendar, setShowStudentCalendar] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
@@ -274,6 +277,34 @@ export default function TeacherAssignments() {
     return new Date(dueDate) < new Date();
   };
 
+  // Calendar items for selected student
+  const getStudentCalendarItems = () => {
+    if (!selectedStudentForCalendar) return [];
+    
+    const studentAssignments = assignments.filter(assignment => {
+      if (assignment.type === 'individual' && assignment.studentId) {
+        return assignment.studentId._id === selectedStudentForCalendar;
+      }
+      if (assignment.type === 'class' && assignment.classId) {
+        // Check if the selected student is in this class
+        const classData = classes.find(c => c._id === assignment.classId?._id);
+        return classData?.students?.some((s: any) => s._id === selectedStudentForCalendar);
+      }
+      return false;
+    });
+
+    return studentAssignments.map(assignment => ({
+      _id: assignment._id,
+      title: `📝 ${assignment.title}`,
+      date: new Date(assignment.dueDate).toISOString().split('T')[0],
+      status: 'assignment' as const,
+      studentName: assignment.studentId ? `${assignment.studentId.firstName} ${assignment.studentId.lastName}` : 'Sınıf Ödevi',
+      type: assignment.type
+    }));
+  };
+
+  const studentCalendarItems = getStudentCalendarItems();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -327,6 +358,21 @@ export default function TeacherAssignments() {
               ))}
             </select>
           )}
+          <select
+            value={selectedStudentForCalendar}
+            onChange={(e) => {
+              setSelectedStudentForCalendar(e.target.value);
+              setShowStudentCalendar(e.target.value !== '');
+            }}
+            className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+          >
+            <option value="">Öğrenci Takvimi Seç</option>
+            {students.map(student => (
+              <option key={student._id} value={student._id}>
+                {student.firstName} {student.lastName} - Takvim
+              </option>
+            ))}
+          </select>
           <button
             onClick={() => setShowCreateForm(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -384,6 +430,28 @@ export default function TeacherAssignments() {
           </div>
         </div>
       </div>
+
+      {/* Student Calendar Section */}
+      {showStudentCalendar && selectedStudentForCalendar && (
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
+            <div className="px-6 py-4 border-b border-secondary-200">
+              <h3 className="text-lg font-semibold text-secondary-900 flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                {students.find(s => s._id === selectedStudentForCalendar)?.firstName} {students.find(s => s._id === selectedStudentForCalendar)?.lastName} - Haftalık Takvim
+              </h3>
+              <p className="text-sm text-secondary-600">Seçilen öğrencinin ödev takvimi</p>
+            </div>
+            <div className="p-6">
+              <WeekCalendar 
+                items={studentCalendarItems} 
+                readOnly 
+                emptyText="Bu öğrenci için bu hafta ödev yok" 
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {filteredAssignments.length === 0 ? (
         <div className="text-center py-12">
