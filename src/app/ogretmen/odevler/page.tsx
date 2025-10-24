@@ -264,6 +264,7 @@ export default function TeacherAssignments() {
       if (assignment.type === 'individual' && assignment.studentId) {
         return assignment.studentId._id === studentFilter;
       }
+      if (assignment.type === 'class') return true; // Sınıf ödevleri her zaman gösterilsin
       return false;
     })
     .filter(a => (showOnlyOverdue ? isOverdue(a.dueDate) : true))
@@ -310,14 +311,19 @@ export default function TeacherAssignments() {
           </label>
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value as any)}
+            onChange={(e) => {
+              setFilter(e.target.value as any);
+              if (e.target.value !== 'individual') {
+                setStudentFilter('all');
+              }
+            }}
             className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
           >
             <option value="all">Tümü</option>
             <option value="individual">Bireysel</option>
             <option value="class">Sınıf</option>
           </select>
-          {filter === 'individual' && (
+          {filter === 'individual' && students.length > 0 && (
             <select
               value={studentFilter}
               onChange={(e) => setStudentFilter(e.target.value)}
@@ -343,9 +349,9 @@ export default function TeacherAssignments() {
 
       {/* Calendar Section */}
       <div className="mb-8">
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title flex items-center">
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
+          <div className="px-6 py-4 border-b border-secondary-200">
+            <h3 className="text-lg font-semibold text-secondary-900 flex items-center">
               <Calendar className="h-5 w-5 mr-2" />
               Haftalık Takvim
             </h3>
@@ -407,7 +413,11 @@ export default function TeacherAssignments() {
                     </div>
                   </div>
                   
-                  <p className="text-sm text-secondary-600 mb-3 line-clamp-2">
+                  <p className="text-sm text-secondary-600 mb-3 overflow-hidden" style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical'
+                  }}>
                     {assignment.description}
                   </p>
                   
