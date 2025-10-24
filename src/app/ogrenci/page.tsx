@@ -12,11 +12,6 @@ interface Assignment {
   dueDate: string;
   type: 'individual' | 'class';
   maxGrade?: number;
-  // Goal-like properties
-  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
-  priority?: 'low' | 'medium' | 'high';
-  successCriteria?: string;
-  progress?: number; // 0-100
   submission?: {
     status: 'pending' | 'submitted' | 'completed' | 'late' | 'graded';
     grade?: number;

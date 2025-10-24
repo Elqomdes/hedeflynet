@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { User, Class, Assignment, Goal } from '@/lib/models';
+import { User, Class, Assignment } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(

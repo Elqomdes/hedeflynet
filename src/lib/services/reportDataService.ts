@@ -1,5 +1,5 @@
 import connectDB from '@/lib/mongodb';
-import { Assignment, AssignmentSubmission, User, Class, Goal } from '@/lib/models';
+import { Assignment, AssignmentSubmission, User, Class } from '@/lib/models';
 import { IUser } from '@/lib/models/User';
 import { StudentReportData, ReportGenerationOptions } from '@/lib/models/ReportData';
 

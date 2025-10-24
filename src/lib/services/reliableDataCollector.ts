@@ -1,4 +1,4 @@
-import { User, Assignment, AssignmentSubmission, Class, Goal } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission, Class } from '@/lib/models';
 import { ReliableReportData } from './reliablePdfGenerator';
 
 export interface DataCollectionParams {
@@ -58,7 +58,6 @@ export class ReliableDataCollector {
         performance: metrics.performance,
         subjectStats: metrics.subjectStats,
         monthlyProgress: metrics.monthlyProgress,
-        goals: additionalData.goals,
         assignments: additionalData.assignments,
         insights
       };
@@ -189,20 +188,18 @@ export class ReliableDataCollector {
 
   private static async collectAdditionalData(studentId: string, dateFilter: any) {
     try {
-      const [assignments, submissions, goals] = await Promise.allSettled([
+      const [assignments, submissions] = await Promise.allSettled([
         this.getAssignments(studentId, dateFilter),
-        this.getSubmissions(studentId, dateFilter),
-        this.getGoals(studentId, dateFilter)
+        this.getSubmissions(studentId, dateFilter)
       ]);
 
       return {
         assignments: assignments.status === 'fulfilled' ? assignments.value : [],
-        submissions: submissions.status === 'fulfilled' ? submissions.value : [],
-        goals: goals.status === 'fulfilled' ? goals.value : []
+        submissions: submissions.status === 'fulfilled' ? submissions.value : []
       };
     } catch (error) {
       console.warn('ReliableDataCollector: Error collecting additional data', error);
-      return { assignments: [], submissions: [], goals: [] };
+      return { assignments: [], submissions: [] };
     }
   }
 
@@ -255,35 +252,13 @@ export class ReliableDataCollector {
     }
   }
 
-  private static async getGoals(studentId: string, dateFilter: any) {
-    try {
-      const goals = await Goal.find({
-        studentId,
-        createdAt: dateFilter
-      }).sort({ targetDate: -1 });
-      
-      return goals.map(goal => ({
-        _id: (goal._id as any).toString(),
-        title: goal.title || 'Başlıksız Hedef',
-        description: goal.description || '',
-        status: (goal.status === 'cancelled' ? 'pending' : goal.status) || 'pending',
-        progress: goal.progress || 0,
-        dueDate: goal.targetDate ? goal.targetDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        completedAt: (goal as any).completedAt
-      }));
-    } catch (error) {
-      console.warn('ReliableDataCollector: Error getting goals', error);
-      return [];
-    }
-  }
 
   private static calculateMetrics(data: any) {
-    const { assignments, submissions, goals } = data;
+    const { assignments, submissions } = data;
 
     // Ensure arrays exist and are valid
     const safeAssignments = Array.isArray(assignments) ? assignments : [];
     const safeSubmissions = Array.isArray(submissions) ? submissions : [];
-    const safeGoals = Array.isArray(goals) ? goals : [];
 
     // Performance metrics
     const totalAssignments = safeAssignments.length;
@@ -305,9 +280,6 @@ export class ReliableDataCollector {
     const averageGrade = grades.length > 0 ? 
       Math.round(grades.reduce((sum: number, grade: number) => sum + grade, 0) / grades.length) : 0;
 
-    const completedGoals = safeGoals.filter((g: any) => g && g.status === 'completed').length;
-    const goalsProgress = safeGoals.length > 0 ? 
-      Math.round((completedGoals / safeGoals.length) * 100) : 0;
 
     const overallPerformance = Math.round(
       (assignmentCompletion * 0.4) + 
@@ -374,7 +346,7 @@ export class ReliableDataCollector {
           const dueDate = new Date(assignment.dueDate);
           const month = dueDate.toISOString().substring(0, 7);
           if (!monthlyData.has(month)) {
-            monthlyData.set(month, { assignments: 0, goalsCompleted: 0, grades: [] });
+            monthlyData.set(month, { assignments: 0, grades: [] });
           }
           monthlyData.get(month).assignments++;
         } catch (error) {
@@ -398,25 +370,10 @@ export class ReliableDataCollector {
       }
     });
 
-    // Process goals
-    safeGoals.forEach((goal: any) => {
-      if (goal && goal.status === 'completed' && goal.completedAt) {
-        try {
-          const completedDate = new Date(goal.completedAt);
-          const month = completedDate.toISOString().substring(0, 7);
-          if (monthlyData.has(month)) {
-            monthlyData.get(month).goalsCompleted++;
-          }
-        } catch (error) {
-          console.warn('Invalid goal completion date:', goal.completedAt);
-        }
-      }
-    });
 
     const monthlyProgress = Array.from(monthlyData.entries()).map(([month, data]) => ({
       month: this.formatMonth(month),
       assignments: data.assignments,
-      goalsCompleted: data.goalsCompleted,
       averageGrade: data.grades.length > 0 ? 
         Math.round(data.grades.reduce((sum: number, grade: number) => sum + grade, 0) / data.grades.length) : 0
     })).sort((a, b) => b.month.localeCompare(a.month));
@@ -424,7 +381,6 @@ export class ReliableDataCollector {
     return {
       performance: {
         assignmentCompletion: Math.max(0, Math.min(100, assignmentCompletion)),
-        goalsProgress: Math.max(0, Math.min(100, goalsProgress)),
         overallPerformance: Math.max(0, Math.min(100, overallPerformance)),
         averageGrade: Math.max(0, Math.min(100, averageGrade)),
         totalAssignments,
@@ -439,7 +395,6 @@ export class ReliableDataCollector {
 
   private static generateInsights(metrics: any, data: any) {
     const { performance, subjectStats } = metrics;
-    const { goals } = data;
 
     const recommendations: string[] = [];
     const strengths: string[] = [];

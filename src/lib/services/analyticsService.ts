@@ -1,4 +1,4 @@
-import { User, Assignment, AssignmentSubmission, Class, Goal } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission, Class } from '@/lib/models';
 import connectDB from '@/lib/mongodb';
 
 export interface PerformanceMetrics {
