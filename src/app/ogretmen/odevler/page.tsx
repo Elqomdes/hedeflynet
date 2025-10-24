@@ -596,9 +596,29 @@ export default function TeacherAssignments() {
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
+                
+                // Client-side validation
+                const title = formData.get('title') as string;
+                const description = formData.get('description') as string;
+                
+                if (!title || title.trim().length === 0) {
+                  alert('Ödev başlığı gereklidir');
+                  return;
+                }
+                
+                if (!description || description.trim().length === 0) {
+                  alert('Ödev açıklaması gereklidir');
+                  return;
+                }
+                
+                if (title.length > 200) {
+                  alert('Ödev başlığı 200 karakterden uzun olamaz');
+                  return;
+                }
+                
                 const assignmentData = {
-                  title: formData.get('title'),
-                  description: formData.get('description'),
+                  title: title.trim(),
+                  description: description.trim(),
                   type: formData.get('type'),
                   classId: formData.get('classId'),
                   studentId: formData.get('studentId'),
@@ -647,6 +667,9 @@ export default function TeacherAssignments() {
                       defaultValue={editingAssignment?.title || ''}
                       className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
+                      minLength={1}
+                      maxLength={200}
+                      placeholder="Ödev başlığını girin (1-200 karakter)"
                     />
                   </div>
                   

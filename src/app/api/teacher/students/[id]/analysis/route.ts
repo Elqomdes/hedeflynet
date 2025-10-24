@@ -192,11 +192,36 @@ export async function GET(
         count: item.count 
       }));
 
-    // If no specific titles found, create a general category
+    // If no specific titles found, try to get actual assignment titles
     if (assignmentTitleCounts.length === 0 && totalAssignments > 0) {
-      assignmentTitleCounts = [
-        { title: 'Genel Ödevler', count: totalAssignments }
-      ];
+      // Get actual assignment titles from database
+      const actualAssignments = await Assignment.find({ studentId })
+        .select('title')
+        .lean();
+      
+      const titleCounts: { [key: string]: number } = {};
+      actualAssignments.forEach(assignment => {
+        if (assignment.title && assignment.title.trim().length > 0) {
+          const cleanTitle = assignment.title.trim();
+          titleCounts[cleanTitle] = (titleCounts[cleanTitle] || 0) + 1;
+        }
+      });
+      
+      assignmentTitleCounts = Object.entries(titleCounts)
+        .map(([title, count]) => ({ title, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+      
+      // If still no valid titles, show individual assignments by ID
+      if (assignmentTitleCounts.length === 0) {
+        assignmentTitleCounts = actualAssignments
+          .filter(assignment => assignment.title)
+          .slice(0, 10)
+          .map((assignment, index) => ({
+            title: assignment.title.trim() || `Ödev ${index + 1}`,
+            count: 1
+          }));
+      }
     }
 
     return NextResponse.json({

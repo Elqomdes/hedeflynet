@@ -264,9 +264,9 @@ export default function StudentAnalysisPage() {
               if (analysisData.assignmentTitleCounts && Array.isArray(analysisData.assignmentTitleCounts) && analysisData.assignmentTitleCounts.length > 0) {
                 chartData = analysisData.assignmentTitleCounts;
               } else if (analysisData.totalAssignments && analysisData.totalAssignments > 0) {
-                // Create fallback data based on total assignments
+                // Show message that no specific assignment data is available
                 chartData = [
-                  { title: 'Genel Ödevler', count: analysisData.totalAssignments }
+                  { title: 'Ödev Verileri Bulunamadı', count: 0 }
                 ];
               }
               

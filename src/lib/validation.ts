@@ -22,8 +22,8 @@ export const AssignmentAllowLateSchema = z.object({
 }).strict();
 
 export const AssignmentCreateSchema = z.object({
-  title: z.string().trim().min(1),
-  description: z.string().trim().min(1),
+  title: z.string().trim().min(1, 'Ödev başlığı gereklidir').max(200, 'Ödev başlığı 200 karakterden uzun olamaz'),
+  description: z.string().trim().min(1, 'Ödev açıklaması gereklidir'),
   type: z.enum(['class', 'individual']),
   classId: z.string().optional().or(z.literal('').transform(() => undefined)),
   studentId: z.string().optional().or(z.literal('').transform(() => undefined)),
