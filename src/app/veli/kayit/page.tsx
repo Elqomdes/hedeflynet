@@ -7,6 +7,7 @@ import { Eye, EyeOff, UserPlus } from 'lucide-react';
 
 export default function ParentRegisterPage() {
   const [formData, setFormData] = useState({
+    username: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -36,6 +37,12 @@ export default function ParentRegisterPage() {
     setError('');
 
     // Input validation
+    if (!formData.username || formData.username.trim().length < 3) {
+      setError('Kullanıcı adı en az 3 karakter olmalıdır');
+      setIsLoading(false);
+      return;
+    }
+
     if (!formData.firstName || formData.firstName.trim().length < 2) {
       setError('Ad en az 2 karakter olmalıdır');
       setIsLoading(false);
@@ -79,11 +86,13 @@ export default function ParentRegisterPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          username: formData.username.trim(),
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim(),
-          password: formData.password
+          password: formData.password,
+          children: []
         }),
       });
 
@@ -92,6 +101,7 @@ export default function ParentRegisterPage() {
       if (response.ok) {
         // Clear form data
         setFormData({
+          username: '',
           firstName: '',
           lastName: '',
           email: '',
@@ -140,6 +150,22 @@ export default function ParentRegisterPage() {
                 {error}
               </div>
             )}
+
+            <div>
+              <label htmlFor="username" className="block text-sm font-semibold text-secondary-700 mb-3">
+                Kullanıcı Adı
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                value={formData.username}
+                onChange={handleChange}
+                className="input-field"
+                placeholder="Kullanıcı adınız"
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>

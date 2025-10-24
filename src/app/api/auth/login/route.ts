@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
 import { IUser } from '@/lib/models/User';
+import { Parent, IParent } from '@/lib/models/Parent';
 import { generateToken } from '@/lib/auth';
 import { rateLimit } from '@/lib/rateLimit';
 import { z } from 'zod';
@@ -37,49 +38,79 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
     
-    // Use sanitized inputs in query
-    const user = await User.findOne({ 
-      $or: [
-        { username: sanitizedUsername },
-        { email: sanitizedUsername }
-      ],
-      isActive: true 
-    }) as IUser | null;
+    // Check both User and Parent models
+    const [user, parent] = await Promise.all([
+      User.findOne({ 
+        $or: [
+          { username: sanitizedUsername },
+          { email: sanitizedUsername }
+        ],
+        isActive: true 
+      }) as IUser | null,
+      Parent.findOne({ 
+        $or: [
+          { username: sanitizedUsername },
+          { email: sanitizedUsername }
+        ],
+        isActive: true 
+      }) as IParent | null
+    ]);
 
     // Timing attack protection - always perform password comparison
     let isPasswordValid = false;
+    let authenticatedUser = null;
+    let userRole = '';
+
     if (user) {
       isPasswordValid = await user.comparePassword(sanitizedPassword);
-    } else {
+      if (isPasswordValid) {
+        authenticatedUser = user;
+        userRole = user.role;
+      }
+    } else if (parent) {
+      isPasswordValid = await parent.comparePassword(sanitizedPassword);
+      if (isPasswordValid) {
+        authenticatedUser = parent;
+        userRole = 'parent';
+      }
+    }
+
+    if (!isPasswordValid || !authenticatedUser) {
       // Dummy password comparison to prevent timing attacks
       const dummyUser = new User({ password: '$2a$10$dummy.hash.for.timing.attack.protection' });
       await dummyUser.comparePassword('dummy_password');
-    }
-
-    if (!user || !isPasswordValid) {
+      
       return NextResponse.json(
         { error: 'Geçersiz kullanıcı adı veya şifre' },
         { status: 401 }
       );
     }
 
-    // No need to clear rate limit; it expires automatically
-
-    const token = generateToken((user._id as any).toString(), user.username, user.role);
+    // Generate appropriate token based on user type
+    let token;
+    let cookieName;
+    
+    if (userRole === 'parent') {
+      token = generateToken((parent!._id as any).toString(), parent!.username, 'parent');
+      cookieName = 'parent-token';
+    } else {
+      token = generateToken((user!._id as any).toString(), user!.username, userRole);
+      cookieName = 'auth-token';
+    }
 
     const response = NextResponse.json({
       message: 'Giriş başarılı',
       user: {
-        id: (user._id as any).toString(),
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName
+        id: (authenticatedUser._id as any).toString(),
+        username: authenticatedUser.username,
+        email: authenticatedUser.email,
+        role: userRole,
+        firstName: authenticatedUser.firstName,
+        lastName: authenticatedUser.lastName
       }
     });
 
-    response.cookies.set('auth-token', token, {
+    response.cookies.set(cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

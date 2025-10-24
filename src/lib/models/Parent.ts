@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IParent extends Document {
   _id: mongoose.Types.ObjectId;
+  username: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -84,6 +85,14 @@ export interface IParentReport extends Document {
 
 // Parent Schema
 const ParentSchema = new Schema<IParent>({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 30
+  },
   firstName: {
     type: String,
     required: true,
@@ -342,6 +351,12 @@ const ParentReportSchema = new Schema<IParentReport>({
 }, {
   timestamps: true
 });
+
+// Add comparePassword method to Parent schema
+ParentSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+  const bcrypt = await import('bcryptjs');
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 // Indexes for better performance
 // Note: 'email' already has a unique index via schema definition; avoid duplicate index declarations

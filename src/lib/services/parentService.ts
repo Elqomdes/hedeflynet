@@ -101,6 +101,7 @@ export class ParentService {
    * Create new parent account
    */
   async createParent(parentData: {
+    username: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -113,7 +114,11 @@ export class ParentService {
     const hashedPassword = await bcrypt.hash(parentData.password, 12);
 
     const parent = await Parent.create({
-      ...parentData,
+      username: parentData.username,
+      firstName: parentData.firstName,
+      lastName: parentData.lastName,
+      email: parentData.email,
+      phone: parentData.phone,
       password: hashedPassword,
       children: parentData.children
     });

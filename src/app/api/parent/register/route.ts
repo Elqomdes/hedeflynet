@@ -6,6 +6,7 @@ import { z } from 'zod';
 export const dynamic = 'force-dynamic';
 
 const ParentRegisterSchema = z.object({
+  username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalıdır').max(30),
   firstName: z.string().min(2, 'Ad en az 2 karakter olmalıdır').max(50),
   lastName: z.string().min(2, 'Soyad en az 2 karakter olmalıdır').max(50),
   email: z.string().email('Geçerli bir e-posta adresi giriniz'),
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { firstName, lastName, email, phone, password, children } = parsed.data;
+    const { username, firstName, lastName, email, phone, password, children } = parsed.data;
 
     await connectDB();
 
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Create new parent
     const parent = await parentService.createParent({
+      username,
       firstName,
       lastName,
       email,
