@@ -157,42 +157,54 @@ export default function StudentAnalysisPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Assignment Status Distribution - Enhanced with Goals and Assignments */}
+        {/* Assignment Status Distribution - Pie Chart */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
             Ödev Durum Dağılımım
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={[
-                  { 
-                    category: 'Ödevler', 
-                    teslim: analysisData.submittedAssignments || 0, 
-                    degerlendirildi: analysisData.gradedAssignments || 0,
-                    bekliyor: Math.max(0, (analysisData.submittedAssignments || 0) - (analysisData.gradedAssignments || 0))
-                  },
-                  { 
-                    category: 'Hedefler', 
-                    teslim: Math.round((analysisData.goalsProgress || 0) * 0.8), 
-                    degerlendirildi: Math.round((analysisData.goalsProgress || 0) * 0.6),
-                    bekliyor: Math.max(0, 100 - (analysisData.goalsProgress || 0))
-                  }
-                ]}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis />
+              <PieChart>
+                <Pie
+                  data={[
+                    { 
+                      name: 'Yapılan Ödevler', 
+                      value: analysisData.submittedAssignments || 0,
+                      color: '#10B981'
+                    },
+                    { 
+                      name: 'Yapılmayan Ödevler', 
+                      value: Math.max(0, (analysisData.assignmentCompletion || 0) - (analysisData.submittedAssignments || 0)),
+                      color: '#EF4444'
+                    }
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(1)}%)`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {[
+                    { name: 'Yapılan Ödevler', value: analysisData.submittedAssignments || 0, color: '#10B981' },
+                    { name: 'Yapılmayan Ödevler', value: Math.max(0, (analysisData.assignmentCompletion || 0) - (analysisData.submittedAssignments || 0)), color: '#EF4444' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
                 <Tooltip 
                   formatter={(value, name) => [`${value}`, name as string]}
-                  labelFormatter={(label) => `Kategori: ${label}`}
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    fontSize: '12px'
+                  }}
                 />
                 <Legend />
-                <Bar dataKey="teslim" stackId="a" fill="#3B82F6" name="Teslim Edildi" />
-                <Bar dataKey="degerlendirildi" stackId="a" fill="#10B981" name="Değerlendirildi" />
-                <Bar dataKey="bekliyor" stackId="a" fill="#F59E0B" name="Bekliyor" />
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
