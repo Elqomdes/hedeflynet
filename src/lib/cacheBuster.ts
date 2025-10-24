@@ -56,6 +56,9 @@ class CacheBuster {
       // IndexedDB cache'i temizle
       this.clearIndexedDBCache();
 
+      // Browser cache'i zorla temizle
+      this.clearBrowserCache();
+
       // Force reload if needed
       this.forceReloadIfNeeded();
     }
@@ -122,6 +125,44 @@ class CacheBuster {
   }
 
   /**
+   * Browser cache'i zorla temizler
+   */
+  private clearBrowserCache(): void {
+    if (typeof window !== 'undefined') {
+      // Cache API'sini temizle
+      if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+          cacheNames.forEach(cacheName => {
+            caches.delete(cacheName);
+          });
+        });
+      }
+
+      // HTTP cache'i bypass etmek için timestamp ekle
+      const timestamp = Date.now();
+      const links = document.querySelectorAll('link[rel="stylesheet"], script[src]');
+      
+      links.forEach((element: any) => {
+        if (element.href || element.src) {
+          const url = new URL(element.href || element.src);
+          url.searchParams.set('_cb', timestamp.toString());
+          element.href = url.toString();
+        }
+      });
+
+      // Image cache'i temizle
+      const images = document.querySelectorAll('img[src]');
+      images.forEach((img: any) => {
+        if (img.src) {
+          const url = new URL(img.src);
+          url.searchParams.set('_cb', timestamp.toString());
+          img.src = url.toString();
+        }
+      });
+    }
+  }
+
+  /**
    * Gerekirse sayfayı zorla yeniler
    */
   private forceReloadIfNeeded(): void {
@@ -130,12 +171,15 @@ class CacheBuster {
       const lastReload = localStorage.getItem('lastCacheBust');
       const now = Date.now();
       
-      if (!lastReload || (now - parseInt(lastReload)) > 5 * 60 * 1000) { // 5 dakikada bir
+      // Development modunda daha sık yenile
+      const reloadInterval = process.env.NODE_ENV === 'development' ? 2 * 60 * 1000 : 5 * 60 * 1000;
+      
+      if (!lastReload || (now - parseInt(lastReload)) > reloadInterval) {
         localStorage.setItem('lastCacheBust', now.toString());
         
         // Sayfayı yenile
         setTimeout(() => {
-          window.location.reload();
+          window.location.reload(); // Hard reload
         }, 100);
       }
     }
@@ -210,6 +254,12 @@ export const cacheBuster = CacheBuster.getInstance();
 
 // Development modunda otomatik cache busting
 if (process.env.NODE_ENV === 'development') {
-  cacheBuster.startAutoBusting(2 * 60 * 1000); // 2 dakikada bir
+  cacheBuster.startAutoBusting(1 * 60 * 1000); // 1 dakikada bir
+  cacheBuster.startPageChangeListener();
+}
+
+// Production modunda da otomatik cache busting
+if (process.env.NODE_ENV === 'production') {
+  cacheBuster.startAutoBusting(5 * 60 * 1000); // 5 dakikada bir
   cacheBuster.startPageChangeListener();
 }

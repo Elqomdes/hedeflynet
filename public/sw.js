@@ -1,7 +1,7 @@
 // Service Worker for offline support and caching
-const CACHE_NAME = 'hedefly-v1';
-const STATIC_CACHE = 'hedefly-static-v1';
-const API_CACHE = 'hedefly-api-v1';
+const CACHE_NAME = `hedefly-v${Date.now()}`;
+const STATIC_CACHE = `hedefly-static-v${Date.now()}`;
+const API_CACHE = `hedefly-api-v${Date.now()}`;
 
 // Files to cache for offline use
 const STATIC_FILES = [
@@ -46,7 +46,9 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== STATIC_CACHE && cacheName !== API_CACHE) {
+            // Tüm eski cache'leri sil
+            if (!cacheName.includes(STATIC_CACHE.split('-v')[0]) && 
+                !cacheName.includes(API_CACHE.split('-v')[0])) {
               console.log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
@@ -65,22 +67,29 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Cache busting için timestamp ekle
+  const cacheBuster = `_cb=${Date.now()}`;
+  const separator = url.search ? '&' : '?';
+  const bustedUrl = `${url.origin}${url.pathname}${url.search}${separator}${cacheBuster}`;
+
   // Handle API requests
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      caches.open(API_CACHE)
-        .then((cache) => {
-          return fetch(request)
-            .then((response) => {
-              // Cache successful API responses
-              if (response.ok && request.method === 'GET') {
-                const responseClone = response.clone();
-                cache.put(request, responseClone);
-              }
-              return response;
-            })
-            .catch(() => {
-              // Serve from cache when offline
+      fetch(request, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
+        .then((response) => {
+          // API isteklerini cache'leme
+          return response;
+        })
+        .catch(() => {
+          // Offline durumunda cache'den servis et
+          return caches.open(API_CACHE)
+            .then((cache) => {
               return cache.match(request)
                 .then((cachedResponse) => {
                   if (cachedResponse) {
@@ -108,28 +117,28 @@ self.addEventListener('fetch', (event) => {
 
   // Handle static file requests
   event.respondWith(
-    caches.match(request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
+    fetch(request, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
+      .then((response) => {
+        // Don't cache non-GET requests or non-200 responses
+        if (request.method !== 'GET' || !response.ok) {
+          return response;
         }
 
-        return fetch(request)
-          .then((response) => {
-            // Don't cache non-GET requests or non-200 responses
-            if (request.method !== 'GET' || !response.ok) {
-              return response;
-            }
+        // Cache static files with cache busting
+        const responseClone = response.clone();
+        caches.open(STATIC_CACHE)
+          .then((cache) => {
+            cache.put(request, responseClone);
+          });
 
-            // Cache static files
-            const responseClone = response.clone();
-            caches.open(STATIC_CACHE)
-              .then((cache) => {
-                cache.put(request, responseClone);
-              });
-
-            return response;
-          })
+        return response;
+      })
           .catch(() => {
             // Return offline page for navigation requests
             if (request.mode === 'navigate') {

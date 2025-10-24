@@ -23,7 +23,9 @@ export const metadata: Metadata = {
   other: {
     'Cache-Control': 'no-cache, no-store, must-revalidate',
     'Pragma': 'no-cache',
-    'Expires': '0'
+    'Expires': '0',
+    'X-Cache-Buster': Date.now().toString(),
+    'X-Request-Time': Date.now().toString()
   }
 };
 
@@ -38,6 +40,9 @@ export default function RootLayout({
         <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
+        <meta name="cache-buster" content={Date.now().toString()} />
+        <meta name="version" content={process.env.NEXT_PUBLIC_BUILD_HASH || 'dev'} />
+        <meta name="last-modified" content={new Date().toISOString()} />
       </head>
       <body className={inter.className}>
         <AppProvider>
