@@ -144,6 +144,14 @@ export class ReportDataService {
 
     } catch (error) {
       console.error('Report data collection error:', error);
+      console.error('Error details:', {
+        studentId,
+        teacherId,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       throw new Error(`Rapor verisi toplanamadı: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
     }
   }
@@ -152,62 +160,83 @@ export class ReportDataService {
    * Ödev istatistiklerini hesaplar
    */
   private static async calculateAssignmentStats(studentId: string, startDate: Date, endDate: Date) {
-    // Tüm ödevleri al (tarih aralığındaki)
-    const allAssignments = await Assignment.find({
-      studentId,
-      dueDate: { $gte: startDate, $lte: endDate }
-    });
+    try {
+      console.log('ReportDataService: Calculating assignment stats', { studentId, startDate, endDate });
+      
+      // Tüm ödevleri al (tarih aralığındaki)
+      const allAssignments = await Assignment.find({
+        studentId,
+        dueDate: { $gte: startDate, $lte: endDate }
+      });
 
-    const totalAssignments = allAssignments.length;
+      const totalAssignments = allAssignments.length;
+      console.log('ReportDataService: Found assignments', { totalAssignments });
 
-    // Bu ödevlerin teslim edilenlerini say
-    const assignmentIds = allAssignments.map(a => a._id);
-    const submittedAssignments = await AssignmentSubmission.countDocuments({
-      assignmentId: { $in: assignmentIds },
-      studentId,
-      status: { $in: ['submitted', 'graded', 'completed'] }
-    });
+      // Bu ödevlerin teslim edilenlerini say
+      const assignmentIds = allAssignments.map(a => a._id);
+      const submittedAssignments = await AssignmentSubmission.countDocuments({
+        assignmentId: { $in: assignmentIds },
+        studentId,
+        status: { $in: ['submitted', 'graded', 'completed'] }
+      });
 
-    const gradedAssignments = await AssignmentSubmission.countDocuments({
-      assignmentId: { $in: assignmentIds },
-      studentId,
-      status: { $in: ['graded', 'completed'] }
-    });
+      const gradedAssignments = await AssignmentSubmission.countDocuments({
+        assignmentId: { $in: assignmentIds },
+        studentId,
+        status: { $in: ['graded', 'completed'] }
+      });
 
-    // Ortalama not hesapla
-    const gradedSubmissions = await AssignmentSubmission.find({
-      assignmentId: { $in: assignmentIds },
-      studentId,
-      status: { $in: ['graded', 'completed'] },
-      grade: { $exists: true, $ne: null }
-    }).populate('assignmentId', 'maxGrade');
+      console.log('ReportDataService: Assignment counts', { submittedAssignments, gradedAssignments });
 
-    let averageGrade = 0;
-    if (gradedSubmissions.length > 0) {
-      const totalGrade = gradedSubmissions.reduce((sum, submission) => {
-        const populatedSubmission = submission as any;
-        const maxGrade = populatedSubmission.assignmentId?.maxGrade || 100;
-        return sum + (submission.grade || 0);
-      }, 0);
-      averageGrade = Math.round(totalGrade / gradedSubmissions.length);
+      // Ortalama not hesapla
+      const gradedSubmissions = await AssignmentSubmission.find({
+        assignmentId: { $in: assignmentIds },
+        studentId,
+        status: { $in: ['graded', 'completed'] },
+        grade: { $exists: true, $ne: null }
+      }).populate('assignmentId', 'maxGrade');
+
+      let averageGrade = 0;
+      if (gradedSubmissions.length > 0) {
+        const totalGrade = gradedSubmissions.reduce((sum, submission) => {
+          const populatedSubmission = submission as any;
+          const maxGrade = populatedSubmission.assignmentId?.maxGrade || 100;
+          return sum + (submission.grade || 0);
+        }, 0);
+        averageGrade = Math.round(totalGrade / gradedSubmissions.length);
+      }
+
+      const assignmentCompletion = totalAssignments > 0 
+        ? Math.round((submittedAssignments / totalAssignments) * 100)
+        : 0;
+
+      const gradingRate = submittedAssignments > 0 
+        ? Math.round((gradedAssignments / submittedAssignments) * 100)
+        : 0;
+
+      const result = {
+        totalAssignments,
+        submittedAssignments,
+        gradedAssignments,
+        averageGrade,
+        assignmentCompletion,
+        gradingRate
+      };
+
+      console.log('ReportDataService: Assignment stats calculated', result);
+      return result;
+    } catch (error) {
+      console.error('ReportDataService: Error calculating assignment stats', error);
+      // Fallback değerler döndür
+      return {
+        totalAssignments: 0,
+        submittedAssignments: 0,
+        gradedAssignments: 0,
+        averageGrade: 0,
+        assignmentCompletion: 0,
+        gradingRate: 0
+      };
     }
-
-    const assignmentCompletion = totalAssignments > 0 
-      ? Math.round((submittedAssignments / totalAssignments) * 100)
-      : 0;
-
-    const gradingRate = submittedAssignments > 0 
-      ? Math.round((gradedAssignments / submittedAssignments) * 100)
-      : 0;
-
-    return {
-      totalAssignments,
-      submittedAssignments,
-      gradedAssignments,
-      averageGrade,
-      assignmentCompletion,
-      gradingRate
-    };
   }
 
 
@@ -215,28 +244,36 @@ export class ReportDataService {
    * Son ödevleri getirir
    */
   private static async getRecentAssignments(studentId: string, limit: number) {
-    const assignments = await Assignment.find({ studentId })
-      .populate('classId', 'name')
-      .sort({ createdAt: -1 })
-      .limit(limit);
+    try {
+      console.log('ReportDataService: Getting recent assignments', { studentId, limit });
+      
+      const assignments = await Assignment.find({ studentId })
+        .populate('classId', 'name')
+        .sort({ createdAt: -1 })
+        .limit(limit);
 
-    const recentAssignments = [];
-    for (const assignment of assignments) {
-      const submission = await AssignmentSubmission.findOne({
-        assignmentId: assignment._id,
-        studentId
-      });
+      const recentAssignments = [];
+      for (const assignment of assignments) {
+        const submission = await AssignmentSubmission.findOne({
+          assignmentId: assignment._id,
+          studentId
+        });
 
-      recentAssignments.push({
-        title: assignment.title,
-        dueDate: assignment.dueDate.toISOString(),
-        status: submission?.status || 'pending',
-        grade: submission?.grade,
-        maxGrade: assignment.maxGrade
-      });
+        recentAssignments.push({
+          title: assignment.title,
+          dueDate: assignment.dueDate.toISOString(),
+          status: submission?.status || 'pending',
+          grade: submission?.grade,
+          maxGrade: assignment.maxGrade
+        });
+      }
+
+      console.log('ReportDataService: Recent assignments retrieved', { count: recentAssignments.length });
+      return recentAssignments;
+    } catch (error) {
+      console.error('ReportDataService: Error getting recent assignments', error);
+      return [];
     }
-
-    return recentAssignments;
   }
 
 

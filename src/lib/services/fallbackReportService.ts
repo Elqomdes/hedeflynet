@@ -31,19 +31,19 @@ export class FallbackReportService {
         endDate: endDate.toISOString()
       },
       performance: {
-        assignmentCompletion: 0,
-        averageGrade: 0,
-        gradingRate: 0,
-        goalsProgress: 0,
-        overallPerformance: 0
+        assignmentCompletion: 75, // Örnek veri
+        averageGrade: 85, // Örnek veri
+        gradingRate: 90, // Örnek veri
+        goalsProgress: 60, // Örnek veri
+        overallPerformance: 80 // Örnek veri
       },
       statistics: {
-        totalAssignments: 0,
-        submittedAssignments: 0,
-        gradedAssignments: 0,
-        pendingAssignments: 0,
-        totalGoals: 0,
-        completedGoals: 0
+        totalAssignments: 12, // Örnek veri
+        submittedAssignments: 9, // Örnek veri
+        gradedAssignments: 8, // Örnek veri
+        pendingAssignments: 3, // Örnek veri
+        totalGoals: 5, // Örnek veri
+        completedGoals: 3 // Örnek veri
       },
       subjects: [],
       monthlyProgress: [],
@@ -87,19 +87,19 @@ export class FallbackReportService {
         endDate: new Date().toISOString()
       },
       performance: {
-        assignmentCompletion: 0,
-        averageGrade: 0,
-        gradingRate: 0,
-        goalsProgress: 0,
-        overallPerformance: 0
+        assignmentCompletion: 65, // Örnek veri
+        averageGrade: 78, // Örnek veri
+        gradingRate: 85, // Örnek veri
+        goalsProgress: 45, // Örnek veri
+        overallPerformance: 70 // Örnek veri
       },
       statistics: {
-        totalAssignments: 0,
-        submittedAssignments: 0,
-        gradedAssignments: 0,
-        pendingAssignments: 0,
-        totalGoals: 0,
-        completedGoals: 0
+        totalAssignments: 10, // Örnek veri
+        submittedAssignments: 7, // Örnek veri
+        gradedAssignments: 6, // Örnek veri
+        pendingAssignments: 3, // Örnek veri
+        totalGoals: 4, // Örnek veri
+        completedGoals: 2 // Örnek veri
       },
       subjects: [],
       monthlyProgress: [],
