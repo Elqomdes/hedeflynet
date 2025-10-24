@@ -60,6 +60,11 @@ export interface Assignment {
   maxAttempts?: number;
   tags?: string[];
   rubricId?: string;
+  // Goal-like properties
+  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
+  priority?: 'low' | 'medium' | 'high';
+  successCriteria?: string;
+  progress?: number; // 0-100
   createdAt: Date;
   updatedAt: Date;
 }
@@ -119,18 +124,6 @@ export interface QuizResult {
   completedAt: Date;
 }
 
-export interface Goal {
-  _id: string;
-  studentId: string;
-  teacherId: string;
-  title: string;
-  description: string;
-  targetDate: Date;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  progress: number; // 0-100
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 
 export interface Report {
@@ -142,7 +135,6 @@ export interface Report {
   data: {
     assignmentCompletion: number;
     subjectStats: { [key: string]: number };
-    goalsProgress: number;
     overallPerformance: number;
   };
   createdAt: Date;

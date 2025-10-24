@@ -5,19 +5,6 @@ import { FileText, Target, BookOpen, CheckCircle, Calendar, Clock, Star, Trendin
 import Link from 'next/link';
 import WeekCalendar from '@/components/WeekCalendar';
 
-interface Goal {
-  _id: string;
-  title: string;
-  targetDate: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  progress: number;
-  assignments?: {
-    _id: string;
-    title: string;
-    dueDate: string;
-    type: 'individual' | 'class';
-  }[];
-}
 
 interface Assignment {
   _id: string;
@@ -25,6 +12,11 @@ interface Assignment {
   dueDate: string;
   type: 'individual' | 'class';
   maxGrade?: number;
+  // Goal-like properties
+  category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
+  priority?: 'low' | 'medium' | 'high';
+  successCriteria?: string;
+  progress?: number; // 0-100
   submission?: {
     status: 'pending' | 'submitted' | 'completed' | 'late' | 'graded';
     grade?: number;

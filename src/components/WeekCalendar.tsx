@@ -2,16 +2,18 @@
 
 import { useMemo } from 'react';
 
-type CalendarGoal = {
+type CalendarItem = {
   _id: string;
   title: string;
   date: string; // ISO string: yyyy-mm-dd or full ISO with time
-  status?: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'submitted' | 'late' | 'graded';
+  status?: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'submitted' | 'late' | 'graded' | 'assignment';
+  studentName?: string;
+  type?: string;
 };
 
 interface WeekCalendarProps {
   referenceDate?: Date; // any date within the week
-  items: CalendarGoal[];
+  items: CalendarItem[];
   onSelectDate?: (isoDate: string) => void; // called when a day cell is clicked
   readOnly?: boolean;
   emptyText?: string;
@@ -45,7 +47,7 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
   }, [referenceDate]);
 
   const grouped = useMemo(() => {
-    const map: Record<string, CalendarGoal[]> = {};
+    const map: Record<string, CalendarItem[]> = {};
     for (const d of days) {
       map[formatISODate(d)] = [];
     }
