@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     // Get all parents
     const { Parent } = await import('@/lib/models/Parent');
     const parents = await Parent.find({ isActive: true })
-      .select('_id email firstName lastName phone children isActive createdAt')
+      .select('_id username email firstName lastName phone children isActive createdAt')
       .sort({ createdAt: -1 });
 
     // Get teacher's classes to filter students
@@ -165,6 +165,7 @@ export async function POST(request: NextRequest) {
     // Create and save parent using Parent model
     const { Parent } = await import('@/lib/models/Parent');
     const parent = await Parent.create({
+      username,
       firstName,
       lastName,
       email,
@@ -178,6 +179,7 @@ export async function POST(request: NextRequest) {
       message: 'Veli başarıyla oluşturuldu',
       parent: {
         id: parent._id,
+        username: parent.username,
         email: parent.email,
         firstName: parent.firstName,
         lastName: parent.lastName,

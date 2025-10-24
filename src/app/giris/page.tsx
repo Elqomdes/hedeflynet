@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
@@ -13,8 +13,18 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const router = useRouter();
+
+  // Check for success message in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    if (message) {
+      setSuccessMessage(message);
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -118,6 +128,11 @@ export default function LoginPage() {
 
         <div className="card animate-slide-up">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {successMessage && (
+              <div className="alert alert-success">
+                {successMessage}
+              </div>
+            )}
             {error && (
               <div className="alert alert-danger">
                 {error}
