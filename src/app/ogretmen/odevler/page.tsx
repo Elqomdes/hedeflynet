@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye, Target, BookOpen, Zap } from 'lucide-react';
+import WeekCalendar from '@/components/WeekCalendar';
 
 interface Attachment {
   type: 'pdf' | 'video' | 'link';
@@ -61,6 +62,7 @@ export default function TeacherAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'individual' | 'class'>('all');
+  const [studentFilter, setStudentFilter] = useState<string>('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
@@ -257,8 +259,25 @@ export default function TeacherAssignments() {
     if (filter === 'all') return true;
     return assignment.type === filter;
     })
+    .filter(assignment => {
+      if (studentFilter === 'all') return true;
+      if (assignment.type === 'individual' && assignment.studentId) {
+        return assignment.studentId._id === studentFilter;
+      }
+      return false;
+    })
     .filter(a => (showOnlyOverdue ? isOverdue(a.dueDate) : true))
     .sort((a, b) => new Date(a[sortBy]).getTime() - new Date(b[sortBy]).getTime());
+
+  // Calendar items for assignments
+  const calendarItems = filteredAssignments.map(assignment => ({
+    _id: assignment._id,
+    title: `📝 ${assignment.title}`,
+    date: new Date(assignment.dueDate).toISOString().split('T')[0],
+    status: 'assignment',
+    studentName: assignment.studentId ? `${assignment.studentId.firstName} ${assignment.studentId.lastName}` : 'Sınıf Ödevi',
+    type: assignment.type
+  }));
 
   const isOverdue = (dueDate: string) => {
     return new Date(dueDate) < new Date();
@@ -298,6 +317,20 @@ export default function TeacherAssignments() {
             <option value="individual">Bireysel</option>
             <option value="class">Sınıf</option>
           </select>
+          {filter === 'individual' && (
+            <select
+              value={studentFilter}
+              onChange={(e) => setStudentFilter(e.target.value)}
+              className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="all">Tüm Öğrenciler</option>
+              {students.map(student => (
+                <option key={student._id} value={student._id}>
+                  {student.firstName} {student.lastName}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             onClick={() => setShowCreateForm(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -305,6 +338,26 @@ export default function TeacherAssignments() {
             <Plus className="h-4 w-4 mr-2" />
             Yeni Ödev
           </button>
+        </div>
+      </div>
+
+      {/* Calendar Section */}
+      <div className="mb-8">
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title flex items-center">
+              <Calendar className="h-5 w-5 mr-2" />
+              Haftalık Takvim
+            </h3>
+            <p className="text-sm text-secondary-600">Verilen ödevlerin takvimi</p>
+          </div>
+          <div className="p-6">
+            <WeekCalendar 
+              items={calendarItems} 
+              readOnly 
+              emptyText="Bu hafta için ödev yok" 
+            />
+          </div>
         </div>
       </div>
 
@@ -320,49 +373,62 @@ export default function TeacherAssignments() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {filteredAssignments.map((assignment) => (
-            <div key={assignment._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+            <div key={assignment._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3">
-                    <FileText className="h-5 w-5 text-primary-600" />
-                    <h3 className="text-lg font-medium text-secondary-900">
-                      {assignment.title}
-                    </h3>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className={`p-2 rounded-lg ${
                       assignment.type === 'class' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-green-100 text-green-800'
+                        ? 'bg-blue-100 text-blue-600' 
+                        : 'bg-green-100 text-green-600'
                     }`}>
-                      {assignment.type === 'class' ? 'Sınıf Ödevi' : 'Bireysel Ödev'}
-                    </span>
-                    {isOverdue(assignment.dueDate) && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        Süresi Geçmiş
-                      </span>
-                    )}
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-secondary-900">
+                        {assignment.title}
+                      </h3>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          assignment.type === 'class' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {assignment.type === 'class' ? 'Sınıf Ödevi' : 'Bireysel Ödev'}
+                        </span>
+                        {isOverdue(assignment.dueDate) && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Süresi Geçmiş
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   
-                  <p className="mt-2 text-sm text-secondary-600">
+                  <p className="text-sm text-secondary-600 mb-3 line-clamp-2">
                     {assignment.description}
                   </p>
                   
-                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-secondary-500">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-500">
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
-                      Teslim: {new Date(assignment.dueDate).toLocaleDateString('tr-TR')}
+                      <span className="font-medium">Teslim:</span>
+                      <span className="ml-1">{new Date(assignment.dueDate).toLocaleDateString('tr-TR')}</span>
                     </div>
                     {assignment.type === 'class' && assignment.classId && (
                       <div className="flex items-center">
                         <Users className="h-4 w-4 mr-1" />
-                        Sınıf: {assignment.classId.name}
+                        <span className="font-medium">Sınıf:</span>
+                        <span className="ml-1">{assignment.classId.name}</span>
                       </div>
                     )}
                     {assignment.type === 'individual' && assignment.studentId && (
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-1" />
-                        Öğrenci: {assignment.studentId.firstName} {assignment.studentId.lastName}
+                        <span className="font-medium">Öğrenci:</span>
+                        <span className="ml-1">{assignment.studentId.firstName} {assignment.studentId.lastName}</span>
                       </div>
                     )}
                     <div className="flex items-center">
@@ -372,8 +438,7 @@ export default function TeacherAssignments() {
                   </div>
 
                   {assignment.attachments.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium text-secondary-900 mb-2">Ekler:</h4>
+                    <div className="mt-3">
                       <div className="flex flex-wrap gap-2">
                         {assignment.attachments.map((attachment, index) => (
                           <a
@@ -381,11 +446,11 @@ export default function TeacherAssignments() {
                             href={attachment.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-secondary-100 text-secondary-800 hover:bg-secondary-200"
+                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-secondary-100 text-secondary-700 hover:bg-secondary-200 transition-colors"
                           >
-                            {attachment.type === 'pdf' && <FileText className="h-4 w-4 mr-1" />}
-                            {attachment.type === 'video' && <ExternalLink className="h-4 w-4 mr-1" />}
-                            {attachment.type === 'link' && <ExternalLink className="h-4 w-4 mr-1" />}
+                            {attachment.type === 'pdf' && <FileText className="h-3 w-3 mr-1" />}
+                            {attachment.type === 'video' && <ExternalLink className="h-3 w-3 mr-1" />}
+                            {attachment.type === 'link' && <ExternalLink className="h-3 w-3 mr-1" />}
                             {attachment.name}
                           </a>
                         ))}
@@ -394,24 +459,24 @@ export default function TeacherAssignments() {
                   )}
                 </div>
                 
-                <div className="ml-4 flex space-x-2">
+                <div className="ml-4 flex space-x-1">
                   <button
                     onClick={() => handleViewSubmissions(assignment)}
-                    className="p-2 text-blue-400 hover:text-blue-600"
+                    className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                     title="Teslimleri Görüntüle"
                   >
                     <Eye className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setEditingAssignment(assignment)}
-                    className="p-2 text-secondary-400 hover:text-secondary-600"
+                    className="p-2 text-secondary-500 hover:text-secondary-700 hover:bg-secondary-50 rounded-lg transition-colors"
                     title="Düzenle"
                   >
                     <Edit3 className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteAssignment(assignment._id)}
-                    className="p-2 text-red-400 hover:text-red-600"
+                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                     title="Sil"
                   >
                     <Trash2 className="h-4 w-4" />
