@@ -496,31 +496,29 @@ export default function TeacherAssignments() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredAssignments.map((assignment) => (
-            <div key={assignment._id} className="bg-white rounded-xl shadow-md border border-secondary-200 hover:shadow-lg transition-all duration-300">
+            <div key={assignment._id} className="bg-white rounded-lg shadow-md border border-secondary-200 hover:shadow-lg transition-all duration-200 flex flex-col">
               {/* Card Header */}
-              <div className={`px-6 py-4 rounded-t-xl ${
+              <div className={`px-4 py-3 rounded-t-lg ${
                 assignment.type === 'class' 
                   ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
                   : 'bg-gradient-to-r from-green-500 to-green-600'
               }`}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-white bg-opacity-20 p-2 rounded-lg">
-                      <FileText className="h-5 w-5 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white">
+                  <div className="flex items-center space-x-2 min-w-0 flex-1">
+                    <FileText className="h-4 w-4 text-white flex-shrink-0" />
+                    <h3 className="text-base font-bold text-white truncate">
                       {assignment.title}
                     </h3>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white bg-opacity-20 text-white backdrop-blur-sm">
-                      {assignment.type === 'class' ? 'Sınıf Ödevi' : 'Bireysel Ödev'}
+                  <div className="flex items-center space-x-1.5 ml-2">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white bg-opacity-20 text-white">
+                      {assignment.type === 'class' ? 'Sınıf' : 'Bireysel'}
                     </span>
                     {isOverdue(assignment.dueDate) && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-500 text-white">
-                        ⚠️ Süresi Geçmiş
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500 text-white">
+                        ⚠️
                       </span>
                     )}
                   </div>
@@ -528,85 +526,80 @@ export default function TeacherAssignments() {
               </div>
 
               {/* Card Body */}
-              <div className="p-6">
-                <p className="text-sm text-secondary-600 mb-4 line-clamp-2">
+              <div className="p-4 flex-1 flex flex-col">
+                <p className="text-sm text-secondary-600 mb-3 line-clamp-2">
                   {assignment.description}
                 </p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="flex items-center space-x-2 text-sm text-secondary-600 bg-secondary-50 px-3 py-2 rounded-lg">
-                    <Clock className="h-4 w-4 text-secondary-400" />
+                <div className="space-y-2 mb-3 flex-1">
+                  <div className="flex items-center text-xs text-secondary-600">
+                    <Clock className="h-3.5 w-3.5 mr-1.5 text-secondary-400" />
                     <span className="font-medium">Teslim:</span>
-                    <span className="text-secondary-900">{new Date(assignment.dueDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    <span className="ml-1 text-secondary-900">{new Date(assignment.dueDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</span>
                   </div>
 
                   {assignment.type === 'class' && assignment.classId && (
-                    <div className="flex items-center space-x-2 text-sm text-secondary-600 bg-blue-50 px-3 py-2 rounded-lg">
-                      <Users className="h-4 w-4 text-blue-400" />
-                      <span className="font-medium">Sınıf:</span>
+                    <div className="flex items-center text-xs text-secondary-600">
+                      <Users className="h-3.5 w-3.5 mr-1.5 text-blue-400" />
                       <span className="text-blue-900">{assignment.classId.name}</span>
                     </div>
                   )}
 
                   {assignment.type === 'individual' && assignment.studentId && (
-                    <div className="flex items-center space-x-2 text-sm text-secondary-600 bg-green-50 px-3 py-2 rounded-lg">
-                      <User className="h-4 w-4 text-green-400" />
-                      <span className="font-medium">Öğrenci:</span>
+                    <div className="flex items-center text-xs text-secondary-600">
+                      <User className="h-3.5 w-3.5 mr-1.5 text-green-400" />
                       <span className="text-green-900">{assignment.studentId.firstName} {assignment.studentId.lastName}</span>
                     </div>
                   )}
-
-                  <div className="flex items-center space-x-2 text-sm text-secondary-600 bg-secondary-50 px-3 py-2 rounded-lg">
-                    <Calendar className="h-4 w-4 text-secondary-400" />
-                    <span className="font-medium">Oluşturulma:</span>
-                    <span className="text-secondary-900">{new Date(assignment.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</span>
-                  </div>
                 </div>
 
                 {assignment.attachments.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-secondary-500 uppercase tracking-wide mb-2">Ekler</p>
-                    <div className="flex flex-wrap gap-2">
-                      {assignment.attachments.map((attachment, index) => (
+                  <div className="mb-3">
+                    <div className="flex flex-wrap gap-1">
+                      {assignment.attachments.slice(0, 2).map((attachment, index) => (
                         <a
                           key={index}
                           href={attachment.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary-100 text-secondary-700 hover:bg-secondary-200 transition-colors"
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-secondary-100 text-secondary-700 hover:bg-secondary-200 transition-colors"
                         >
-                          {attachment.type === 'pdf' && <FileText className="h-3.5 w-3.5 mr-1.5" />}
-                          {attachment.type === 'video' && <ExternalLink className="h-3.5 w-3.5 mr-1.5" />}
-                          {attachment.type === 'link' && <ExternalLink className="h-3.5 w-3.5 mr-1.5" />}
-                          {attachment.name}
+                          {attachment.type === 'pdf' && <FileText className="h-3 w-3 mr-1" />}
+                          {(attachment.type === 'video' || attachment.type === 'link') && <ExternalLink className="h-3 w-3 mr-1" />}
+                          <span className="truncate max-w-[100px]">{attachment.name}</span>
                         </a>
                       ))}
+                      {assignment.attachments.length > 2 && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-secondary-100 text-secondary-700">
+                          +{assignment.attachments.length - 2}
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-secondary-200">
+                <div className="flex items-center justify-end space-x-2 pt-3 border-t border-secondary-200">
                   <button
                     onClick={() => handleViewSubmissions(assignment)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    title="Teslimleri Görüntüle"
                   >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Teslimleri Görüntüle
+                    <Eye className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setEditingAssignment(assignment)}
-                    className="inline-flex items-center px-4 py-2 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                    className="p-1.5 text-secondary-600 hover:bg-secondary-50 rounded transition-colors"
+                    title="Düzenle"
                   >
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Düzenle
+                    <Edit3 className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteAssignment(assignment._id)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                    className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Sil"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Sil
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
