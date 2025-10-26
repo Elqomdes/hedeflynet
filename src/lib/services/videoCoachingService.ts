@@ -454,6 +454,143 @@ export class VideoCoachingService {
   }
 
   /**
+   * Get video coaching statistics for a teacher
+   */
+  async getTeacherVideoStats(teacherId: string): Promise<{
+    totalSessions: number;
+    completedSessions: number;
+    upcomingSessions: number;
+    totalParticipants: number;
+    averageDuration: number;
+    totalRecordings: number;
+    thisWeekSessions: number;
+    thisMonthSessions: number;
+    averageParticipantsPerSession: number;
+    totalHours: number;
+    attendanceRate: number;
+  }> {
+    await connectDB();
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Get all sessions for this teacher
+    const allSessions = await VideoSession.find({ teacherId });
+    
+    // Calculate statistics
+    const totalSessions = allSessions.length;
+    const completedSessions = allSessions.filter(s => s.status === 'completed').length;
+    const upcomingSessions = allSessions.filter(s => s.status === 'scheduled' && s.scheduledFor > now).length;
+    
+    // Calculate total participants (unique students)
+    const uniqueStudents = new Set();
+    allSessions.forEach(session => {
+      session.participants.forEach(participant => {
+        if (participant.role === 'student') {
+          uniqueStudents.add(participant.userId.toString());
+        }
+      });
+    });
+    const totalParticipants = uniqueStudents.size;
+
+    // Calculate average duration
+    const completedSessionsWithDuration = allSessions.filter(s => s.status === 'completed' && s.actualDuration);
+    const averageDuration = completedSessionsWithDuration.length > 0 
+      ? Math.round(completedSessionsWithDuration.reduce((sum, s) => sum + (s.actualDuration || s.duration), 0) / completedSessionsWithDuration.length)
+      : 0;
+
+    // Count recordings
+    const totalRecordings = allSessions.filter(s => s.recording?.isAvailable).length;
+
+    // This week and month sessions
+    const thisWeekSessions = allSessions.filter(s => s.scheduledFor >= startOfWeek).length;
+    const thisMonthSessions = allSessions.filter(s => s.scheduledFor >= startOfMonth).length;
+
+    // Average participants per session
+    const averageParticipantsPerSession = totalSessions > 0 
+      ? Math.round(allSessions.reduce((sum, s) => sum + s.participants.length, 0) / totalSessions)
+      : 0;
+
+    // Total hours
+    const totalHours = Math.round(allSessions.reduce((sum, s) => sum + s.duration, 0) / 60);
+
+    // Attendance rate (simplified calculation)
+    const attendanceRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+
+    return {
+      totalSessions,
+      completedSessions,
+      upcomingSessions,
+      totalParticipants,
+      averageDuration,
+      totalRecordings,
+      thisWeekSessions,
+      thisMonthSessions,
+      averageParticipantsPerSession,
+      totalHours,
+      attendanceRate
+    };
+  }
+
+  /**
+   * Get video coaching statistics for a student
+   */
+  async getStudentVideoStats(studentId: string): Promise<{
+    totalSessions: number;
+    completedSessions: number;
+    upcomingSessions: number;
+    totalHours: number;
+    averageDuration: number;
+    attendanceRate: number;
+    teacherCount: number;
+  }> {
+    await connectDB();
+
+    const now = new Date();
+
+    // Get all sessions for this student
+    const allSessions = await VideoSession.find({ 
+      'participants.userId': studentId,
+      'participants.role': 'student'
+    });
+    
+    // Calculate statistics
+    const totalSessions = allSessions.length;
+    const completedSessions = allSessions.filter(s => s.status === 'completed').length;
+    const upcomingSessions = allSessions.filter(s => s.status === 'scheduled' && s.scheduledFor > now).length;
+    
+    // Calculate total hours
+    const totalHours = Math.round(allSessions.reduce((sum, s) => sum + s.duration, 0) / 60);
+
+    // Calculate average duration
+    const averageDuration = totalSessions > 0 
+      ? Math.round(allSessions.reduce((sum, s) => sum + s.duration, 0) / totalSessions)
+      : 0;
+
+    // Attendance rate
+    const attendanceRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+
+    // Count unique teachers
+    const uniqueTeachers = new Set();
+    allSessions.forEach(session => {
+      uniqueTeachers.add(session.teacherId.toString());
+    });
+    const teacherCount = uniqueTeachers.size;
+
+    return {
+      totalSessions,
+      completedSessions,
+      upcomingSessions,
+      totalHours,
+      averageDuration,
+      attendanceRate,
+      teacherCount
+    };
+  }
+
+  /**
    * Generate meeting ID
    */
   private generateMeetingId(): string {

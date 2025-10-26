@@ -23,8 +23,27 @@ interface VideoSession {
   createdAt: string;
 }
 
+interface VideoStats {
+  totalSessions: number;
+  completedSessions: number;
+  upcomingSessions: number;
+  totalHours: number;
+  averageDuration: number;
+  attendanceRate: number;
+  teacherCount: number;
+}
+
 export default function StudentVideoCoaching() {
   const [sessions, setSessions] = useState<VideoSession[]>([]);
+  const [stats, setStats] = useState<VideoStats>({
+    totalSessions: 0,
+    completedSessions: 0,
+    upcomingSessions: 0,
+    totalHours: 0,
+    averageDuration: 0,
+    attendanceRate: 0,
+    teacherCount: 0
+  });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'ongoing' | 'completed'>('all');
 
@@ -34,14 +53,26 @@ export default function StudentVideoCoaching() {
 
   const fetchSessions = async () => {
     try {
-      const response = await fetch('/api/student/video-coaching', {
+      // Fetch sessions
+      const sessionsResponse = await fetch('/api/student/video-coaching', {
         credentials: 'include',
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' },
       });
-      if (response.ok) {
-        const data = await response.json();
-        setSessions(data);
+      if (sessionsResponse.ok) {
+        const sessionsData = await sessionsResponse.json();
+        setSessions(sessionsData);
+      }
+
+      // Fetch statistics
+      const statsResponse = await fetch('/api/student/video-coaching/stats', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        setStats(statsData.data || stats);
       }
     } catch (error) {
       console.error('Video sessions fetch error:', error);
@@ -121,6 +152,57 @@ export default function StudentVideoCoaching() {
             <option value="ongoing">Devam Eden</option>
             <option value="completed">Tamamlanan</option>
           </select>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="card card-hover animate-scale-in">
+          <div className="flex items-center">
+            <div className="p-4 rounded-2xl bg-blue-500 shadow-lg">
+              <Video className="h-8 w-8 text-white" />
+            </div>
+            <div className="ml-6">
+              <p className="text-sm font-semibold text-secondary-600 mb-1">Toplam Oturum</p>
+              <p className="text-3xl font-bold text-secondary-900">{stats.totalSessions}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card card-hover animate-scale-in" style={{animationDelay: '0.1s'}}>
+          <div className="flex items-center">
+            <div className="p-4 rounded-2xl bg-green-500 shadow-lg">
+              <Play className="h-8 w-8 text-white" />
+            </div>
+            <div className="ml-6">
+              <p className="text-sm font-semibold text-secondary-600 mb-1">Tamamlanan</p>
+              <p className="text-3xl font-bold text-secondary-900">{stats.completedSessions}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card card-hover animate-scale-in" style={{animationDelay: '0.2s'}}>
+          <div className="flex items-center">
+            <div className="p-4 rounded-2xl bg-yellow-500 shadow-lg">
+              <Calendar className="h-8 w-8 text-white" />
+            </div>
+            <div className="ml-6">
+              <p className="text-sm font-semibold text-secondary-600 mb-1">Yaklaşan</p>
+              <p className="text-3xl font-bold text-secondary-900">{stats.upcomingSessions}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card card-hover animate-scale-in" style={{animationDelay: '0.3s'}}>
+          <div className="flex items-center">
+            <div className="p-4 rounded-2xl bg-purple-500 shadow-lg">
+              <Clock className="h-8 w-8 text-white" />
+            </div>
+            <div className="ml-6">
+              <p className="text-sm font-semibold text-secondary-600 mb-1">Toplam Saat</p>
+              <p className="text-3xl font-bold text-secondary-900">{stats.totalHours}</p>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user.role !== 'teacher') {
+    if (user.role !== 'student') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -21,12 +21,12 @@ export async function GET(request: NextRequest) {
     const videoCoachingService = VideoCoachingService.getInstance();
     
     // Get real video coaching statistics from database
-    const stats = await videoCoachingService.getTeacherVideoStats(user.id);
+    const stats = await videoCoachingService.getStudentVideoStats(user.id);
 
     return NextResponse.json({ data: stats });
 
   } catch (error) {
-    console.error('Get video coaching stats error:', error);
+    console.error('Get student video coaching stats error:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
