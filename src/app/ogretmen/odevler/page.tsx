@@ -315,117 +315,148 @@ export default function TeacherAssignments() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-secondary-900">Ödevlerim</h1>
-        <div className="mt-4 sm:mt-0 flex space-x-3">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-          >
-            <option value="dueDate">Teslim Tarihi</option>
-            <option value="createdAt">Oluşturulma</option>
-          </select>
-          <label className="inline-flex items-center space-x-2 text-sm text-secondary-700">
-            <input type="checkbox" checked={showOnlyOverdue} onChange={(e) => setShowOnlyOverdue(e.target.checked)} />
-            <span>Sadece süresi geçmiş</span>
-          </label>
-          <select
-            value={filter}
-            onChange={(e) => {
-              setFilter(e.target.value as any);
-              if (e.target.value !== 'individual') {
-                setStudentFilter('all');
-              }
-            }}
-            className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-          >
-            <option value="all">Tümü</option>
-            <option value="individual">Bireysel</option>
-            <option value="class">Sınıf</option>
-          </select>
-          {filter === 'individual' && students.length > 0 && (
-            <select
-              value={studentFilter}
-              onChange={(e) => setStudentFilter(e.target.value)}
-              className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="all">Tüm Öğrenciler</option>
-              {students.map(student => (
-                <option key={student._id} value={student._id}>
-                  {student.firstName} {student.lastName}
-                </option>
-              ))}
-            </select>
-          )}
-          <select
-            value={selectedStudentForCalendar}
-            onChange={(e) => {
-              setSelectedStudentForCalendar(e.target.value);
-              setShowStudentCalendar(e.target.value !== '');
-            }}
-            className="block px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-          >
-            <option value="">Öğrenci Takvimi Seç</option>
-            {students.map(student => (
-              <option key={student._id} value={student._id}>
-                {student.firstName} {student.lastName} - Takvim
-              </option>
-            ))}
-          </select>
+      {/* Header Section */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-secondary-900">Ödevlerim</h1>
+            <p className="text-sm text-secondary-600 mt-1">Tüm ödevlerinizi yönetin ve takip edin</p>
+          </div>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-5 w-5 mr-2" />
             Yeni Ödev
           </button>
+        </div>
+
+        {/* Filter Controls */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-secondary-700 mb-2">Ödev Türü</label>
+              <select
+                value={filter}
+                onChange={(e) => {
+                  setFilter(e.target.value as any);
+                  if (e.target.value !== 'individual') {
+                    setStudentFilter('all');
+                  }
+                }}
+                className="block w-full px-3 py-2 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+              >
+                <option value="all">Tümü</option>
+                <option value="individual">Bireysel</option>
+                <option value="class">Sınıf</option>
+              </select>
+            </div>
+
+            {filter === 'individual' && students.length > 0 && (
+              <div>
+                <label className="block text-xs font-medium text-secondary-700 mb-2">Öğrenci</label>
+                <select
+                  value={studentFilter}
+                  onChange={(e) => setStudentFilter(e.target.value)}
+                  className="block w-full px-3 py-2 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+                >
+                  <option value="all">Tüm Öğrenciler</option>
+                  {students.map(student => (
+                    <option key={student._id} value={student._id}>
+                      {student.firstName} {student.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-medium text-secondary-700 mb-2">Sıralama</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="block w-full px-3 py-2 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+              >
+                <option value="dueDate">Teslim Tarihi</option>
+                <option value="createdAt">Oluşturulma</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-secondary-700 mb-2">Takvim Görünümü</label>
+              <select
+                value={selectedStudentForCalendar}
+                onChange={(e) => {
+                  setSelectedStudentForCalendar(e.target.value);
+                  setShowStudentCalendar(e.target.value !== '');
+                }}
+                className="block w-full px-3 py-2 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+              >
+                <option value="">Öğrenci Takvimi Seç</option>
+                {students.map(student => (
+                  <option key={student._id} value={student._id}>
+                    {student.firstName} {student.lastName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between pt-4 border-t border-secondary-200">
+            <label className="inline-flex items-center space-x-2 text-sm text-secondary-700 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={showOnlyOverdue} 
+                onChange={(e) => setShowOnlyOverdue(e.target.checked)}
+                className="h-4 w-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+              />
+              <span className="font-medium">Sadece süresi geçmiş ödevleri göster</span>
+            </label>
+          </div>
         </div>
       </div>
 
       {/* Assignment Summary Section */}
-      <div className="mb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
-          <div className="px-6 py-4 border-b border-secondary-200">
-            <h3 className="text-lg font-semibold text-secondary-900 flex items-center">
-              <BarChart3 className="h-5 w-5 mr-2" />
-              Ödev Özeti
-            </h3>
-            <p className="text-sm text-secondary-600">Verilen ödevlerin genel durumu</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md border border-blue-200 p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-blue-700 uppercase tracking-wide mb-1">Toplam Ödev</p>
+              <p className="text-4xl font-bold text-blue-900">{filteredAssignments.length}</p>
+              <p className="text-xs text-blue-600 mt-2">Aktif ödevler</p>
+            </div>
+            <div className="bg-blue-200 p-3 rounded-lg">
+              <FileText className="h-8 w-8 text-blue-700" />
+            </div>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="flex items-center">
-                  <FileText className="h-8 w-8 text-blue-600" />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-blue-900">Toplam Ödev</p>
-                    <p className="text-2xl font-bold text-blue-600">{filteredAssignments.length}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <div className="flex items-center">
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-green-900">Sınıf Ödevleri</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {filteredAssignments.filter(a => a.type === 'class').length}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <div className="flex items-center">
-                  <User className="h-8 w-8 text-purple-600" />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-purple-900">Bireysel Ödevler</p>
-                    <p className="text-2xl font-bold text-purple-600">
-                      {filteredAssignments.filter(a => a.type === 'individual').length}
-                    </p>
-                  </div>
-                </div>
-              </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-md border border-green-200 p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-green-700 uppercase tracking-wide mb-1">Sınıf Ödevleri</p>
+              <p className="text-4xl font-bold text-green-900">
+                {filteredAssignments.filter(a => a.type === 'class').length}
+              </p>
+              <p className="text-xs text-green-600 mt-2">Tüm sınıfa verilen</p>
+            </div>
+            <div className="bg-green-200 p-3 rounded-lg">
+              <Users className="h-8 w-8 text-green-700" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-md border border-purple-200 p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-purple-700 uppercase tracking-wide mb-1">Bireysel Ödevler</p>
+              <p className="text-4xl font-bold text-purple-900">
+                {filteredAssignments.filter(a => a.type === 'individual').length}
+              </p>
+              <p className="text-xs text-purple-600 mt-2">Kişiye özel ödevler</p>
+            </div>
+            <div className="bg-purple-200 p-3 rounded-lg">
+              <User className="h-8 w-8 text-purple-700" />
             </div>
           </div>
         </div>
@@ -465,117 +496,117 @@ export default function TeacherAssignments() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-6">
           {filteredAssignments.map((assignment) => (
-            <div key={assignment._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className={`p-2 rounded-lg ${
-                      assignment.type === 'class' 
-                        ? 'bg-blue-100 text-blue-600' 
-                        : 'bg-green-100 text-green-600'
-                    }`}>
-                      <FileText className="h-4 w-4" />
+            <div key={assignment._id} className="bg-white rounded-xl shadow-md border border-secondary-200 hover:shadow-lg transition-all duration-300">
+              {/* Card Header */}
+              <div className={`px-6 py-4 rounded-t-xl ${
+                assignment.type === 'class' 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
+                  : 'bg-gradient-to-r from-green-500 to-green-600'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                      <FileText className="h-5 w-5 text-white" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-secondary-900">
-                        {assignment.title}
-                      </h3>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          assignment.type === 'class' 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {assignment.type === 'class' ? 'Sınıf Ödevi' : 'Bireysel Ödev'}
-                        </span>
-                        {isOverdue(assignment.dueDate) && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            Süresi Geçmiş
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                    <h3 className="text-xl font-bold text-white">
+                      {assignment.title}
+                    </h3>
                   </div>
-                  
-                  <p className="text-sm text-secondary-600 mb-3 overflow-hidden" style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical'
-                  }}>
-                    {assignment.description}
-                  </p>
-                  
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-500">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span className="font-medium">Teslim:</span>
-                      <span className="ml-1">{new Date(assignment.dueDate).toLocaleDateString('tr-TR')}</span>
-                    </div>
-                    {assignment.type === 'class' && assignment.classId && (
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        <span className="font-medium">Sınıf:</span>
-                        <span className="ml-1">{assignment.classId.name}</span>
-                      </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white bg-opacity-20 text-white backdrop-blur-sm">
+                      {assignment.type === 'class' ? 'Sınıf Ödevi' : 'Bireysel Ödev'}
+                    </span>
+                    {isOverdue(assignment.dueDate) && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-500 text-white">
+                        ⚠️ Süresi Geçmiş
+                      </span>
                     )}
-                    {assignment.type === 'individual' && assignment.studentId && (
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 mr-1" />
-                        <span className="font-medium">Öğrenci:</span>
-                        <span className="ml-1">{assignment.studentId.firstName} {assignment.studentId.lastName}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Oluşturulma: {new Date(assignment.createdAt).toLocaleDateString('tr-TR')}
-                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6">
+                <p className="text-sm text-secondary-600 mb-4 line-clamp-2">
+                  {assignment.description}
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center space-x-2 text-sm text-secondary-600 bg-secondary-50 px-3 py-2 rounded-lg">
+                    <Clock className="h-4 w-4 text-secondary-400" />
+                    <span className="font-medium">Teslim:</span>
+                    <span className="text-secondary-900">{new Date(assignment.dueDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                   </div>
 
-                  {assignment.attachments.length > 0 && (
-                    <div className="mt-3">
-                      <div className="flex flex-wrap gap-2">
-                        {assignment.attachments.map((attachment, index) => (
-                          <a
-                            key={index}
-                            href={attachment.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-secondary-100 text-secondary-700 hover:bg-secondary-200 transition-colors"
-                          >
-                            {attachment.type === 'pdf' && <FileText className="h-3 w-3 mr-1" />}
-                            {attachment.type === 'video' && <ExternalLink className="h-3 w-3 mr-1" />}
-                            {attachment.type === 'link' && <ExternalLink className="h-3 w-3 mr-1" />}
-                            {attachment.name}
-                          </a>
-                        ))}
-                      </div>
+                  {assignment.type === 'class' && assignment.classId && (
+                    <div className="flex items-center space-x-2 text-sm text-secondary-600 bg-blue-50 px-3 py-2 rounded-lg">
+                      <Users className="h-4 w-4 text-blue-400" />
+                      <span className="font-medium">Sınıf:</span>
+                      <span className="text-blue-900">{assignment.classId.name}</span>
                     </div>
                   )}
+
+                  {assignment.type === 'individual' && assignment.studentId && (
+                    <div className="flex items-center space-x-2 text-sm text-secondary-600 bg-green-50 px-3 py-2 rounded-lg">
+                      <User className="h-4 w-4 text-green-400" />
+                      <span className="font-medium">Öğrenci:</span>
+                      <span className="text-green-900">{assignment.studentId.firstName} {assignment.studentId.lastName}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center space-x-2 text-sm text-secondary-600 bg-secondary-50 px-3 py-2 rounded-lg">
+                    <Calendar className="h-4 w-4 text-secondary-400" />
+                    <span className="font-medium">Oluşturulma:</span>
+                    <span className="text-secondary-900">{new Date(assignment.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</span>
+                  </div>
                 </div>
-                
-                <div className="ml-4 flex space-x-1">
+
+                {assignment.attachments.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-secondary-500 uppercase tracking-wide mb-2">Ekler</p>
+                    <div className="flex flex-wrap gap-2">
+                      {assignment.attachments.map((attachment, index) => (
+                        <a
+                          key={index}
+                          href={attachment.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary-100 text-secondary-700 hover:bg-secondary-200 transition-colors"
+                        >
+                          {attachment.type === 'pdf' && <FileText className="h-3.5 w-3.5 mr-1.5" />}
+                          {attachment.type === 'video' && <ExternalLink className="h-3.5 w-3.5 mr-1.5" />}
+                          {attachment.type === 'link' && <ExternalLink className="h-3.5 w-3.5 mr-1.5" />}
+                          {attachment.name}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-secondary-200">
                   <button
                     onClick={() => handleViewSubmissions(assignment)}
-                    className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Teslimleri Görüntüle"
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4 mr-2" />
+                    Teslimleri Görüntüle
                   </button>
                   <button
                     onClick={() => setEditingAssignment(assignment)}
-                    className="p-2 text-secondary-500 hover:text-secondary-700 hover:bg-secondary-50 rounded-lg transition-colors"
-                    title="Düzenle"
+                    className="inline-flex items-center px-4 py-2 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                   >
-                    <Edit3 className="h-4 w-4" />
+                    <Edit3 className="h-4 w-4 mr-2" />
+                    Düzenle
                   </button>
                   <button
                     onClick={() => handleDeleteAssignment(assignment._id)}
-                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Sil"
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Sil
                   </button>
                 </div>
               </div>
@@ -586,12 +617,17 @@ export default function TeacherAssignments() {
 
       {/* Create/Edit Assignment Modal */}
       {(showCreateForm || editingAssignment) && (
-        <div className="fixed inset-0 bg-secondary-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-secondary-900 mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto max-w-2xl w-full shadow-2xl rounded-xl bg-white">
+            <div className="px-8 py-6 border-b border-secondary-200 bg-gradient-to-r from-primary-600 to-primary-700 rounded-t-xl">
+              <h3 className="text-2xl font-bold text-white">
                 {editingAssignment ? 'Ödevi Düzenle' : 'Yeni Ödev Oluştur'}
               </h3>
+              <p className="text-sm text-primary-100 mt-1">
+                {editingAssignment ? 'Ödev bilgilerini güncelleyin' : 'Yeni bir ödev oluşturmak için formu doldurun'}
+              </p>
+            </div>
+            <div className="p-8">
               
               <form onSubmit={async (e) => {
                 e.preventDefault();
@@ -652,86 +688,88 @@ export default function TeacherAssignments() {
                   alert('Ödev oluşturulamadı');
                 }
               }}>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Başlık
+                    <label className="block text-sm font-semibold text-secondary-900 mb-2">
+                      Başlık <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="title"
                       defaultValue={editingAssignment?.title || ''}
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       required
                       minLength={1}
                       maxLength={200}
-                      placeholder="Ödev başlığını girin (1-200 karakter)"
+                      placeholder="Ödev başlığını girin"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Açıklama
+                    <label className="block text-sm font-semibold text-secondary-900 mb-2">
+                      Açıklama <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       name="description"
                       defaultValue={editingAssignment?.description || ''}
-                      rows={3}
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      rows={4}
+                      className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all resize-none"
                       required
+                      placeholder="Ödev açıklamasını girin"
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Ödev Türü
-                    </label>
-                    <select
-                      name="type"
-                      defaultValue={editingAssignment?.type || 'individual'}
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      required
-                    >
-                      <option value="individual">Bireysel Ödev</option>
-                      <option value="class">Sınıf Ödevi</option>
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary-900 mb-2">
+                        Ödev Türü <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        name="type"
+                        defaultValue={editingAssignment?.type || 'individual'}
+                        className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                        required
+                      >
+                        <option value="individual">Bireysel Ödev</option>
+                        <option value="class">Sınıf Ödevi</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-semibold text-secondary-900 mb-2">
+                        Maksimum Puan
+                      </label>
+                      <input
+                        type="number"
+                        name="maxGrade"
+                        min="1"
+                        max="100"
+                        defaultValue={editingAssignment?.maxGrade || 100}
+                        className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                      />
+                    </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Teslim Tarihi
+                    <label className="block text-sm font-semibold text-secondary-900 mb-2">
+                      Teslim Tarihi <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="datetime-local"
                       name="dueDate"
                       defaultValue={editingAssignment?.dueDate ? new Date(editingAssignment.dueDate).toISOString().slice(0, 16) : ''}
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       required
                     />
                   </div>
 
-                  
                   <div>
-                    <label className="block text-sm font-medium text-secondary-700">
-                      Maksimum Puan
-                    </label>
-                    <input
-                      type="number"
-                      name="maxGrade"
-                      min="1"
-                      max="100"
-                      defaultValue={editingAssignment?.maxGrade || 100}
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-700">
+                    <label className="block text-sm font-semibold text-secondary-900 mb-2">
                       Sınıf (Sınıf Ödevi için)
                     </label>
                     <select
                       name="classId"
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                     >
                       <option value="">Sınıf seçin</option>
                       {classes.map((classItem) => (
@@ -743,12 +781,12 @@ export default function TeacherAssignments() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-secondary-700">
+                    <label className="block text-sm font-semibold text-secondary-900 mb-2">
                       Öğrenci (Bireysel Ödev için)
                     </label>
                     <select
                       name="studentId"
-                      className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                     >
                       <option value="">Öğrenci seçin</option>
                       {students.map((student) => (
@@ -761,20 +799,20 @@ export default function TeacherAssignments() {
 
                 </div>
                 
-                <div className="mt-6 flex justify-end space-x-3">
+                <div className="mt-8 flex justify-end space-x-3 pt-6 border-t border-secondary-200">
                   <button
                     type="button"
                     onClick={() => {
                       setShowCreateForm(false);
                       setEditingAssignment(null);
                     }}
-                    className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="px-6 py-3 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                   >
                     İptal
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                   >
                     {editingAssignment ? 'Güncelle' : 'Oluştur'}
                   </button>
@@ -787,26 +825,30 @@ export default function TeacherAssignments() {
 
       {/* Submissions Modal */}
       {selectedAssignment && (
-        <div className="fixed inset-0 bg-secondary-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-secondary-900">
-                  {selectedAssignment.title} - Teslimler
-                </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto max-w-5xl w-11/12 shadow-2xl rounded-xl bg-white">
+            <div className="px-8 py-6 border-b border-secondary-200 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-xl">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">
+                    {selectedAssignment.title}
+                  </h3>
+                  <p className="text-sm text-blue-100 mt-1">Teslim Edilen Çalışmalar</p>
+                </div>
                 <button
                   onClick={() => {
                     setSelectedAssignment(null);
                     setSubmissions([]);
                   }}
-                  className="text-secondary-400 hover:text-secondary-600"
+                  className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
                 >
-                  <span className="sr-only">Kapat</span>
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
+            </div>
+            <div className="p-8 max-h-[calc(100vh-200px)] overflow-y-auto">
 
               {submissions.length === 0 ? (
                 <div className="text-center py-8">
@@ -817,56 +859,43 @@ export default function TeacherAssignments() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {submissions.map((submission) => (
-                    <div key={submission._id} className="bg-white border border-secondary-200 rounded-lg p-4">
-                      <div className="flex items-start justify-between">
+                    <div key={submission._id} className="bg-white border-2 border-secondary-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-2 rounded-lg">
+                              <User className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="text-lg font-bold text-secondary-900">
+                                {submission.studentId.firstName} {submission.studentId.lastName}
+                              </h4>
+                              <p className="text-sm text-secondary-600">{submission.studentId.email}</p>
+                            </div>
+                          </div>
+                          
                           <div className="flex items-center space-x-3">
-                            <h4 className="text-lg font-medium text-secondary-900">
-                              {submission.studentId.firstName} {submission.studentId.lastName}
-                            </h4>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(submission.status)}`}>
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(submission.status)}`}>
                               {getStatusText(submission.status)}
                             </span>
                             {submission.grade !== undefined && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                                <Star className="h-3 w-3 mr-1" />
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-400 to-yellow-500 text-white">
+                                <Star className="h-3.5 w-3.5 mr-1" />
                                 {submission.grade}/{submission.maxGrade || 100}
                               </span>
                             )}
+                            {submission.submittedAt && (
+                              <span className="text-xs text-secondary-500">
+                                <Clock className="h-3.5 w-3.5 inline mr-1" />
+                                {new Date(submission.submittedAt).toLocaleString('tr-TR')}
+                              </span>
+                            )}
                           </div>
-                          
-                          <p className="mt-1 text-sm text-secondary-600">
-                            {submission.studentId.email}
-                          </p>
-                          
-                          {submission.submittedAt && (
-                            <p className="mt-1 text-sm text-secondary-500">
-                              Teslim Tarihi: {new Date(submission.submittedAt).toLocaleString('tr-TR')}
-                            </p>
-                          )}
-                          
-                          {submission.content && (
-                            <div className="mt-3">
-                              <h5 className="text-sm font-medium text-secondary-900 mb-2">Ödev İçeriği:</h5>
-                              <div className="bg-secondary-50 p-3 rounded-md">
-                                <p className="text-sm text-secondary-700 whitespace-pre-wrap">{submission.content}</p>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {submission.teacherFeedback && (
-                            <div className="mt-3">
-                              <h5 className="text-sm font-medium text-secondary-900 mb-2">Geri Bildirimim:</h5>
-                              <div className="bg-blue-50 p-3 rounded-md">
-                                <p className="text-sm text-secondary-700 whitespace-pre-wrap">{submission.teacherFeedback}</p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                         
-                <div className="ml-4 flex space-x-2">
+                        <div className="flex space-x-2">
                           {submission.status === 'submitted' && (
                             <button
                               onClick={() => {
@@ -874,9 +903,9 @@ export default function TeacherAssignments() {
                                 setGrade(submission.grade || 0);
                                 setTeacherFeedback(submission.teacherFeedback || '');
                               }}
-                              className="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+                              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             >
-                              <CheckCircle className="h-4 w-4 mr-1" />
+                              <CheckCircle className="h-4 w-4 mr-2" />
                               Değerlendir
                             </button>
                           )}
@@ -894,13 +923,31 @@ export default function TeacherAssignments() {
                                   console.error('Reopen submission error:', error);
                                 }
                               }}
-                              className="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-700 bg-secondary-100 hover:bg-secondary-200"
+                              className="inline-flex items-center px-4 py-2 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                             >
                               Yeniden Aç
                             </button>
                           )}
                         </div>
                       </div>
+                      
+                      {submission.content && (
+                        <div className="mt-4">
+                          <h5 className="text-sm font-semibold text-secondary-900 mb-2 uppercase tracking-wide">Ödev İçeriği</h5>
+                          <div className="bg-secondary-50 p-4 rounded-lg border border-secondary-200">
+                            <p className="text-sm text-secondary-700 whitespace-pre-wrap">{submission.content}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {submission.teacherFeedback && (
+                        <div className="mt-4">
+                          <h5 className="text-sm font-semibold text-secondary-900 mb-2 uppercase tracking-wide">Geri Bildirimim</h5>
+                          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                            <p className="text-sm text-secondary-700 whitespace-pre-wrap">{submission.teacherFeedback}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -912,17 +959,29 @@ export default function TeacherAssignments() {
 
       {/* Grading Modal */}
       {gradingSubmission && (
-        <div className="fixed inset-0 bg-secondary-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-secondary-900 mb-4">
-                Ödev Değerlendir - {gradingSubmission.studentId.firstName} {gradingSubmission.studentId.lastName}
-              </h3>
-              
-              <div className="space-y-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto max-w-2xl w-11/12 shadow-2xl rounded-xl bg-white">
+            <div className="px-8 py-6 border-b border-secondary-200 bg-gradient-to-r from-green-600 to-green-700 rounded-t-xl">
+              <div className="flex items-center space-x-3">
+                <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                  <Star className="h-6 w-6 text-white" />
+                </div>
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700">
-                    Puan (0-{gradingSubmission.maxGrade || 100})
+                  <h3 className="text-2xl font-bold text-white">
+                    Ödev Değerlendir
+                  </h3>
+                  <p className="text-sm text-green-100">
+                    {gradingSubmission.studentId.firstName} {gradingSubmission.studentId.lastName}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-8">
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-secondary-900 mb-2">
+                    Puan <span className="text-secondary-500">(0-{gradingSubmission.maxGrade || 100})</span>
                   </label>
                   <input
                     type="number"
@@ -930,25 +989,28 @@ export default function TeacherAssignments() {
                     max={gradingSubmission.maxGrade || 100}
                     value={grade}
                     onChange={(e) => setGrade(parseInt(e.target.value) || 0)}
-                    className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-2xl font-bold text-center"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700">
+                  <label className="block text-sm font-semibold text-secondary-900 mb-2">
                     Geri Bildirim
                   </label>
                   <textarea
                     value={teacherFeedback}
                     onChange={(e) => setTeacherFeedback(e.target.value)}
-                    rows={4}
-                    className="mt-1 block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="Öğrenciye geri bildirim yazın..."
+                    rows={6}
+                    className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all resize-none"
+                    placeholder="Öğrenciye detaylı geri bildirim yazın..."
                   />
+                  <p className="mt-2 text-xs text-secondary-500">
+                    Bu geri bildirim öğrenciye iletilir
+                  </p>
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-8 flex justify-end space-x-3 pt-6 border-t border-secondary-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -956,15 +1018,15 @@ export default function TeacherAssignments() {
                     setGrade(0);
                     setTeacherFeedback('');
                   }}
-                  className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="px-6 py-3 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                 >
                   İptal
                 </button>
                 <button
                   onClick={handleGradeSubmission}
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                 >
-                  <CheckCircle className="h-4 w-4 mr-2 inline" />
+                  <CheckCircle className="h-5 w-5 mr-2" />
                   Değerlendir
                 </button>
               </div>
