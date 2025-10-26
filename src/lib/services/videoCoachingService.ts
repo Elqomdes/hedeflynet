@@ -234,7 +234,7 @@ export class VideoCoachingService {
     }
 
     // Check if user is a participant
-    const participant = session.participants.find((p: any) => p.userId.toString() === userId);
+    const participant = session.participants?.find((p: any) => p.userId?.toString() === userId);
     if (!participant) {
       return { success: false, message: 'Bu oturuma katılma yetkiniz yok' };
     }
@@ -268,7 +268,7 @@ export class VideoCoachingService {
       return { success: false, message: 'Oturum bulunamadı' };
     }
 
-    const participant = session.participants.find((p: any) => p.userId.toString() === userId);
+    const participant = session.participants?.find((p: any) => p.userId?.toString() === userId);
     if (!participant) {
       return { success: false, message: 'Bu oturumda değilsiniz' };
     }
@@ -277,7 +277,7 @@ export class VideoCoachingService {
     participant.leftAt = new Date();
 
     // Check if all participants have left
-    const activeParticipants = session.participants.filter((p: any) => p.isActive);
+    const activeParticipants = (session.participants || []).filter((p: any) => p.isActive);
     if (activeParticipants.length === 0) {
       session.status = 'completed';
       session.actualDuration = this.calculateSessionDuration(session);
@@ -299,6 +299,9 @@ export class VideoCoachingService {
       return { success: false, message: 'Oturum bulunamadı' };
     }
 
+    if (!session.notes) {
+      session.notes = [];
+    }
     session.notes.push({
       authorId: authorId as any,
       content,
@@ -324,14 +327,17 @@ export class VideoCoachingService {
     }
 
     // Check if feedback already exists
-    const existingFeedback = session.feedback.find((f: any) => 
-      f.fromUserId.toString() === fromUserId && f.toUserId.toString() === toUserId
+    const existingFeedback = (session.feedback || []).find((f: any) => 
+      f.fromUserId?.toString() === fromUserId && f.toUserId?.toString() === toUserId
     );
 
     if (existingFeedback) {
       existingFeedback.rating = rating;
       existingFeedback.comment = comment;
     } else {
+      if (!session.feedback) {
+        session.feedback = [];
+      }
       session.feedback.push({
         fromUserId: fromUserId as any,
         toUserId: toUserId as any,
@@ -485,13 +491,15 @@ export class VideoCoachingService {
     const upcomingSessions = allSessions.filter(s => s.status === 'scheduled' && s.scheduledFor > now).length;
     
     // Calculate total participants (unique students)
-    const uniqueStudents = new Set();
+    const uniqueStudents = new Set<string>();
     allSessions.forEach(session => {
-      session.participants.forEach(participant => {
-        if (participant.role === 'student') {
-          uniqueStudents.add(participant.userId.toString());
-        }
-      });
+      if (session.participants && Array.isArray(session.participants)) {
+        session.participants.forEach((participant: any) => {
+          if (participant.role === 'student') {
+            uniqueStudents.add(participant.userId.toString());
+          }
+        });
+      }
     });
     const totalParticipants = uniqueStudents.size;
 
@@ -510,7 +518,7 @@ export class VideoCoachingService {
 
     // Average participants per session
     const averageParticipantsPerSession = totalSessions > 0 
-      ? Math.round(allSessions.reduce((sum, s) => sum + s.participants.length, 0) / totalSessions)
+      ? Math.round(allSessions.reduce((sum, s) => sum + (s.participants?.length || 0), 0) / totalSessions)
       : 0;
 
     // Total hours
@@ -573,9 +581,11 @@ export class VideoCoachingService {
     const attendanceRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
 
     // Count unique teachers
-    const uniqueTeachers = new Set();
+    const uniqueTeachers = new Set<string>();
     allSessions.forEach(session => {
-      uniqueTeachers.add(session.teacherId.toString());
+      if (session.teacherId) {
+        uniqueTeachers.add(session.teacherId.toString());
+      }
     });
     const teacherCount = uniqueTeachers.size;
 
@@ -601,18 +611,19 @@ export class VideoCoachingService {
    * Calculate session duration
    */
   private calculateSessionDuration(session: IVideoSession): number {
-    if (!session.participants.length) return 0;
+    if (!session.participants || session.participants.length === 0) return 0;
+
+    const participantsWithJoinTime = session.participants.filter(p => p.joinedAt);
+    const participantsWithLeaveTime = session.participants.filter(p => p.leftAt);
+
+    if (participantsWithJoinTime.length === 0 || participantsWithLeaveTime.length === 0) return 0;
 
     const firstJoin = Math.min(
-      ...session.participants
-        .filter(p => p.joinedAt)
-        .map(p => p.joinedAt!.getTime())
+      ...participantsWithJoinTime.map(p => p.joinedAt!.getTime())
     );
 
     const lastLeave = Math.max(
-      ...session.participants
-        .filter(p => p.leftAt)
-        .map(p => p.leftAt!.getTime())
+      ...participantsWithLeaveTime.map(p => p.leftAt!.getTime())
     );
 
     return Math.round((lastLeave - firstJoin) / (1000 * 60)); // in minutes
@@ -642,21 +653,21 @@ export class VideoCoachingService {
       meetingUrl: session.meetingUrl,
       meetingId: session.meetingId,
       platformUrl: session.platformUrl,
-      participants: session.participants.map((p: any) => ({
-        id: p.userId._id.toString(),
-        name: `${p.userId.firstName} ${p.userId.lastName}`,
-        role: p.role,
+      participants: (session.participants || []).map((p: any) => ({
+        id: p.userId?._id?.toString() || p.userId?.toString() || '',
+        name: p.userId ? `${p.userId.firstName || ''} ${p.userId.lastName || ''}`.trim() : 'Bilinmeyen',
+        role: p.role || 'student',
         joinedAt: p.joinedAt,
-        isActive: p.isActive
+        isActive: p.isActive || false
       })),
       recording: session.recording,
       agenda: session.agenda,
-      feedback: session.feedback.map((f: any) => ({
-        fromUser: f.fromUserId.toString(),
-        toUser: f.toUserId.toString(),
-        rating: f.rating,
-        comment: f.comment,
-        createdAt: f.createdAt
+      feedback: (session.feedback || []).map((f: any) => ({
+        fromUser: f.fromUserId?.toString() || '',
+        toUser: f.toUserId?.toString() || '',
+        rating: f.rating || 0,
+        comment: f.comment || '',
+        createdAt: f.createdAt || new Date()
       }))
     };
   }
@@ -684,13 +695,13 @@ export class VideoCoachingService {
       tags: resource.tags,
       rating: resource.rating,
       views: resource.views,
-      likes: resource.likes.length,
-      bookmarks: resource.bookmarks.length,
-      comments: resource.comments.map((c: any) => ({
-        user: `${c.userId.firstName} ${c.userId.lastName}`,
-        content: c.content,
-        createdAt: c.createdAt,
-        likes: c.likes.length
+      likes: (resource.likes || []).length,
+      bookmarks: (resource.bookmarks || []).length,
+      comments: (resource.comments || []).map((c: any) => ({
+        user: c.userId ? `${c.userId.firstName || ''} ${c.userId.lastName || ''}`.trim() : 'Bilinmeyen',
+        content: c.content || '',
+        createdAt: c.createdAt || new Date(),
+        likes: (c.likes || []).length
       }))
     };
   }
@@ -700,13 +711,37 @@ export class VideoCoachingService {
    */
   private formatVideoAnalyticsData(analytics: any): VideoAnalyticsData {
     return {
-      sessionId: analytics.sessionId.toString(),
-      studentId: analytics.studentId.toString(),
-      teacherId: analytics.teacherId.toString(),
-      engagement: analytics.engagement,
-      interaction: analytics.interaction,
-      performance: analytics.performance,
-      feedback: analytics.feedback
+      sessionId: analytics.sessionId?.toString() || '',
+      studentId: analytics.studentId?.toString() || '',
+      teacherId: analytics.teacherId?.toString() || '',
+      engagement: analytics.engagement || {
+        totalWatchTime: 0,
+        averageWatchTime: 0,
+        completionRate: 0,
+        pauseCount: 0,
+        rewindCount: 0,
+        fastForwardCount: 0
+      },
+      interaction: analytics.interaction || {
+        questionsAsked: 0,
+        answersGiven: 0,
+        chatMessages: 0,
+        screenShares: 0,
+        whiteboardUsage: 0
+      },
+      performance: analytics.performance || {
+        connectionQuality: 'good',
+        audioQuality: 'good',
+        videoQuality: 'good',
+        technicalIssues: 0
+      },
+      feedback: analytics.feedback || {
+        sessionRating: 0,
+        contentRating: 0,
+        teacherRating: 0,
+        overallSatisfaction: 0,
+        comments: ''
+      }
     };
   }
 }
