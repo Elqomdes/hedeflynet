@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Video, Users, Clock, Calendar, Play, Plus, Settings } from 'lucide-react';
+import { Video, Users, Clock, Calendar, Play, Plus, Settings, Edit, X } from 'lucide-react';
 
 interface VideoSession {
   id: string;
@@ -82,6 +82,7 @@ export default function VideoCoachingPage() {
   });
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'scheduled' | 'in_progress' | 'completed'>('all');
   const [students, setStudents] = useState<{id: string, name: string}[]>([]);
+  const [editingSession, setEditingSession] = useState<string | null>(null);
 
   const fetchVideoData = useCallback(async () => {
     try {
@@ -422,7 +423,11 @@ export default function VideoCoachingPage() {
                         <span>Kaydı İzle</span>
                       </button>
                     )}
-                    <button className="p-2 text-secondary-400 hover:text-secondary-600">
+                    <button 
+                      onClick={() => setEditingSession(session.id)}
+                      className="p-2 text-secondary-400 hover:text-secondary-600 transition-colors"
+                      title="Ayarlar"
+                    >
                       <Settings className="w-4 h-4" />
                     </button>
                   </div>
@@ -544,6 +549,63 @@ export default function VideoCoachingPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Session Modal */}
+      {editingSession && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-secondary-900">Oturum Ayarları</h3>
+              <button
+                onClick={() => setEditingSession(null)}
+                className="p-1 text-secondary-400 hover:text-secondary-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-secondary-700 mb-2">Oturum Durumu</p>
+                <div className="flex space-x-2">
+                  {['scheduled', 'in_progress', 'completed', 'cancelled'].map((status) => (
+                    <button
+                      key={status}
+                      onClick={async () => {
+                        try {
+                          await fetch(`/api/teacher/video-coaching/sessions/${editingSession}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status })
+                          });
+                          setEditingSession(null);
+                          fetchVideoData();
+                          alert('Oturum durumu güncellendi');
+                        } catch (error) {
+                          console.error('Update session error:', error);
+                          alert('Oturum güncellenirken hata oluştu');
+                        }
+                      }}
+                      className="px-3 py-2 text-sm rounded-md bg-secondary-100 text-secondary-700 hover:bg-secondary-200"
+                    >
+                      {getStatusText(status)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={() => setEditingSession(null)}
+                  className="flex-1 px-4 py-2 border border-secondary-300 text-secondary-700 rounded-md hover:bg-secondary-50 transition-colors"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
