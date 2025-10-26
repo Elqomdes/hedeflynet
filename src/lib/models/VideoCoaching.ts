@@ -13,6 +13,7 @@ export interface IVideoSession extends Document {
   actualDuration?: number; // in minutes
   meetingUrl: string;
   meetingId: string;
+  platformUrl?: string;
   password?: string;
   participants: {
     userId: mongoose.Types.ObjectId;
@@ -217,6 +218,10 @@ const VideoSessionSchema = new Schema<IVideoSession>({
     type: String,
     required: true,
     unique: true,
+    trim: true
+  },
+  platformUrl: {
+    type: String,
     trim: true
   },
   password: {

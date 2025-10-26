@@ -16,6 +16,7 @@ interface VideoSession {
   duration: number; // in minutes
   status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
   meetingUrl?: string;
+  platformUrl?: string;
   recordingUrl?: string;
   notes?: string;
   feedback?: string;
@@ -136,23 +137,29 @@ export default function StudentVideoCoaching() {
         </div>
       ) : (
         <div className="grid gap-6">
-          {filteredSessions.map((session) => (
-            <div key={session._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          {filteredSessions.map((session, index) => (
+            <div key={session._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6 hover:shadow-md transition-shadow animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3">
-                    {getStatusIcon(session)}
-                    <h3 className="text-lg font-medium text-secondary-900">
-                      {session.title}
-                    </h3>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session)}`}>
-                      {getStatusText(session)}
-                    </span>
-                    {isUpcoming(session.scheduledAt) && session.status === 'scheduled' && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        Yaklaşıyor
-                      </span>
-                    )}
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      {getStatusIcon(session)}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-secondary-900">
+                        {session.title}
+                      </h3>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session)}`}>
+                          {getStatusText(session)}
+                        </span>
+                        {isUpcoming(session.scheduledAt) && session.status === 'scheduled' && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Yaklaşıyor
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   
                   <p className="mt-2 text-sm text-secondary-600">
@@ -178,15 +185,15 @@ export default function StudentVideoCoaching() {
                     </div>
                   </div>
 
-                  {session.meetingUrl && (session.status === 'ongoing' || session.status === 'scheduled') && (
+                  {(session.meetingUrl || session.platformUrl) && (session.status === 'ongoing' || session.status === 'scheduled') && (
                     <div className="mt-4">
                       <a
-                        href={session.meetingUrl}
+                        href={session.platformUrl || session.meetingUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                       >
-                        <Video className="h-4 w-4 mr-2" />
+                        <Video className="h-5 w-5 mr-2" />
                         Oturuma Katıl
                       </a>
                     </div>
@@ -198,9 +205,9 @@ export default function StudentVideoCoaching() {
                         href={session.recordingUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        className="inline-flex items-center px-6 py-3 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                       >
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download className="h-5 w-5 mr-2" />
                         Kaydı İndir
                       </a>
                     </div>

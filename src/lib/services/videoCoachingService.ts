@@ -32,6 +32,7 @@ export interface VideoSessionData {
   actualDuration?: number;
   meetingUrl: string;
   meetingId: string;
+  platformUrl?: string;
   participants: {
     id: string;
     name: string;
@@ -147,13 +148,14 @@ export class VideoCoachingService {
     type: 'one_on_one' | 'group' | 'class' | 'consultation';
     scheduledFor: Date;
     duration: number;
+    platformUrl?: string;
     agenda?: { topic: string; duration: number; description?: string }[];
   }): Promise<IVideoSession> {
     await connectDB();
 
-    // Generate meeting URL and ID (in real implementation, integrate with video service like Zoom, Jitsi, etc.)
+    // Use provided platform URL or generate one
     const meetingId = this.generateMeetingId();
-    const meetingUrl = `https://meet.hedefly.com/${meetingId}`;
+    const meetingUrl = sessionData.platformUrl || `https://meet.hedefly.com/${meetingId}`;
 
     const session = await VideoSession.create({
       ...sessionData,
@@ -502,6 +504,7 @@ export class VideoCoachingService {
       actualDuration: session.actualDuration,
       meetingUrl: session.meetingUrl,
       meetingId: session.meetingId,
+      platformUrl: session.platformUrl,
       participants: session.participants.map((p: any) => ({
         id: p.userId._id.toString(),
         name: `${p.userId.firstName} ${p.userId.lastName}`,

@@ -45,30 +45,35 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, scheduledFor, duration, studentId, type } = body;
+    const { title, description, scheduledFor, duration, platformUrl, selectedStudents } = body;
 
-    if (!title || !description || !scheduledFor || !duration || !studentId || !type) {
+    if (!title || !description || !scheduledFor || !duration || !platformUrl || !selectedStudents || selectedStudents.length === 0) {
       return NextResponse.json({ error: 'Eksik alanlar' }, { status: 400 });
     }
 
     await connectDB();
     const videoCoachingService = VideoCoachingService.getInstance();
     
-    // Create new video session using real service
-    const newSession = await videoCoachingService.createVideoSession({
-      title,
-      description,
-      teacherId: user.id,
-      studentId,
-      type: type as 'one_on_one' | 'group' | 'class' | 'consultation',
-      scheduledFor: new Date(scheduledFor),
-      duration: parseInt(duration)
-    });
+    // Create video sessions for each selected student
+    const sessions = [];
+    for (const studentId of selectedStudents) {
+      const newSession = await videoCoachingService.createVideoSession({
+        title,
+        description,
+        teacherId: user.id,
+        studentId,
+        type: 'one_on_one' as 'one_on_one' | 'group' | 'class' | 'consultation',
+        scheduledFor: new Date(scheduledFor),
+        duration: parseInt(duration),
+        platformUrl
+      });
+      sessions.push(newSession);
+    }
 
     return NextResponse.json({ 
       success: true, 
-      data: newSession,
-      message: 'Video oturumu başarıyla oluşturuldu'
+      data: sessions,
+      message: `${sessions.length} video oturumu başarıyla oluşturuldu`
     });
 
   } catch (error) {

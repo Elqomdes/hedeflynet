@@ -16,7 +16,7 @@ interface VideoSession {
     role: 'teacher' | 'student';
     isActive: boolean;
   }[];
-  maxParticipants: number;
+  platformUrl?: string;
   meetingUrl?: string;
   recordingUrl?: string;
 }
@@ -47,9 +47,11 @@ export default function VideoCoachingPage() {
     description: '',
     scheduledFor: '',
     duration: 60,
-    maxParticipants: 10
+    platformUrl: '',
+    selectedStudents: [] as string[]
   });
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'scheduled' | 'in_progress' | 'completed'>('all');
+  const [students, setStudents] = useState<{id: string, name: string}[]>([]);
 
   const fetchVideoData = useCallback(async () => {
     try {
@@ -66,6 +68,16 @@ export default function VideoCoachingPage() {
         const statsData = await statsResponse.json();
         setStats(prevStats => statsData.data || prevStats);
       }
+
+      // Öğrenci listesini getir
+      const studentsResponse = await fetch('/api/teacher/students');
+      if (studentsResponse.ok) {
+        const studentsData = await studentsResponse.json();
+        setStudents(studentsData.map((student: any) => ({
+          id: student._id,
+          name: `${student.firstName} ${student.lastName}`
+        })));
+      }
     } catch (error) {
       console.error('Video data fetch error:', error);
     } finally {
@@ -77,8 +89,13 @@ export default function VideoCoachingPage() {
     fetchVideoData();
   }, [fetchVideoData]);
 
-  const handleJoinSession = async (sessionId: string) => {
+  const handleJoinSession = async (sessionId: string, platformUrl?: string) => {
     try {
+      if (platformUrl) {
+        window.open(platformUrl, '_blank');
+        return;
+      }
+
       const response = await fetch(`/api/teacher/video-coaching/sessions/${sessionId}/join`, {
         method: 'POST',
       });
@@ -96,13 +113,26 @@ export default function VideoCoachingPage() {
 
   const handleCreateSession = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (createForm.selectedStudents.length === 0) {
+      alert('En az bir öğrenci seçmelisiniz');
+      return;
+    }
+
     try {
       const response = await fetch('/api/teacher/video-coaching/sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(createForm),
+        body: JSON.stringify({
+          title: createForm.title,
+          description: createForm.description,
+          scheduledFor: createForm.scheduledFor,
+          duration: createForm.duration,
+          platformUrl: createForm.platformUrl,
+          selectedStudents: createForm.selectedStudents
+        }),
       });
 
       if (response.ok) {
@@ -114,7 +144,8 @@ export default function VideoCoachingPage() {
             description: '',
             scheduledFor: '',
             duration: 60,
-            maxParticipants: 10
+            platformUrl: '',
+            selectedStudents: []
           });
           fetchVideoData(); // Refresh data
         }
@@ -296,7 +327,7 @@ export default function VideoCoachingPage() {
                         </div>
                         <div className="flex items-center">
                           <Users className="w-4 h-4 mr-1" />
-                          <span>{session.participants.length}/{session.maxParticipants} katılımcı</span>
+                          <span>{session.participants.length} katılımcı</span>
                         </div>
                       </div>
                     </div>
@@ -305,7 +336,7 @@ export default function VideoCoachingPage() {
                   <div className="flex space-x-2">
                     {session.status === 'scheduled' && (
                       <button
-                        onClick={() => handleJoinSession(session.id)}
+                        onClick={() => handleJoinSession(session.id, session.platformUrl)}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2"
                       >
                         <Play className="w-4 h-4" />
@@ -314,7 +345,7 @@ export default function VideoCoachingPage() {
                     )}
                     {session.status === 'in_progress' && (
                       <button
-                        onClick={() => handleJoinSession(session.id)}
+                        onClick={() => handleJoinSession(session.id, session.platformUrl)}
                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center space-x-2"
                       >
                         <Play className="w-4 h-4" />
@@ -395,17 +426,46 @@ export default function VideoCoachingPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">Maksimum Katılımcı</label>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Platform Linki</label>
                 <input
-                  type="number"
-                  value={createForm.maxParticipants}
-                  onChange={(e) => setCreateForm(prev => ({ ...prev, maxParticipants: parseInt(e.target.value) }))}
+                  type="url"
+                  value={createForm.platformUrl}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, platformUrl: e.target.value }))}
                   className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="10"
-                  min="2"
-                  max="50"
+                  placeholder="https://meet.google.com/abc-defg-hij"
                   required
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Katılımcı Öğrenciler</label>
+                <div className="max-h-40 overflow-y-auto border border-secondary-300 rounded-md p-2">
+                  {students.map((student) => (
+                    <label key={student.id} className="flex items-center space-x-2 py-1">
+                      <input
+                        type="checkbox"
+                        checked={createForm.selectedStudents.includes(student.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setCreateForm(prev => ({
+                              ...prev,
+                              selectedStudents: [...prev.selectedStudents, student.id]
+                            }));
+                          } else {
+                            setCreateForm(prev => ({
+                              ...prev,
+                              selectedStudents: prev.selectedStudents.filter(id => id !== student.id)
+                            }));
+                          }
+                        }}
+                        className="rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm text-secondary-700">{student.name}</span>
+                    </label>
+                  ))}
+                </div>
+                {createForm.selectedStudents.length === 0 && (
+                  <p className="text-sm text-red-600 mt-1">En az bir öğrenci seçmelisiniz</p>
+                )}
               </div>
               <div className="flex space-x-3 pt-4">
                 <button
