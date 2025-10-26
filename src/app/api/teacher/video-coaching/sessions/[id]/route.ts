@@ -34,9 +34,7 @@ export async function PATCH(
       ? session.teacherId._id?.toString() || session.teacherId.toString()
       : session.teacherId.toString();
     
-    const userId = typeof user._id === 'object'
-      ? user._id._id?.toString() || user._id.toString()
-      : user._id.toString();
+    const userId = user._id?.toString() || String(user._id);
 
     if (sessionTeacherId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
