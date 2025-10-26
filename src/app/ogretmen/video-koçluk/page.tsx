@@ -7,18 +7,48 @@ interface VideoSession {
   id: string;
   title: string;
   description: string;
-  scheduledFor: string;
+  teacher: {
+    id: string;
+    name: string;
+  };
+  student: {
+    id: string;
+    name: string;
+  };
+  type: 'one_on_one' | 'group' | 'class' | 'consultation';
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'rescheduled';
+  scheduledFor: Date;
   duration: number;
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  actualDuration?: number;
+  meetingUrl: string;
+  meetingId: string;
+  platformUrl?: string;
   participants: {
     id: string;
     name: string;
-    role: 'teacher' | 'student';
+    role: 'teacher' | 'student' | 'observer';
+    joinedAt?: Date;
     isActive: boolean;
   }[];
-  platformUrl?: string;
-  meetingUrl?: string;
-  recordingUrl?: string;
+  recording: {
+    url?: string;
+    duration?: number;
+    isAvailable: boolean;
+    expiresAt?: Date;
+  };
+  agenda: {
+    topic: string;
+    duration: number;
+    description?: string;
+    isCompleted: boolean;
+  }[];
+  feedback: {
+    fromUser: string;
+    toUser: string;
+    rating: number;
+    comment: string;
+    createdAt: Date;
+  }[];
 }
 
 interface VideoStats {
@@ -55,11 +85,15 @@ export default function VideoCoachingPage() {
 
   const fetchVideoData = useCallback(async () => {
     try {
+      setLoading(true);
+      
       // Video oturumlarını getir
       const sessionsResponse = await fetch('/api/teacher/video-coaching/sessions');
       if (sessionsResponse.ok) {
         const sessionsData = await sessionsResponse.json();
         setSessions(sessionsData.data || []);
+      } else {
+        console.error('Sessions fetch failed:', sessionsResponse.status);
       }
 
       // Video istatistiklerini getir
@@ -67,6 +101,8 @@ export default function VideoCoachingPage() {
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setStats(prevStats => statsData.data || prevStats);
+      } else {
+        console.error('Stats fetch failed:', statsResponse.status);
       }
 
       // Öğrenci listesini getir
@@ -77,6 +113,8 @@ export default function VideoCoachingPage() {
           id: student._id,
           name: `${student.firstName} ${student.lastName}`
         })));
+      } else {
+        console.error('Students fetch failed:', studentsResponse.status);
       }
     } catch (error) {
       console.error('Video data fetch error:', error);
@@ -102,12 +140,18 @@ export default function VideoCoachingPage() {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.meetingUrl) {
+        if (data.success && data.meetingUrl) {
           window.open(data.meetingUrl, '_blank');
+        } else {
+          alert('Oturuma katılım başarısız: ' + (data.error || 'Bilinmeyen hata'));
         }
+      } else {
+        const errorData = await response.json();
+        alert('Oturuma katılım başarısız: ' + (errorData.error || 'Sunucu hatası'));
       }
     } catch (error) {
       console.error('Join session error:', error);
+      alert('Oturuma katılım başarısız: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'));
     }
   };
 
@@ -116,6 +160,11 @@ export default function VideoCoachingPage() {
     
     if (createForm.selectedStudents.length === 0) {
       alert('En az bir öğrenci seçmelisiniz');
+      return;
+    }
+
+    if (!createForm.platformUrl.trim()) {
+      alert('Platform linki gereklidir');
       return;
     }
 
@@ -148,10 +197,17 @@ export default function VideoCoachingPage() {
             selectedStudents: []
           });
           fetchVideoData(); // Refresh data
+          alert('Video oturumu başarıyla oluşturuldu!');
+        } else {
+          alert('Oturum oluşturulurken hata oluştu: ' + (data.error || 'Bilinmeyen hata'));
         }
+      } else {
+        const errorData = await response.json();
+        alert('Oturum oluşturulurken hata oluştu: ' + (errorData.error || 'Sunucu hatası'));
       }
     } catch (error) {
       console.error('Create session error:', error);
+      alert('Oturum oluşturulurken hata oluştu: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'));
     }
   };
 
@@ -329,6 +385,11 @@ export default function VideoCoachingPage() {
                           <Users className="w-4 h-4 mr-1" />
                           <span>{session.participants.length} katılımcı</span>
                         </div>
+                        <div className="flex items-center">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {session.student.name}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -352,9 +413,9 @@ export default function VideoCoachingPage() {
                         <span>Devam Et</span>
                       </button>
                     )}
-                    {session.status === 'completed' && session.recordingUrl && (
+                    {session.status === 'completed' && session.recording?.url && (
                       <button
-                        onClick={() => window.open(session.recordingUrl, '_blank')}
+                        onClick={() => window.open(session.recording.url, '_blank')}
                         className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium flex items-center space-x-2"
                       >
                         <Video className="w-4 h-4" />

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
+import { VideoCoachingService } from '@/lib/services/videoCoachingService';
 
 export async function POST(
   request: NextRequest,
@@ -17,14 +19,24 @@ export async function POST(
 
     const { id } = params;
 
-    // Simüle edilmiş meeting URL'i
-    const meetingUrl = `https://meet.google.com/${id}-${Math.random().toString(36).substr(2, 6)}`;
+    await connectDB();
+    const videoCoachingService = VideoCoachingService.getInstance();
+    
+    // Join video session using real service
+    const result = await videoCoachingService.joinVideoSession(id, user.id);
 
-    return NextResponse.json({ 
-      success: true, 
-      meetingUrl,
-      message: 'Oturuma katılım başarılı'
-    });
+    if (result.success) {
+      return NextResponse.json({ 
+        success: true, 
+        meetingUrl: result.meetingUrl,
+        message: result.message
+      });
+    } else {
+      return NextResponse.json({ 
+        success: false, 
+        error: result.message 
+      }, { status: 400 });
+    }
 
   } catch (error) {
     console.error('Join video session error:', error);
