@@ -584,7 +584,10 @@ export class VideoCoachingService {
     const uniqueTeachers = new Set<string>();
     allSessions.forEach(session => {
       if (session.teacherId) {
-        uniqueTeachers.add(session.teacherId.toString());
+        const teacherIdStr = typeof session.teacherId === 'object'
+          ? session.teacherId._id?.toString() || session.teacherId.toString()
+          : session.teacherId.toString();
+        uniqueTeachers.add(teacherIdStr);
       }
     });
     const teacherCount = uniqueTeachers.size;
@@ -633,17 +636,33 @@ export class VideoCoachingService {
    * Format video session data
    */
   private formatVideoSessionData(session: any): VideoSessionData {
+    const teacherId = typeof session.teacherId === 'object' && session.teacherId._id
+      ? session.teacherId._id.toString()
+      : session.teacherId?.toString() || '';
+    
+    const teacherName = typeof session.teacherId === 'object' && session.teacherId.firstName
+      ? `${session.teacherId.firstName} ${session.teacherId.lastName}`
+      : 'Bilinmeyen';
+    
+    const studentId = typeof session.studentId === 'object' && session.studentId._id
+      ? session.studentId._id.toString()
+      : session.studentId?.toString() || '';
+    
+    const studentName = typeof session.studentId === 'object' && session.studentId.firstName
+      ? `${session.studentId.firstName} ${session.studentId.lastName}`
+      : 'Bilinmeyen';
+
     return {
       id: session._id.toString(),
       title: session.title,
       description: session.description,
       teacher: {
-        id: session.teacherId._id.toString(),
-        name: `${session.teacherId.firstName} ${session.teacherId.lastName}`
+        id: teacherId,
+        name: teacherName
       },
       student: {
-        id: session.studentId._id.toString(),
-        name: `${session.studentId.firstName} ${session.studentId.lastName}`
+        id: studentId,
+        name: studentName
       },
       type: session.type,
       status: session.status,
@@ -676,6 +695,14 @@ export class VideoCoachingService {
    * Format video resource data
    */
   private formatVideoResourceData(resource: any): VideoResourceData {
+    const createdById = typeof resource.createdBy === 'object' && resource.createdBy._id
+      ? resource.createdBy._id.toString()
+      : resource.createdBy?.toString() || '';
+    
+    const createdByName = typeof resource.createdBy === 'object' && resource.createdBy.firstName
+      ? `${resource.createdBy.firstName} ${resource.createdBy.lastName}`
+      : 'Bilinmeyen';
+
     return {
       id: resource._id.toString(),
       title: resource.title,
@@ -687,8 +714,8 @@ export class VideoCoachingService {
       url: resource.url,
       thumbnailUrl: resource.thumbnailUrl,
       createdBy: {
-        id: resource.createdBy._id.toString(),
-        name: `${resource.createdBy.firstName} ${resource.createdBy.lastName}`
+        id: createdById,
+        name: createdByName
       },
       isPublic: resource.isPublic,
       isVerified: resource.isVerified,

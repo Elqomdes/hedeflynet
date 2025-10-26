@@ -30,7 +30,15 @@ export async function PATCH(
     }
 
     // Check if user is the teacher of this session
-    if (session.teacherId.toString() !== user._id.toString()) {
+    const sessionTeacherId = typeof session.teacherId === 'object' 
+      ? session.teacherId._id?.toString() || session.teacherId.toString()
+      : session.teacherId.toString();
+    
+    const userId = typeof user._id === 'object'
+      ? user._id._id?.toString() || user._id.toString()
+      : user._id.toString();
+
+    if (sessionTeacherId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
