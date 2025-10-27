@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, FileText, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Clock, Calendar, Star, BarChart3, Video, Bell, Target, Award, ExternalLink } from 'lucide-react';
+import { Users, FileText, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Clock, Calendar, Star, BarChart3, Video, Bell, Award, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 interface DashboardData {
@@ -23,8 +23,8 @@ interface DashboardData {
     totalAssignments: number;
     completedAssignments: number;
     averageGrade: number;
-    goalsAchieved?: number;
-    goalsTotal?: number;
+    completedSessions?: number;
+    totalSessions?: number;
     lastActivity?: string;
     performanceTrend?: 'improving' | 'stable' | 'declining';
   }>;
@@ -232,22 +232,22 @@ export default function ParentDashboard() {
                         </div>
                       </div>
 
-                      {/* Goals Progress */}
-                      {childStats.goalsTotal !== undefined && childStats.goalsTotal > 0 && (
+                      {/* Video Sessions Progress */}
+                      {childStats.totalSessions !== undefined && childStats.totalSessions > 0 && (
                         <div className="p-3 bg-purple-50 rounded-xl border border-purple-100">
                           <div className="flex items-center justify-between text-sm mb-2">
                             <div className="flex items-center text-purple-700">
-                              <Target className="w-4 h-4 mr-1" />
-                              <span className="font-semibold">Hedefler</span>
+                              <Video className="w-4 h-4 mr-1" />
+                              <span className="font-semibold">Video Koçluk</span>
                             </div>
                             <span className="font-semibold text-purple-600">
-                              {childStats.goalsAchieved || 0}/{childStats.goalsTotal}
+                              {childStats.completedSessions || 0}/{childStats.totalSessions}
                             </span>
                           </div>
                           <div className="w-full bg-purple-200 rounded-full h-2 overflow-hidden">
                             <div 
                               className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000"
-                              style={{ width: `${Math.round(((childStats.goalsAchieved || 0) / childStats.goalsTotal) * 100)}%` }}
+                              style={{ width: `${Math.round(((childStats.completedSessions || 0) / childStats.totalSessions) * 100)}%` }}
                             ></div>
                           </div>
                         </div>

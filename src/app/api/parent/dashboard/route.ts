@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { getCurrentParent } from '@/lib/auth';
-import { User, Assignment, AssignmentSubmission, Goal } from '@/lib/models';
+import { User, Assignment, AssignmentSubmission } from '@/lib/models';
+import { VideoSession } from '@/lib/models/VideoCoaching';
 import { Parent, ParentNotification, ParentReport } from '@/lib/models/Parent';
 
 export const dynamic = 'force-dynamic';
@@ -71,15 +72,15 @@ export async function GET(request: NextRequest) {
             { students: childId }
           ]
         });
-        const goals = await Goal.find({ studentId: childId.toString() });
+        const videoSessions = await VideoSession.find({ studentId: childId.toString() });
 
         const assignmentsCompleted = submissions.filter(s => s.status === 'submitted').length;
         const assignmentsTotal = assignments.length;
         const averageGrade = submissions.length > 0 
           ? submissions.reduce((sum, s) => sum + (s.grade || 0), 0) / submissions.length 
           : 0;
-        const goalsAchieved = goals.filter(g => g.status === 'completed').length;
-        const goalsTotal = goals.length;
+        const completedSessions = videoSessions.filter(v => v.status === 'completed').length;
+        const totalSessions = videoSessions.length;
 
         return {
           studentId: childId.toString(),
@@ -87,8 +88,8 @@ export async function GET(request: NextRequest) {
           assignmentsCompleted,
           assignmentsTotal,
           averageGrade: Math.round(averageGrade),
-          goalsAchieved,
-          goalsTotal,
+          completedSessions,
+          totalSessions,
           lastActivity: student.updatedAt || student.createdAt,
           performanceTrend: averageGrade >= 80 ? 'improving' : 
                            averageGrade >= 60 ? 'stable' : 'declining'
@@ -134,8 +135,8 @@ export async function GET(request: NextRequest) {
         totalAssignments: stat.assignmentsTotal,
         completedAssignments: stat.assignmentsCompleted,
         averageGrade: stat.averageGrade,
-        goalsAchieved: stat.goalsAchieved,
-        goalsTotal: stat.goalsTotal,
+        completedSessions: stat.completedSessions,
+        totalSessions: stat.totalSessions,
         lastActivity: stat.lastActivity,
         performanceTrend: stat.performanceTrend
       })),

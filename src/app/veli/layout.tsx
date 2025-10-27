@@ -44,8 +44,12 @@ export default function ParentLayout({
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { 
+        method: 'POST',
+        credentials: 'include'
+      });
       router.push('/');
+      router.refresh();
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -53,11 +57,10 @@ export default function ParentLayout({
 
   const navigation = [
     { name: 'Dashboard', href: '/veli', icon: Home },
-    { name: 'Çocuklarım', href: '/veli', icon: Users },
-    { name: 'Raporlar', href: '/veli', icon: FileText },
-    { name: 'Analiz', href: '/veli', icon: BarChart3 },
-    { name: 'Video Koçluk', href: '/veli', icon: Video },
-    { name: 'Bildirimler', href: '/veli', icon: Bell },
+    { name: 'Raporlar', href: '/veli/raporlar', icon: FileText },
+    { name: 'Analiz', href: '/veli/analiz', icon: BarChart3 },
+    { name: 'Video Koçluk', href: '/veli/video-kocluk', icon: Video },
+    { name: 'Bildirimler', href: '/veli/bildirimler', icon: Bell },
   ];
 
   return (
