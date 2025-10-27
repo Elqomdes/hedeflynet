@@ -4,6 +4,13 @@ import { Assignment, Class, User } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { AssignmentCreateSchema } from '@/lib/validation';
 
+// Type for populated student
+interface PopulatedStudent {
+  _id: any;
+  firstName: string;
+  lastName: string;
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
@@ -43,11 +50,12 @@ export async function GET(request: NextRequest) {
         }
         
         // Add this student to the group
-        if (assignment.studentId) {
+        if (assignment.studentId && typeof assignment.studentId === 'object' && '_id' in assignment.studentId) {
+          const student = assignment.studentId as unknown as PopulatedStudent;
           classAssignmentsMap.get(key).students.push({
-            _id: assignment.studentId._id,
-            firstName: assignment.studentId.firstName,
-            lastName: assignment.studentId.lastName
+            _id: student._id,
+            firstName: student.firstName,
+            lastName: student.lastName
           });
         }
       } else {

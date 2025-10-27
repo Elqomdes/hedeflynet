@@ -4,6 +4,13 @@ import connectDB from '@/lib/mongodb';
 import Assignment from '@/lib/models/Assignment';
 import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
 
+// Type for populated student
+interface PopulatedStudent {
+  _id: any;
+  firstName: string;
+  lastName: string;
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(
@@ -44,7 +51,7 @@ export async function GET(
         .populate('studentId', 'firstName lastName');
 
       const students = siblings
-        .filter(s => s.studentId)
+        .filter((s): s is typeof s & { studentId: PopulatedStudent } => !!s.studentId && typeof s.studentId === 'object' && '_id' in s.studentId)
         .map(s => ({
           _id: s.studentId._id,
           firstName: s.studentId.firstName,
@@ -123,7 +130,7 @@ export async function PUT(
       });
 
       for (const sibling of siblings) {
-        if (sibling._id.toString() !== assignment._id.toString()) {
+        if (String(sibling._id) !== String(assignment._id)) {
           if (title !== undefined) sibling.title = title;
           if (description !== undefined) sibling.description = description;
           if (dueDate !== undefined) sibling.dueDate = new Date(dueDate);
@@ -142,6 +149,13 @@ export async function PUT(
       .populate('classId', 'name')
       .populate('studentId', 'firstName lastName');
 
+    if (!populated) {
+      return NextResponse.json(
+        { error: 'Assignment not found after update' },
+        { status: 404 }
+      );
+    }
+
     // If class assignment, add students array
     if (assignment.type === 'class' && assignment.classId) {
       const siblings = await Assignment.find({
@@ -154,7 +168,7 @@ export async function PUT(
         .populate('studentId', 'firstName lastName');
 
       const students = siblings
-        .filter(s => s.studentId)
+        .filter((s): s is typeof s & { studentId: PopulatedStudent } => !!s.studentId && typeof s.studentId === 'object' && '_id' in s.studentId)
         .map(s => ({
           _id: s.studentId._id,
           firstName: s.studentId.firstName,
