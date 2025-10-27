@@ -130,18 +130,18 @@ export default function ParentDashboard() {
   ];
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-secondary-900 mb-3">Veli Dashboard</h1>
-        <p className="text-lg text-secondary-600">
-          Hoş geldiniz, {data.parent?.firstName} {data.parent?.lastName}
+    <div>
+      {/* Welcome Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-secondary-900 mb-2">Hoş Geldiniz!</h1>
+        <p className="text-secondary-600">
+          {data.parent?.firstName} {data.parent?.lastName} - Veli Paneli
         </p>
       </div>
 
       {/* Notifications */}
       {data.notifications?.unread > 0 && (
-        <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center">
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center">
           <Bell className="w-5 h-5 text-blue-600 mr-2" />
           <span className="text-blue-800 font-medium">
             {data.notifications.unread} okunmamış bildiriminiz var
@@ -150,27 +150,24 @@ export default function ParentDashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((stat, index) => (
-          <div key={stat.name} className="group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
-            <div className={`relative overflow-hidden rounded-2xl ${stat.bgColor} border ${stat.borderColor} p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105`}>
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:shadow-glow transition-all duration-300`}>
-                  <stat.icon className="h-6 w-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-secondary-900 group-hover:text-primary-600 transition-colors duration-300">
-                    {stat.value}
-                  </p>
+          <div key={stat.name} className="group">
+            <div className={`relative overflow-hidden rounded-xl ${stat.bgColor} border ${stat.borderColor} p-5 transition-all duration-200 hover:shadow-lg`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2.5 rounded-lg bg-gradient-to-r ${stat.color}`}>
+                  <stat.icon className="h-5 w-5 text-white" />
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-secondary-900 mb-1 group-hover:text-primary-600 transition-colors duration-300">
+                <p className="text-3xl font-bold text-secondary-900 mb-1">
+                  {stat.value}
+                </p>
+                <h3 className="text-base font-semibold text-secondary-700 mb-1">
                   {stat.name}
                 </h3>
-                <p className="text-sm text-secondary-600">{stat.description}</p>
+                <p className="text-xs text-secondary-500">{stat.description}</p>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"></div>
             </div>
           </div>
         ))}
@@ -178,9 +175,9 @@ export default function ParentDashboard() {
 
       {/* Children Overview */}
       {data.children && data.children.length > 0 && (
-        <div className="mb-10">
-          <h2 className="text-2xl font-bold text-secondary-900 mb-6">Çocuklar&apos;ınız</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-secondary-900 mb-4">Çocuklarınız</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {data.children.map((child, index) => {
               const childStats = data.stats?.find(s => s.studentId === child.id);
               const completionRate = childStats && childStats.totalAssignments > 0
@@ -188,15 +185,15 @@ export default function ParentDashboard() {
                 : 0;
 
               return (
-                <div key={child.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                <div key={child.id} className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-all duration-200">
                   <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-                      <Users className="w-6 h-6 text-white" />
+                    <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                      <Users className="w-5 h-5 text-white" />
                     </div>
-                    <div className="ml-4">
-                      <h3 className="text-lg font-bold text-secondary-900">{child.firstName} {child.lastName}</h3>
+                    <div className="ml-3">
+                      <h3 className="text-base font-bold text-secondary-900">{child.firstName} {child.lastName}</h3>
                       {child.className && (
-                        <p className="text-sm text-secondary-600">{child.className}</p>
+                        <p className="text-xs text-secondary-500">{child.className}</p>
                       )}
                     </div>
                   </div>
