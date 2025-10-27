@@ -16,7 +16,8 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const isDashboardPage = pathname && (
     pathname.startsWith('/admin') || 
     pathname.startsWith('/ogrenci') || 
-    pathname.startsWith('/ogretmen')
+    pathname.startsWith('/ogretmen') ||
+    pathname.startsWith('/veli')
   );
 
   return (
