@@ -88,7 +88,7 @@ export default function ParentLayout({
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="group flex items-center px-2 py-2 text-base font-medium rounded-md text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900"
+                    className="group flex items-center px-2 py-2 text-base font-medium rounded-md text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 cursor-pointer"
                     onClick={() => setSidebarOpen(false)}
                   >
                     <item.icon className="mr-4 h-6 w-6" />
@@ -135,18 +135,18 @@ export default function ParentLayout({
               </nav>
             </div>
             <div className="flex-shrink-0 flex border-t border-secondary-200 p-4">
-              <div className="flex items-center">
-                <div className="ml-3">
+              <div className="flex items-center w-full">
+                <div className="ml-3 flex-1">
                   <p className="text-base font-medium text-secondary-800">{user?.firstName} {user?.lastName}</p>
                   <p className="text-sm font-medium text-secondary-500">Veli</p>
                 </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-secondary-400 hover:text-secondary-600"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
               </div>
-              <button
-                onClick={handleLogout}
-                className="ml-auto p-2 text-secondary-400 hover:text-secondary-600"
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
             </div>
           </div>
         </div>
