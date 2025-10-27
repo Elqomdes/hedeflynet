@@ -130,12 +130,12 @@ export default function ParentDashboard() {
   ];
 
   return (
-    <div>
-      {/* Welcome Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-secondary-900 mb-2">Hoş Geldiniz!</h1>
-        <p className="text-secondary-600">
-          {data.parent?.firstName} {data.parent?.lastName} - Veli Paneli
+    <div className="animate-fade-in">
+      {/* Header */}
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold text-secondary-900 mb-3">Veli Dashboard</h1>
+        <p className="text-lg text-secondary-600">
+          Çocuklarınızın eğitim durumunu takip edin ve ilerlemeleri inceleyin
         </p>
       </div>
 
@@ -150,24 +150,27 @@ export default function ParentDashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {statCards.map((stat, index) => (
-          <div key={stat.name} className="group">
-            <div className={`relative overflow-hidden rounded-xl ${stat.bgColor} border ${stat.borderColor} p-5 transition-all duration-200 hover:shadow-lg`}>
-              <div className="flex items-center justify-between mb-3">
-                <div className={`p-2.5 rounded-lg bg-gradient-to-r ${stat.color}`}>
-                  <stat.icon className="h-5 w-5 text-white" />
+          <div key={stat.name} className="group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
+            <div className={`relative overflow-hidden rounded-2xl ${stat.bgColor} border ${stat.borderColor} p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:border-opacity-50`}>
+              <div className="flex items-center justify-between mb-4">
+                <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:shadow-glow transition-all duration-300`}>
+                  <stat.icon className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-secondary-900 group-hover:text-primary-600 transition-colors duration-300">
+                    {stat.value}
+                  </p>
                 </div>
               </div>
               <div>
-                <p className="text-3xl font-bold text-secondary-900 mb-1">
-                  {stat.value}
-                </p>
-                <h3 className="text-base font-semibold text-secondary-700 mb-1">
+                <h3 className="text-lg font-semibold text-secondary-900 mb-1 group-hover:text-primary-600 transition-colors duration-300">
                   {stat.name}
                 </h3>
-                <p className="text-xs text-secondary-500">{stat.description}</p>
+                <p className="text-sm text-secondary-600">{stat.description}</p>
               </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"></div>
             </div>
           </div>
         ))}
