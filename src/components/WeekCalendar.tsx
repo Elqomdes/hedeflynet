@@ -212,27 +212,32 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
               {/* Status Badge */}
               <div className="mt-6 flex items-center gap-2">
                 <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${(() => {
-                  const dt = new Date(selectedItem.date);
-                  const statusColors = {
+                  const statusColors: Record<string, string> = {
                     'completed': 'bg-green-100 text-green-800',
                     'cancelled': 'bg-red-100 text-red-800',
                     'late': 'bg-red-100 text-red-800',
                     'submitted': 'bg-blue-100 text-blue-800',
                     'graded': 'bg-green-100 text-green-800',
                     'in_progress': 'bg-blue-100 text-blue-800',
+                    'pending': 'bg-secondary-100 text-secondary-800',
+                    'assignment': 'bg-blue-100 text-blue-800',
                   };
-                  return statusColors[selectedItem.status || 'pending'] || 'bg-secondary-100 text-secondary-800';
+                  const status = selectedItem.status || 'pending';
+                  return statusColors[status] || 'bg-secondary-100 text-secondary-800';
                 })()}`}>
                   {(() => {
-                    const statusTexts = {
+                    const statusTexts: Record<string, string> = {
                       'completed': '✓ Tamamlandı',
                       'cancelled': '✗ İptal',
                       'late': '⚠ Geç Teslim',
                       'submitted': '✓ Teslim Edildi',
                       'graded': '✓ Değerlendirildi',
                       'in_progress': '⏳ Devam Ediyor',
+                      'pending': '📌 Bekliyor',
+                      'assignment': '📝 Ödev',
                     };
-                    return statusTexts[selectedItem.status || 'pending'] || '📌 Bekliyor';
+                    const status = selectedItem.status || 'pending';
+                    return statusTexts[status] || '📌 Bekliyor';
                   })()}
                 </span>
                 {selectedItem.type && (
