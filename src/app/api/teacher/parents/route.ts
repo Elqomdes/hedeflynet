@@ -71,7 +71,16 @@ export async function GET(request: NextRequest) {
     // Add children details for each parent - show all parents regardless of children
     const parentsWithChildrenDetails = await Promise.all(
       parents.map(async (parent) => {
-        let childrenDetails = [];
+        type ChildDetail = {
+          _id: any;
+          firstName: string;
+          lastName: string;
+          email: string;
+          classId?: any;
+          className?: string | null;
+        };
+        
+        let childrenDetails: ChildDetail[] = [];
         
         if (parent.children && parent.children.length > 0) {
           const allChildrenDetails = await User.find({
@@ -83,7 +92,7 @@ export async function GET(request: NextRequest) {
 
           // Add class names to children
           childrenDetails = await Promise.all(
-            allChildrenDetails.map(async (child) => {
+            allChildrenDetails.map(async (child: any) => {
               if (child.classId) {
                 const classInfo = await Class.findById(child.classId).select('name').lean();
                 return {
