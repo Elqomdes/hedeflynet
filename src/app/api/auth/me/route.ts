@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, getCurrentParent } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +8,23 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
     
+    // Try to get parent first
+    const parent = await getCurrentParent(request);
+    if (parent) {
+      return NextResponse.json({
+        user: {
+          id: parent._id.toString(),
+          username: parent.username,
+          email: parent.email,
+          role: 'parent',
+          firstName: parent.firstName,
+          lastName: parent.lastName,
+          phone: parent.phone || ''
+        }
+      });
+    }
+    
+    // Try to get regular user
     const user = await getCurrentUser(request);
     
     if (!user) {
