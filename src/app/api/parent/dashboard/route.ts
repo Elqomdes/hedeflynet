@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentParent } from '@/lib/auth';
 import { User, Assignment, AssignmentSubmission, Goal } from '@/lib/models';
 import { Parent, ParentNotification, ParentReport } from '@/lib/models/Parent';
 
@@ -10,28 +10,12 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    // Get current user
-    const user = await getCurrentUser(request);
-    if (!user) {
+    // Get current parent directly
+    const parent = await getCurrentParent(request);
+    if (!parent) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
-      );
-    }
-
-    // Find parent by email or username
-    const parent = await Parent.findOne({
-      $or: [
-        { email: user.email },
-        { username: user.username }
-      ],
-      isActive: true
-    });
-
-    if (!parent) {
-      return NextResponse.json(
-        { error: 'Parent not found' },
-        { status: 404 }
       );
     }
 
