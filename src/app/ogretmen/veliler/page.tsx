@@ -72,7 +72,11 @@ export default function ParentsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Parents data received:', data);
+        console.log('Parents API Response:', data);
+        console.log('Total parents received:', data.parents?.length || 0);
+        if (data.parents && data.parents.length > 0) {
+          console.log('First parent:', data.parents[0]);
+        }
         setParents(data.parents || []);
       } else {
         const errorData = await response.json();
@@ -440,7 +444,7 @@ export default function ParentsPage() {
                               Bağlı Öğrenciler
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {parent.childrenDetails.map((student) => (
+                              {parent.childrenDetails.map((student: Student) => (
                                 <div key={student._id} className="bg-white rounded-lg border border-blue-200 p-3 flex items-center justify-between">
                                   <div className="flex items-center space-x-3">
                                     <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">

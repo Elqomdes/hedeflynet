@@ -38,8 +38,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all parents
+    // Get all parents from database
     const { Parent } = await import('@/lib/models/Parent');
+    
+    // Log to debug
+    const allParents = await Parent.find({}).lean();
+    console.log('Total parents in database:', allParents.length);
+    console.log('Sample parent:', allParents[0]);
+    
     const parents = await Parent.find({})
       .select('_id username email firstName lastName phone children isActive createdAt')
       .sort({ createdAt: -1 })
@@ -62,46 +68,42 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Add children details for each parent
+    // Add children details for each parent - show all parents regardless of children
     const parentsWithChildrenDetails = await Promise.all(
       parents.map(async (parent) => {
+        let childrenDetails = [];
+        
         if (parent.children && parent.children.length > 0) {
-          // Filter children to only include teacher's students
-          const relevantChildren = parent.children.filter((childId: any) => 
-            teacherStudentIds.has(String(childId))
-          );
+          const allChildrenDetails = await User.find({
+            _id: { $in: parent.children },
+            role: 'student'
+          })
+            .select('_id firstName lastName email classId')
+            .lean();
 
-          if (relevantChildren.length > 0) {
-            const childrenDetails = await User.find({
-              _id: { $in: relevantChildren },
-              role: 'student'
+          // Add class names to children
+          childrenDetails = await Promise.all(
+            allChildrenDetails.map(async (child) => {
+              if (child.classId) {
+                const classInfo = await Class.findById(child.classId).select('name').lean();
+                return {
+                  ...child,
+                  className: classInfo?.name || null
+                };
+              }
+              return child;
             })
-              .select('_id firstName lastName email classId')
-              .lean();
-
-            // Add class names to children
-            const childrenWithClassNames = await Promise.all(
-              childrenDetails.map(async (child) => {
-                if (child.classId) {
-                  const classInfo = await Class.findById(child.classId).select('name').lean();
-                  return {
-                    ...child,
-                    className: classInfo?.name || null
-                  };
-                }
-                return child;
-              })
-            );
-
-            return {
-              ...parent,
-              childrenDetails: childrenWithClassNames
-            };
-          }
+          );
         }
-        return parent;
+
+        return {
+          ...parent,
+          childrenDetails: childrenDetails
+        };
       })
     );
+    
+    console.log('Parents with details:', parentsWithChildrenDetails.length);
 
     return NextResponse.json({
       success: true,
