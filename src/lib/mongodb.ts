@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { ConnectionStates } from 'mongoose';
 
 // MongoDB connection string - MUST be provided via environment variable in production.
 // In development, fall back to localhost for safety. Never embed credentials in source.
@@ -21,28 +21,54 @@ declare global {
   } | undefined;
 }
 
-let cached = global.mongoose;
+// Cache type
+type MongooseCache = {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+};
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+let cached: MongooseCache;
+
+if (global.mongoose && typeof global.mongoose === 'object') {
+  cached = global.mongoose as MongooseCache;
+} else {
+  cached = { conn: null, promise: null };
+  global.mongoose = cached as any;
 }
 
-async function connectDB() {
+async function connectDB(retryCount = 0): Promise<typeof mongoose> {
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 1000; // 1 second delay between retries
+
   try {
     // If MONGODB_URI is not provided in production, skip to avoid leaking errors
     if (!MONGODB_URI) {
       console.warn('MONGODB_URI not provided; skipping DB connection');
-      return null;
+      throw new Error('MONGODB_URI not provided');
     }
 
     // If we have a cached connection and it's ready, return it
-    if (cached!.conn && mongoose.connection.readyState === 1) {
+    const cachedConn = cached.conn;
+    if (cachedConn && mongoose.connection.readyState === ConnectionStates.connected) {
       console.log('Using cached MongoDB connection');
-      return cached!.conn;
+      return cachedConn;
+    }
+
+    // If the connection is in a connecting state and we have a promise, wait for it
+    if (cached.promise && mongoose.connection.readyState === ConnectionStates.connecting) {
+      console.log('Waiting for existing connection...');
+      try {
+        const result = await cached.promise;
+        // If promise resolved successfully, connection is ready
+        return result;
+      } catch (error) {
+        console.error('Waiting for connection failed, retrying...');
+        cached.promise = null;
+      }
     }
 
     // If we don't have a promise, create one
-    if (!cached!.promise) {
+    if (!cached.promise) {
       console.log('Creating new MongoDB connection...');
       const opts = {
         bufferCommands: false,
@@ -63,47 +89,78 @@ async function connectDB() {
         ? `${MONGODB_URI}/${MONGODB_DB}`
         : MONGODB_URI!;
 
-      cached!.promise = mongoose.connect(connectionUri, opts).then((mongooseInstance) => {
+      cached.promise = mongoose.connect(connectionUri, opts).then((mongooseInstance) => {
         console.log(`MongoDB connected successfully (db: ${MONGODB_DB})`);
+        
+        // Set up connection event listeners for better error handling (only once)
+        if (!mongoose.connection.listeners('error').length) {
+          mongoose.connection.on('error', (error) => {
+            console.error('MongoDB connection error:', error);
+            cached.conn = null;
+            cached.promise = null;
+          });
+        }
+        
+        if (!mongoose.connection.listeners('disconnected').length) {
+          mongoose.connection.on('disconnected', () => {
+            console.warn('MongoDB disconnected');
+            // Clear cache on disconnect
+            cached.conn = null;
+            cached.promise = null;
+          });
+        }
+        
+        if (!mongoose.connection.listeners('reconnected').length) {
+          mongoose.connection.on('reconnected', () => {
+            console.log('MongoDB reconnected');
+          });
+        }
+        
         return mongooseInstance;
       }).catch((error) => {
         console.error('MongoDB connection failed:', error);
-        cached!.promise = null;
-        throw new Error(`MongoDB bağlantı hatası: ${error.message}`);
+        cached.promise = null;
+        cached.conn = null;
+        throw error;
       }) as any;
     }
 
-    cached!.conn = await cached!.promise;
+    cached.conn = await cached.promise;
     
     // Verify connection is actually ready
-    if (mongoose.connection.readyState !== 1) {
+    if (mongoose.connection.readyState !== ConnectionStates.connected) {
+      console.warn(`MongoDB connection not ready. State: ${mongoose.connection.readyState}`);
+      cached.conn = null;
+      cached.promise = null;
+      
+      // Retry if we haven't exceeded max retries
+      if (retryCount < MAX_RETRIES) {
+        console.log(`Retrying connection (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+        return connectDB(retryCount + 1);
+      }
+      
       throw new Error(`MongoDB connection not ready. State: ${mongoose.connection.readyState}`);
     }
     
-    // Skip per-request ping to avoid extra latency; rely on readyState and events
-    
-    // Set up connection event listeners for better error handling
-    mongoose.connection.on('error', (error) => {
-      console.error('MongoDB connection error:', error);
-    });
-    
-    mongoose.connection.on('disconnected', () => {
-      console.warn('MongoDB disconnected');
-      // Clear cache on disconnect
-      cached!.conn = null;
-      cached!.promise = null;
-    });
-    
-    mongoose.connection.on('reconnected', () => {
-      console.log('MongoDB reconnected');
-    });
-    
     console.log('MongoDB connection is ready');
-    return cached!.conn;
+    const finalConn = cached.conn;
+    if (!finalConn) {
+      throw new Error('Connection failed - no cached connection');
+    }
+    return finalConn;
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    cached!.promise = null;
-    cached!.conn = null;
+    cached.promise = null;
+    cached.conn = null;
+    
+    // Retry if we haven't exceeded max retries
+    if (retryCount < MAX_RETRIES) {
+      console.log(`Retrying connection after error (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      return connectDB(retryCount + 1);
+    }
+    
     throw new Error(`Veritabanı bağlantı hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
   }
 }
