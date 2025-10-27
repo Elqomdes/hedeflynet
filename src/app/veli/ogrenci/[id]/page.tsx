@@ -114,7 +114,7 @@ export default function StudentDetail() {
           className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          <span className="font-semibold">Dashboard'a Dön</span>
+          <span className="font-semibold">Dashboard&apos;a Dön</span>
         </Link>
         <div className="flex items-center justify-between">
           <div>

@@ -179,7 +179,7 @@ export default function ParentDashboard() {
       {/* Children Overview */}
       {data.children && data.children.length > 0 && (
         <div className="mb-10">
-          <h2 className="text-2xl font-bold text-secondary-900 mb-6">Çocuklarınız</h2>
+          <h2 className="text-2xl font-bold text-secondary-900 mb-6">Çocuklar&apos;ınız</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.children.map((child, index) => {
               const childStats = data.stats?.find(s => s.studentId === child.id);
@@ -312,7 +312,7 @@ export default function ParentDashboard() {
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
             <Users className="w-16 h-16 text-secondary-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-secondary-900 mb-2">Henüz öğrenci eklenmedi</h3>
-            <p className="text-secondary-600">Çocuklarınızın verilerini görmek için öğretmeninizden hesap bağlantısı isteyin</p>
+            <p className="text-secondary-600">Çocuklar&apos;ınızın verilerini görmek için öğretmeninizden hesap bağlantısı isteyin</p>
           </div>
         </div>
       )}
