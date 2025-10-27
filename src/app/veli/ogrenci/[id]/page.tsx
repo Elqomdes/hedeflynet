@@ -45,12 +45,6 @@ export default function StudentDetail() {
   const [data, setData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (studentId) {
-      fetchStudentData();
-    }
-  }, [studentId]);
-
   const fetchStudentData = async () => {
     try {
       const response = await fetch(`/api/parent/students/${studentId}`, {
@@ -71,6 +65,13 @@ export default function StudentDetail() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (studentId) {
+      fetchStudentData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]);
 
   if (loading) {
     return (

@@ -84,7 +84,7 @@ export async function GET(
       return {
         id: assignment._id.toString(),
         title: assignment.title,
-        subject: assignment.subject || 'Genel',
+        subject: 'Genel',
         dueDate: assignment.dueDate,
         status: submission?.status || 'pending',
         grade: submission?.grade,
