@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, FileText, TrendingUp, AlertTriangle, CheckCircle, Clock, Calendar, Star, BarChart3, Video, Bell } from 'lucide-react';
+import { Users, FileText, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Clock, Calendar, Star, BarChart3, Video, Bell, Target, Award, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 interface DashboardData {
@@ -23,10 +23,16 @@ interface DashboardData {
     totalAssignments: number;
     completedAssignments: number;
     averageGrade: number;
+    goalsAchieved?: number;
+    goalsTotal?: number;
+    lastActivity?: string;
+    performanceTrend?: 'improving' | 'stable' | 'declining';
   }>;
   notifications: {
     unread: number;
   };
+  recentReports?: Array<any>;
+  upcomingEvents?: Array<any>;
 }
 
 export default function ParentDashboard() {
@@ -197,29 +203,93 @@ export default function ParentDashboard() {
 
                   {childStats && (
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 bg-blue-50 rounded-xl">
-                          <div className="text-2xl font-bold text-blue-600">{childStats.averageGrade || 0}</div>
-                          <div className="text-xs text-secondary-600">Ortalama</div>
+                      {/* Performance Trend */}
+                      {childStats.performanceTrend && (
+                        <div className={`flex items-center justify-center p-2 rounded-lg ${
+                          childStats.performanceTrend === 'improving' ? 'bg-green-50 text-green-700' :
+                          childStats.performanceTrend === 'declining' ? 'bg-red-50 text-red-700' :
+                          'bg-yellow-50 text-yellow-700'
+                        }`}>
+                          {childStats.performanceTrend === 'improving' && <TrendingUp className="w-4 h-4 mr-1" />}
+                          {childStats.performanceTrend === 'declining' && <TrendingDown className="w-4 h-4 mr-1" />}
+                          {childStats.performanceTrend === 'stable' && <Minus className="w-4 h-4 mr-1" />}
+                          <span className="text-xs font-semibold">
+                            {childStats.performanceTrend === 'improving' ? '📈 Yükselişte' :
+                             childStats.performanceTrend === 'declining' ? '📉 Düşüşte' :
+                             '➖ Stabil'}
+                          </span>
                         </div>
-                        <div className="text-center p-3 bg-green-50 rounded-xl">
+                      )}
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-center p-3 bg-blue-50 rounded-xl border border-blue-100">
+                          <div className="text-2xl font-bold text-blue-600">{childStats.averageGrade || 0}</div>
+                          <div className="text-xs text-secondary-600">Ortalama Not</div>
+                        </div>
+                        <div className="text-center p-3 bg-green-50 rounded-xl border border-green-100">
                           <div className="text-2xl font-bold text-green-600">{completionRate}%</div>
                           <div className="text-xs text-secondary-600">Tamamlama</div>
                         </div>
                       </div>
 
-                      <div>
-                        <div className="flex justify-between text-sm text-secondary-600 mb-2">
-                          <span>Ödevler</span>
-                          <span className="font-semibold">{childStats.completedAssignments}/{childStats.totalAssignments}</span>
+                      {/* Goals Progress */}
+                      {childStats.goalsTotal !== undefined && childStats.goalsTotal > 0 && (
+                        <div className="p-3 bg-purple-50 rounded-xl border border-purple-100">
+                          <div className="flex items-center justify-between text-sm mb-2">
+                            <div className="flex items-center text-purple-700">
+                              <Target className="w-4 h-4 mr-1" />
+                              <span className="font-semibold">Hedefler</span>
+                            </div>
+                            <span className="font-semibold text-purple-600">
+                              {childStats.goalsAchieved || 0}/{childStats.goalsTotal}
+                            </span>
+                          </div>
+                          <div className="w-full bg-purple-200 rounded-full h-2 overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000"
+                              style={{ width: `${Math.round(((childStats.goalsAchieved || 0) / childStats.goalsTotal) * 100)}%` }}
+                            ></div>
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000"
-                            style={{ width: `${completionRate}%` }}
-                          ></div>
+                      )}
+
+                      {/* Assignment Progress */}
+                      {childStats.totalAssignments > 0 && (
+                        <div>
+                          <div className="flex justify-between text-sm text-secondary-600 mb-2">
+                            <span className="flex items-center">
+                              <FileText className="w-4 h-4 mr-1" />
+                              Ödevler
+                            </span>
+                            <span className="font-semibold text-secondary-900">
+                              {childStats.completedAssignments}/{childStats.totalAssignments}
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000"
+                              style={{ width: `${completionRate}%` }}
+                            ></div>
+                          </div>
                         </div>
-                      </div>
+                      )}
+
+                      {/* Last Activity */}
+                      {childStats.lastActivity && (
+                        <div className="text-center text-xs text-secondary-500">
+                          <Clock className="w-3 h-3 inline mr-1" />
+                          Son aktivite: {new Date(childStats.lastActivity).toLocaleDateString('tr-TR')}
+                        </div>
+                      )}
+
+                      {/* Action Button */}
+                      <Link 
+                        href={`/veli/ogrenci/${child.id}`}
+                        className="block w-full text-center py-2 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors text-sm font-semibold flex items-center justify-center"
+                      >
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Detaylı Görüntüle
+                      </Link>
                     </div>
                   )}
 

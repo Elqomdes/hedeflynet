@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
           id: child._id.toString(),
           firstName: child.firstName,
           lastName: child.lastName,
-          class: className
+          className: className
         };
       })
     );
@@ -138,14 +138,23 @@ export async function GET(request: NextRequest) {
         id: parent._id.toString(),
         firstName: parent.firstName,
         lastName: parent.lastName,
-        email: parent.email,
-        children: childrenWithDetails
+        email: parent.email
       },
+      children: childrenWithDetails,
       notifications: {
-        unread: unreadCount,
-        recent: notifications
+        unread: unreadCount
       },
-      childrenStats: validChildrenStats,
+      stats: validChildrenStats.map(stat => ({
+        studentId: stat.studentId,
+        studentName: stat.studentName,
+        totalAssignments: stat.assignmentsTotal,
+        completedAssignments: stat.assignmentsCompleted,
+        averageGrade: stat.averageGrade,
+        goalsAchieved: stat.goalsAchieved,
+        goalsTotal: stat.goalsTotal,
+        lastActivity: stat.lastActivity,
+        performanceTrend: stat.performanceTrend
+      })),
       recentReports,
       upcomingEvents
     };
