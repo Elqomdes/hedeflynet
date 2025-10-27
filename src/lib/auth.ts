@@ -102,6 +102,25 @@ export function requireAuth(roles?: string[]) {
 
 export async function getCurrentParent(request: NextRequest) {
   try {
+    // First try to get from regular auth - check if user exists as parent
+    const user = await getCurrentUser(request);
+    if (user) {
+      await connectDB();
+      const { Parent } = await import('./models/Parent');
+      const parent = await Parent.findOne({ 
+        $or: [
+          { username: user.username },
+          { email: user.email }
+        ],
+        isActive: true 
+      }).select('-password');
+      
+      if (parent) {
+        return parent;
+      }
+    }
+
+    // Alternative: check parent-token
     const token = request.cookies.get('parent-token')?.value;
     
     if (!token) {
@@ -115,7 +134,7 @@ export async function getCurrentParent(request: NextRequest) {
 
     await connectDB();
     const { Parent } = await import('./models/Parent');
-    const parent = await Parent.findById(payload.parentId).select('-password');
+    const parent = await Parent.findById(payload.parentId || payload.userId).select('-password');
     
     if (!parent || !parent.isActive) {
       return null;
