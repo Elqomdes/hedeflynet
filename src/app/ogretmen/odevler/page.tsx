@@ -10,6 +10,12 @@ interface Attachment {
   name: string;
 }
 
+interface Student {
+  _id: string;
+  firstName: string;
+  lastName: string;
+}
+
 interface Assignment {
   _id: string;
   title: string;
@@ -27,6 +33,7 @@ interface Assignment {
     firstName: string;
     lastName: string;
   };
+  students?: Student[]; // For grouped class assignments
   // Goal-like properties
   category?: 'academic' | 'behavioral' | 'skill' | 'personal' | 'other';
   priority?: 'low' | 'medium' | 'high';
@@ -541,7 +548,7 @@ export default function TeacherAssignments() {
                   {assignment.type === 'class' && assignment.classId && (
                     <div className="flex items-center text-xs text-secondary-600">
                       <Users className="h-3.5 w-3.5 mr-1.5 text-blue-400" />
-                      <span className="text-blue-900">{assignment.classId.name}</span>
+                      <span className="text-blue-900">{assignment.classId.name} ({assignment.students?.length || 0} öğrenci)</span>
                     </div>
                   )}
 
@@ -827,6 +834,12 @@ export default function TeacherAssignments() {
                     {selectedAssignment.title}
                   </h3>
                   <p className="text-sm text-blue-100 mt-1">Teslim Edilen Çalışmalar</p>
+                  {selectedAssignment.type === 'class' && selectedAssignment.students && selectedAssignment.students.length > 0 && (
+                    <div className="mt-2 text-sm text-blue-50">
+                      <span className="font-medium">Öğrenciler: </span>
+                      <span>{selectedAssignment.students.map(s => `${s.firstName} ${s.lastName}`).join(', ')}</span>
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => {

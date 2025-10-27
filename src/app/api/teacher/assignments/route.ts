@@ -26,7 +26,40 @@ export async function GET(request: NextRequest) {
       .populate('studentId', 'firstName lastName')
       .sort({ dueDate: 1 });
 
-    return NextResponse.json(assignments);
+    // Group class assignments together
+    const classAssignmentsMap = new Map();
+    const individualAssignments = [];
+
+    for (const assignment of assignments) {
+      if (assignment.type === 'class' && assignment.classId) {
+        // Create a unique key for grouping: classId + title + dueDate
+        const key = `${assignment.classId._id}-${assignment.title}-${assignment.dueDate}`;
+        
+        if (!classAssignmentsMap.has(key)) {
+          classAssignmentsMap.set(key, {
+            ...assignment.toObject(),
+            students: []
+          });
+        }
+        
+        // Add this student to the group
+        if (assignment.studentId) {
+          classAssignmentsMap.get(key).students.push({
+            _id: assignment.studentId._id,
+            firstName: assignment.studentId.firstName,
+            lastName: assignment.studentId.lastName
+          });
+        }
+      } else {
+        // Keep individual assignments as is
+        individualAssignments.push(assignment);
+      }
+    }
+
+    // Combine class assignments (grouped) and individual assignments
+    const result = Array.from(classAssignmentsMap.values()).concat(individualAssignments);
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Teacher assignments error:', error);
     return NextResponse.json(

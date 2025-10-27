@@ -32,6 +32,31 @@ export async function GET(
       );
     }
 
+    // If this is a class assignment, group it with siblings
+    if (assignment.type === 'class' && assignment.classId) {
+      const siblings = await Assignment.find({
+        teacherId: assignment.teacherId,
+        type: 'class',
+        classId: assignment.classId,
+        title: assignment.title,
+        dueDate: assignment.dueDate
+      })
+        .populate('studentId', 'firstName lastName');
+
+      const students = siblings
+        .filter(s => s.studentId)
+        .map(s => ({
+          _id: s.studentId._id,
+          firstName: s.studentId.firstName,
+          lastName: s.studentId.lastName
+        }));
+
+      return NextResponse.json({
+        ...assignment.toObject(),
+        students
+      });
+    }
+
     return NextResponse.json(assignment);
   } catch (error) {
     console.error('Get assignment error:', error);
@@ -87,9 +112,60 @@ export async function PUT(
 
     await assignment.save();
 
+    // If this is a class assignment, update all siblings
+    if (assignment.type === 'class' && assignment.classId) {
+      const siblings = await Assignment.find({
+        teacherId: assignment.teacherId,
+        type: 'class',
+        classId: assignment.classId,
+        title: assignment.title,
+        dueDate: assignment.dueDate
+      });
+
+      for (const sibling of siblings) {
+        if (sibling._id.toString() !== assignment._id.toString()) {
+          if (title !== undefined) sibling.title = title;
+          if (description !== undefined) sibling.description = description;
+          if (dueDate !== undefined) sibling.dueDate = new Date(dueDate);
+          if (attachments !== undefined) sibling.attachments = attachments;
+          if (maxGrade !== undefined) sibling.maxGrade = maxGrade;
+          if (category !== undefined) sibling.category = category;
+          if (priority !== undefined) sibling.priority = priority;
+          if (successCriteria !== undefined) sibling.successCriteria = successCriteria;
+          await sibling.save();
+        }
+      }
+    }
+
+    // Get populated assignment with students if class assignment
     const populated = await Assignment.findById(assignment._id)
       .populate('classId', 'name')
       .populate('studentId', 'firstName lastName');
+
+    // If class assignment, add students array
+    if (assignment.type === 'class' && assignment.classId) {
+      const siblings = await Assignment.find({
+        teacherId: assignment.teacherId,
+        type: 'class',
+        classId: assignment.classId,
+        title: assignment.title,
+        dueDate: assignment.dueDate
+      })
+        .populate('studentId', 'firstName lastName');
+
+      const students = siblings
+        .filter(s => s.studentId)
+        .map(s => ({
+          _id: s.studentId._id,
+          firstName: s.studentId.firstName,
+          lastName: s.studentId.lastName
+        }));
+
+      return NextResponse.json({
+        ...populated.toObject(),
+        students
+      });
+    }
 
     return NextResponse.json(populated);
   } catch (error) {
