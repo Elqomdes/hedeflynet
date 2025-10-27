@@ -9,6 +9,7 @@ import WeekCalendar from '@/components/WeekCalendar';
 interface Assignment {
   _id: string;
   title: string;
+  description: string;
   dueDate: string;
   type: 'individual' | 'class';
   maxGrade?: number;
@@ -91,7 +92,8 @@ export default function StudentDashboard() {
   // Calendar items for assignments
   const assignmentItems = (assignments || []).map(assignment => ({
     _id: `assignment-${assignment._id}`,
-    title: `📝 ${assignment.title}`,
+    title: assignment.title,
+    description: assignment.description,
     date: new Date(assignment.dueDate).toISOString().split('T')[0],
     status: assignment.submission?.status || 'pending'
   }));

@@ -302,7 +302,8 @@ export default function TeacherAssignments() {
 
     return studentAssignments.map(assignment => ({
       _id: assignment._id,
-      title: `📝 ${assignment.title}`,
+      title: assignment.title,
+      description: assignment.description,
       date: new Date(assignment.dueDate).toISOString().split('T')[0],
       status: 'assignment' as const,
       studentName: assignment.studentId ? `${assignment.studentId.firstName} ${assignment.studentId.lastName}` : 'Sınıf Ödevi',
