@@ -40,9 +40,10 @@ export async function GET(request: NextRequest) {
 
     // Get all parents
     const { Parent } = await import('@/lib/models/Parent');
-    const parents = await Parent.find({ isActive: true })
+    const parents = await Parent.find({})
       .select('_id username email firstName lastName phone children isActive createdAt')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     // Get teacher's classes to filter students
     const classes = await Class.find({
@@ -93,12 +94,12 @@ export async function GET(request: NextRequest) {
             );
 
             return {
-              ...parent.toObject(),
+              ...parent,
               childrenDetails: childrenWithClassNames
             };
           }
         }
-        return parent.toObject();
+        return parent;
       })
     );
 

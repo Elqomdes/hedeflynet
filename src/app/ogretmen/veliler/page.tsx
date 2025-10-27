@@ -290,25 +290,6 @@ export default function ParentsPage() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={async () => {
-              try {
-                const response = await fetch('/api/debug-parents', {
-                  credentials: 'include',
-                  cache: 'no-store'
-                });
-                const data = await response.json();
-                console.log('Debug data:', data);
-                alert('Debug bilgileri konsola yazdırıldı. F12 ile kontrol edin.');
-              } catch (error) {
-                console.error('Debug error:', error);
-                alert('Debug hatası: ' + error);
-              }
-            }}
-            className="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200 font-medium"
-          >
-            Debug
-          </button>
-          <button
             onClick={() => setShowAddModal(true)}
             className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium"
           >
