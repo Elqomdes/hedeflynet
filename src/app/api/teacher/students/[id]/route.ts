@@ -79,3 +79,61 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const authResult = await getCurrentUser(request);
+    if (!authResult || authResult.role !== 'teacher') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const teacherId = authResult._id;
+    const studentId = params.id;
+
+    const connection = await connectDB();
+    if (!connection) {
+      return NextResponse.json(
+        { error: 'Veritabanı bağlantısı kurulamadı' },
+        { status: 500 }
+      );
+    }
+
+    // Only allow deletion if the student is in one of the teacher's classes
+    const isInTeachersClass = await Class.exists({
+      $or: [
+        { teacherId },
+        { coTeachers: teacherId }
+      ],
+      students: studentId
+    });
+
+    if (!isInTeachersClass) {
+      return NextResponse.json(
+        { error: 'Bu öğrenci sizin sınıflarınızda değil' },
+        { status: 403 }
+      );
+    }
+
+    await User.deleteOne({ _id: studentId, role: 'student' });
+
+    // Remove student from any classes they belonged to
+    await Class.updateMany(
+      { students: studentId },
+      { $pull: { students: studentId } }
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete student error:', error);
+    return NextResponse.json(
+      { error: 'Sunucu hatası' },
+      { status: 500 }
+    );
+  }
+}
