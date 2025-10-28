@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     for (const assignment of assignments) {
       // Check if this assignment is completed
-      const submission = submissionMap.get(assignment._id.toString());
+      const submission = submissionMap.get((assignment._id as any).toString());
       const isCompleted = submission && (submission.status === 'graded' || submission.status === 'completed');
       
       // Skip completed assignments from main list
