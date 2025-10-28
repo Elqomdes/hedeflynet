@@ -319,7 +319,7 @@ export default function TeacherAssignments() {
       _id: assignment._id,
       title: assignment.title,
       description: assignment.description,
-      date: new Date(assignment.dueDate).toISOString().split('T')[0],
+      date: assignment.dueDate, // Keep the full date with time information
       status: 'assignment' as const,
       studentName: assignment.studentId ? `${assignment.studentId.firstName} ${assignment.studentId.lastName}` : 'Sınıf Ödevi',
       type: assignment.type
