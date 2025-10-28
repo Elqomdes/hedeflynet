@@ -219,7 +219,7 @@ export default function StudentAnalysisPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(1)}%)`}
+                  label={({ value }) => value > 0 ? value : ''}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
