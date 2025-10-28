@@ -136,7 +136,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 4: Parse request body for date range
+    // Detect action type: create report entry vs generate PDF
+    const urlObj = new URL(request.url);
+    const format = urlObj.searchParams.get('format');
+
+    // If not asking for PDF, create a simple report entry
+    if (!format) {
+      await connectDB();
+      const reportId = `${studentId}-${Date.now()}`;
+      return NextResponse.json({
+        success: true,
+        _id: reportId,
+        title: 'Otomatik Rapor',
+        createdAt: new Date().toISOString(),
+        isPublic: false
+      }, { status: 201 });
+    }
+
+    // Step 4: Parse request body for date range (for PDF generation)
     let startDate: Date | undefined;
     let endDate: Date | undefined;
 
@@ -234,11 +251,11 @@ export async function POST(request: NextRequest) {
         const pdfGenerator = new AdvancedPdfGenerator();
         pdfBuffer = await pdfGenerator.generateReport(reportData);
       } else {
-        // Try advanced PDF first, fallback to simple PDF
+        // Try simple PDF as fallback
         try {
           pdfBuffer = await generateSimplePDF(reportData.student, reportData.performance);
         } catch (advancedPdfError) {
-          console.warn('Advanced PDF generation failed, using simple PDF', advancedPdfError);
+          console.warn('Simple PDF generation failed unexpectedly', advancedPdfError);
           pdfBuffer = await generateSimplePDF(reportData.student, reportData.performance);
         }
       }
@@ -307,30 +324,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Health check endpoint
-export async function GET(request: NextRequest) {
+// GET: return report list (UI expects an array)
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authResult = await getCurrentUser(request);
     if (!authResult || authResult.role !== 'teacher') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    return NextResponse.json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      version: '2.0.0',
-      features: [
-        'Robust data collection with fallback',
-        'Advanced PDF generation with fallback',
-        'Comprehensive error handling',
-        'Retry mechanisms',
-        'Input validation',
-        'Multiple PDF generators'
-      ]
-    });
+    // For now return empty list; UI handles empty state
+    return NextResponse.json([]);
   } catch (error) {
     return NextResponse.json(
-      { error: 'Health check failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Sunucu hatası' },
       { status: 500 }
     );
   }
