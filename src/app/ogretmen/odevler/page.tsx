@@ -451,7 +451,7 @@ export default function TeacherAssignments() {
             background: white;
             border-right: 1px solid #e5e7eb;
             padding: 12px 8px;
-            min-height: 120px;
+            min-height: 160px;
           }
           .calendar-day:last-child {
             border-right: none;
@@ -479,23 +479,45 @@ export default function TeacherAssignments() {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 4px;
-            padding: 6px;
-            margin-bottom: 4px;
+            padding: 8px;
+            margin-bottom: 6px;
             font-size: 11px;
           }
           .assignment-title {
             font-weight: 600;
             color: #1e293b;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             line-height: 1.2;
+          }
+          .assignment-time {
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 3px;
+            background: #f1f5f9;
+            padding: 2px 4px;
+            border-radius: 2px;
+            display: inline-block;
+          }
+          .assignment-description {
+            font-size: 10px;
+            color: #475569;
+            line-height: 1.3;
+            margin-bottom: 3px;
+            max-height: 30px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
           }
           .assignment-type {
             display: inline-block;
-            padding: 1px 4px;
-            border-radius: 2px;
+            padding: 2px 6px;
+            border-radius: 3px;
             font-size: 9px;
             font-weight: 500;
-            margin-top: 2px;
+            margin-top: 3px;
           }
           .assignment-type.class {
             background: #dcfce7;
@@ -570,15 +592,24 @@ export default function TeacherAssignments() {
                   <div class="day-name">${dayNames[idx]}</div>
                   ${isToday ? '<div style="font-size: 10px; color: #dc2626; font-weight: bold;">BUGÜN</div>' : ''}
                 </div>
-                <div style="min-height: 80px;">
+                <div style="min-height: 120px;">
                   ${dayItems.length === 0 ? 
                     '<div class="no-assignments">Ödev yok</div>' :
-                    dayItems.map(item => `
-                      <div class="assignment-item">
-                        <div class="assignment-title">${item.title}</div>
-                        <div class="assignment-type ${item.type}">${item.type === 'class' ? 'Sınıf' : 'Bireysel'}</div>
-                      </div>
-                    `).join('')
+                    dayItems.map(item => {
+                      const itemDate = new Date(item.date);
+                      const hasTime = !isNaN(itemDate.getTime()) && (itemDate.getHours() !== 0 || itemDate.getMinutes() !== 0 || itemDate.getSeconds() !== 0);
+                      const timeLabel = hasTime ? itemDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+                      const description = item.description || '';
+                      
+                      return `
+                        <div class="assignment-item">
+                          <div class="assignment-title">${item.title}</div>
+                          ${timeLabel ? `<div class="assignment-time">🕐 ${timeLabel}</div>` : ''}
+                          ${description ? `<div class="assignment-description">${description}</div>` : ''}
+                          <div class="assignment-type ${item.type}">${item.type === 'class' ? 'Sınıf' : 'Bireysel'}</div>
+                        </div>
+                      `;
+                    }).join('')
                   }
                 </div>
               </div>
