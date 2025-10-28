@@ -597,6 +597,15 @@ export default function TeacherAssignments() {
                     '<div class="no-assignments">Ödev yok</div>' :
                     dayItems.map(item => {
                       const itemDate = new Date(item.date);
+                      console.log('Assignment item:', {
+                        title: item.title,
+                        originalDate: item.date,
+                        parsedDate: itemDate,
+                        hours: itemDate.getHours(),
+                        minutes: itemDate.getMinutes(),
+                        seconds: itemDate.getSeconds(),
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                      });
                       const hasTime = !isNaN(itemDate.getTime()) && (itemDate.getHours() !== 0 || itemDate.getMinutes() !== 0 || itemDate.getSeconds() !== 0);
                       const timeLabel = hasTime ? itemDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
                       const description = item.description || '';

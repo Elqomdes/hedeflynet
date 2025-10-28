@@ -106,6 +106,15 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
                 {grouped[iso] && grouped[iso].length > 0 ? (
                   grouped[iso].slice(0, 4).map((g) => {
                     const dt = new Date(g.date);
+                    console.log('WeekCalendar item:', {
+                      title: g.title,
+                      originalDate: g.date,
+                      parsedDate: dt,
+                      hours: dt.getHours(),
+                      minutes: dt.getMinutes(),
+                      seconds: dt.getSeconds(),
+                      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                    });
                     const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
                     const timeLabel = hasTime ? dt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
                     const statusColor = (() => {
