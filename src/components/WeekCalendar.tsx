@@ -116,7 +116,8 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
                       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                     });
                     const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
-                    const timeLabel = hasTime ? dt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }) : '';
+                    // Fix timezone issue by using local time directly
+                    const timeLabel = hasTime ? `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}` : '';
                     const statusColor = (() => {
                       const isPast = !isNaN(dt.getTime()) && dt.getTime() < new Date().getTime();
                       if (g.status === 'completed' || g.status === 'graded') return 'bg-green-100 text-green-800';
