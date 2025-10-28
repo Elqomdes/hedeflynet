@@ -66,10 +66,7 @@ export async function GET(
       className: classes.length > 0 ? classes[0].name : null
     };
 
-    return NextResponse.json({
-      success: true,
-      student: studentWithClass
-    });
+    return NextResponse.json(studentWithClass);
 
   } catch (error) {
     console.error('Get student error:', error);

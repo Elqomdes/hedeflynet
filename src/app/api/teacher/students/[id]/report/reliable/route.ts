@@ -1,4 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const authResult = await getCurrentUser(request);
+    if (!authResult || authResult.role !== 'teacher') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // For now, return JSON with a URL to a simple report page
+    return NextResponse.json({
+      url: `/rapor/${params.id}`
+    });
+  } catch (error) {
+    console.error('Reliable report error:', error);
+    return NextResponse.json(
+      { error: 'Sunucu hatası' },
+      { status: 500 }
+    );
+  }
+}
+
+import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { getCurrentUser } from '@/lib/auth';
 import ReliableDataCollector from '@/lib/services/reliableDataCollector';
