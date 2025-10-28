@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Assignment, AssignmentSubmission, Goal } from '@/lib/models';
+import { Assignment, AssignmentSubmission } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -62,15 +62,7 @@ export async function GET(
       averageGrade = Math.round(totalGrade / gradedSubmissions.length);
     }
 
-    // Get goals progress
-    const totalGoals = await Goal.countDocuments({ studentId });
-    const completedGoals = await Goal.countDocuments({ 
-      studentId, 
-      status: 'completed' 
-    });
-    const goalsProgress = totalGoals > 0 
-      ? Math.round((completedGoals / totalGoals) * 100)
-      : 0;
+    // Goals are not used in this analysis anymore
 
     // Get real subject statistics from assignments
     const subjectStats: { [key: string]: number } = {};
@@ -146,7 +138,7 @@ export async function GET(
       : 0;
     
     const overallPerformance = Math.round(
-      (assignmentCompletion + goalsProgress + averageSubjectPerformance) / 3
+      (assignmentCompletion + averageSubjectPerformance) / 2
     );
 
     // Generate monthly progress data (last 6 months, dynamic)
@@ -163,16 +155,9 @@ export async function GET(
         createdAt: { $gte: startDate, $lte: endDate }
       });
 
-      const monthlyGoalsCompleted = await Goal.countDocuments({
-        studentId,
-        status: 'completed',
-        updatedAt: { $gte: startDate, $lte: endDate }
-      });
-
       monthlyProgress.push({
         month: label,
-        assignments: monthlyAssignments,
-        goalsCompleted: monthlyGoalsCompleted
+        assignments: monthlyAssignments
       });
     }
 
@@ -233,7 +218,6 @@ export async function GET(
       averageGrade,
       subjectStats,
       subjectDetails,
-      goalsProgress,
       overallPerformance,
       monthlyProgress,
       assignmentTitleCounts

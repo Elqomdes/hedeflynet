@@ -26,12 +26,10 @@ interface AnalysisData {
     submittedAssignments: number; 
     gradedAssignments: number 
   }};
-  goalsProgress: number;
   overallPerformance: number;
   monthlyProgress: Array<{
     month: string;
     assignments: number;
-    goalsCompleted: number;
   }>;
   assignmentTitleCounts?: Array<{ title: string; count: number }>;
 }
@@ -128,7 +126,7 @@ export default function StudentAnalysisPage() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div className="card">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-blue-500">
@@ -140,7 +138,7 @@ export default function StudentAnalysisPage() {
                 %{analysisData.assignmentCompletion}
               </p>
               <p className="text-xs text-secondary-500">
-                {analysisData.submittedAssignments}/{analysisData.submittedAssignments + (analysisData.submittedAssignments || 0)} teslim edildi
+                {analysisData.submittedAssignments}/{analysisData.totalAssignments || 0} teslim edildi
               </p>
             </div>
           </div>
@@ -157,7 +155,7 @@ export default function StudentAnalysisPage() {
                 %{analysisData.gradingRate}
               </p>
               <p className="text-xs text-secondary-500">
-                {analysisData.gradedAssignments} değerlendirildi
+                {analysisData.gradedAssignments}/{analysisData.submittedAssignments || 0} değerlendirildi
               </p>
             </div>
           </div>
@@ -180,22 +178,6 @@ export default function StudentAnalysisPage() {
           </div>
         </div>
 
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-purple-500">
-              <Target className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-secondary-600">Hedef İlerlemesi</p>
-              <p className="text-2xl font-semibold text-secondary-900">
-                %{analysisData.goalsProgress}
-              </p>
-              <p className="text-xs text-secondary-500">
-                Hedefler tamamlandı
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Charts */}
@@ -229,12 +211,8 @@ export default function StudentAnalysisPage() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {[
-                    { name: 'Yapılan Ödevler', value: analysisData.submittedAssignments || 0, color: '#10B981' },
-                    { name: 'Yapılmayan Ödevler', value: Math.max(0, (analysisData.totalAssignments || 0) - (analysisData.submittedAssignments || 0)), color: '#EF4444' }
-                  ].map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
+                  <Cell fill="#10B981" />
+                  <Cell fill="#EF4444" />
                 </Pie>
                 <Tooltip 
                   formatter={(value, name) => [`${value}`, name as string]}
@@ -355,7 +333,6 @@ export default function StudentAnalysisPage() {
               <Tooltip />
               <Legend />
               <Line type="monotone" dataKey="assignments" stroke="#3B82F6" name="Ödevler" strokeWidth={2} />
-              <Line type="monotone" dataKey="goalsCompleted" stroke="#10B981" name="Tamamlanan Hedefler" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
