@@ -13,5 +13,14 @@ export async function POST() {
     maxAge: 0
   });
 
+  // Ensure parent sessions are also cleared
+  response.cookies.set('parent-token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0
+  });
+
   return response;
 }
