@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { User, FileText, Target, BarChart3, Mail, Phone, Calendar, Download } from 'lucide-react';
+import { User, FileText, Target, BarChart3, Mail, Phone, Calendar, Download, Key, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useDataFetching } from '@/hooks/useDataFetching';
 import LoadingSpinner, { CardSkeleton } from '@/components/LoadingSpinner';
@@ -31,6 +31,12 @@ export default function StudentDetailPage() {
   const studentId = params.id as string;
   
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   // Use optimized data fetching hooks
   const { 
@@ -86,6 +92,51 @@ export default function StudentDetailPage() {
       alert(e instanceof Error ? e.message : 'Hata');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      alert('Lütfen tüm alanları doldurun');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert('Şifre en az 6 karakter olmalıdır');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert('Şifreler eşleşmiyor');
+      return;
+    }
+
+    try {
+      setIsUpdatingPassword(true);
+      const response = await fetch(`/api/teacher/students/${studentId}/update-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ newPassword }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Öğrenci şifresi başarıyla güncellendi');
+        setShowPasswordModal(false);
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        alert(data.error || 'Şifre güncellenirken hata oluştu');
+      }
+    } catch (error) {
+      console.error('Password update error:', error);
+      alert('Şifre güncellenirken hata oluştu');
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -281,6 +332,22 @@ export default function StudentDetailPage() {
                 </p>
               </div>
             </div>
+            <div className="flex items-center justify-between pt-4 border-t border-secondary-200">
+              <div className="flex items-center">
+                <Key className="h-5 w-5 text-secondary-400 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-secondary-900">Şifre Yönetimi</p>
+                  <p className="text-sm text-secondary-600">Öğrenci şifresini güncelle</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPasswordModal(true)}
+                className="btn-outline text-sm flex items-center space-x-2"
+              >
+                <Key className="w-4 h-4" />
+                <span>Şifre Güncelle</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -412,6 +479,94 @@ export default function StudentDetailPage() {
           </button>
         </div>
       </div>
+
+      {/* Password Update Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+              Öğrenci Şifresini Güncelle
+            </h3>
+            <p className="text-sm text-secondary-600 mb-4">
+              {student.firstName} {student.lastName} için yeni şifre belirleyin
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">
+                  Yeni Şifre
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent pr-10"
+                    placeholder="En az 6 karakter"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-secondary-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-secondary-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">
+                  Şifreyi Onayla
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent pr-10"
+                    placeholder="Şifreyi tekrar girin"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4 text-secondary-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-secondary-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setNewPassword('');
+                  setConfirmPassword('');
+                }}
+                className="px-4 py-2 text-sm font-medium text-secondary-700 bg-secondary-100 rounded-md hover:bg-secondary-200 transition-colors"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleUpdatePassword}
+                disabled={isUpdatingPassword}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isUpdatingPassword ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
