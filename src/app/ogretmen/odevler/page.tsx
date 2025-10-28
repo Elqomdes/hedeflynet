@@ -89,6 +89,13 @@ const formatDateForInput = (date: string | Date): string => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
+// Helper function to format time for display (same logic as WeekCalendar)
+const formatTimeForDisplay = (date: string | Date): string => {
+  const d = new Date(date);
+  const hasTime = !isNaN(d.getTime()) && (d.getHours() !== 0 || d.getMinutes() !== 0 || d.getSeconds() !== 0);
+  return hasTime ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '';
+};
+
 export default function TeacherAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);

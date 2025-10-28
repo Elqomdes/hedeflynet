@@ -106,17 +106,8 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
                 {grouped[iso] && grouped[iso].length > 0 ? (
                   grouped[iso].slice(0, 4).map((g) => {
                     const dt = new Date(g.date);
-                    console.log('WeekCalendar item:', {
-                      title: g.title,
-                      originalDate: g.date,
-                      parsedDate: dt,
-                      hours: dt.getHours(),
-                      minutes: dt.getMinutes(),
-                      seconds: dt.getSeconds(),
-                      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-                    });
                     const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
-                    // Fix timezone issue by using local time directly
+                    // Use consistent time formatting
                     const timeLabel = hasTime ? `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}` : '';
                     const statusColor = (() => {
                       const isPast = !isNaN(dt.getTime()) && dt.getTime() < new Date().getTime();
