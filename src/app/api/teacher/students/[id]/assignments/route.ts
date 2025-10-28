@@ -58,7 +58,7 @@ export async function GET(
 
     // Combine assignments with their submissions
     const assignmentsWithSubmissions = assignments.map(assignment => {
-      const submission = submissionMap.get(assignment._id.toString());
+      const submission = submissionMap.get((assignment._id as any).toString());
       
       return {
         _id: assignment._id,
