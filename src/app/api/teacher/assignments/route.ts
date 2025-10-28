@@ -122,7 +122,14 @@ export async function POST(request: NextRequest) {
     const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, tags, rubricId, category, priority, successCriteria } = parsed.data;
 
     // Parse dueDate as local time to avoid timezone conversion issues
-    const localDueDate = new Date(dueDate + ':00'); // Add seconds to make it a valid ISO string
+    // datetime-local input gives us "YYYY-MM-DDTHH:MM" format without timezone info
+    // We need to create a Date object that represents the local time, not UTC
+    const [datePart, timePart] = dueDate.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+    
+    // Create date in local timezone
+    const localDueDate = new Date(year, month - 1, day, hours, minutes, 0);
 
     await connectDB();
 

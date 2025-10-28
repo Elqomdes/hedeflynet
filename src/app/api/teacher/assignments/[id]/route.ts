@@ -110,7 +110,15 @@ export async function PUT(
     // Only allow safe field updates here
     if (title !== undefined) assignment.title = title;
     if (description !== undefined) assignment.description = description;
-    if (dueDate !== undefined) assignment.dueDate = new Date(dueDate + ':00');
+    if (dueDate !== undefined) {
+      // Parse dueDate as local time to avoid timezone conversion issues
+      const [datePart, timePart] = dueDate.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+      
+      // Create date in local timezone
+      assignment.dueDate = new Date(year, month - 1, day, hours, minutes, 0);
+    }
     if (attachments !== undefined) assignment.attachments = attachments;
     if (maxGrade !== undefined) assignment.maxGrade = maxGrade;
     if (category !== undefined) assignment.category = category;
