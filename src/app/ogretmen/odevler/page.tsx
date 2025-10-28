@@ -78,6 +78,17 @@ interface Submission {
   }[];
 }
 
+// Helper function to format date for datetime-local input
+const formatDateForInput = (date: string | Date): string => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 export default function TeacherAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1108,7 +1119,7 @@ export default function TeacherAssignments() {
                     <input
                       type="datetime-local"
                       name="dueDate"
-                      defaultValue={editingAssignment?.dueDate ? new Date(editingAssignment.dueDate).toISOString().slice(0, 16) : ''}
+                      defaultValue={editingAssignment?.dueDate ? formatDateForInput(editingAssignment.dueDate) : ''}
                       className="w-full px-4 py-3 border border-secondary-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       required
                     />
