@@ -606,8 +606,12 @@ export default function TeacherAssignments() {
                         seconds: itemDate.getSeconds(),
                         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                       });
+                      
+                      // Fix timezone conversion issue
+                      // Use the original date directly without additional conversion
+                      // The issue might be that the date is already in local timezone
                       const hasTime = !isNaN(itemDate.getTime()) && (itemDate.getHours() !== 0 || itemDate.getMinutes() !== 0 || itemDate.getSeconds() !== 0);
-                      const timeLabel = hasTime ? itemDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+                      const timeLabel = hasTime ? itemDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }) : '';
                       const description = item.description || '';
                       
                       return `
