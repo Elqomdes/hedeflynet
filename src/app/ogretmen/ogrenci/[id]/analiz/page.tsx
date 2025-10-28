@@ -195,7 +195,7 @@ export default function StudentAnalysisPage() {
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
             Bu Hafta Ödev Durumu ({analysisData.weeklyStats.weekStart} - {analysisData.weeklyStats.weekEnd})
           </h3>
-          <div className="h-80">
+          <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -238,7 +238,13 @@ export default function StudentAnalysisPage() {
                     fontSize: '12px'
                   }}
                 />
-                <Legend />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={36}
+                  layout="horizontal"
+                  align="center"
+                  wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
