@@ -34,21 +34,34 @@ export async function GET(
       );
     }
 
-    // Get all assignments for this student (both individual and class assignments)
+    // Get all submissions for this student first
+    const submissions = await AssignmentSubmission.find({
+      studentId: studentId,
+      status: { $in: ['graded', 'completed'] } // Only completed assignments
+    }).sort({ submittedAt: -1 });
+
+    if (submissions.length === 0) {
+      return NextResponse.json({
+        student: {
+          _id: student._id,
+          firstName: student.firstName,
+          lastName: student.lastName,
+          email: student.email
+        },
+        assignments: []
+      });
+    }
+
+    // Get assignment IDs from submissions
+    const assignmentIds = submissions.map(sub => sub.assignmentId);
+
+    // Get assignments for these submissions
     const assignments = await Assignment.find({
-      $or: [
-        { studentId: studentId },
-        { students: studentId }
-      ],
+      _id: { $in: assignmentIds },
       teacherId: teacherId
     })
       .populate('classId', 'name')
       .sort({ dueDate: -1 });
-
-    // Get all submissions for this student
-    const submissions = await AssignmentSubmission.find({
-      studentId: studentId
-    }).sort({ submittedAt: -1 });
 
     // Create a map of submissions by assignment ID
     const submissionMap = new Map();

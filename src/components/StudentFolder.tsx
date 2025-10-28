@@ -187,7 +187,7 @@ export default function StudentFolder({ students, onAssignmentClick }: StudentFo
               const isLoading = loadingStudents.has(student._id);
               const data = studentData.get(student._id);
               const assignments = data?.assignments || [];
-              const completedAssignments = assignments.filter(a => a.submission && (a.submission.status === 'graded' || a.submission.status === 'completed'));
+              // All assignments are already completed since API filters them
               
               return (
                 <div key={student._id} className="border border-secondary-200 rounded-lg">
@@ -210,7 +210,7 @@ export default function StudentFolder({ students, onAssignmentClick }: StudentFo
                             {student.firstName} {student.lastName}
                           </h4>
                           <p className="text-sm text-secondary-600">
-                            {completedAssignments.length} tamamlanan ödev
+                            {assignments.length} tamamlanan ödev
                           </p>
                         </div>
                       </div>
@@ -224,7 +224,7 @@ export default function StudentFolder({ students, onAssignmentClick }: StudentFo
                     <div className="px-4 pb-4 border-t border-secondary-100">
                       {assignments.length === 0 ? (
                         <div className="py-4 text-center text-sm text-secondary-500">
-                          Bu öğrenci için henüz ödev bulunmuyor.
+                          Bu öğrenci için henüz tamamlanan ödev bulunmuyor.
                         </div>
                       ) : (
                         <div className="space-y-2 mt-3">

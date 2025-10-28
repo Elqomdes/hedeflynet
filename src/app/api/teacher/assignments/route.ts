@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Assignment, Class, User } from '@/lib/models';
+import { Assignment, AssignmentSubmission, Class, User } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { AssignmentCreateSchema } from '@/lib/validation';
 
@@ -33,11 +33,32 @@ export async function GET(request: NextRequest) {
       .populate('studentId', 'firstName lastName')
       .sort({ dueDate: 1 });
 
-    // Group class assignments together
+    // Get all submissions to check completion status
+    const assignmentIds = assignments.map(a => a._id);
+    const submissions = await AssignmentSubmission.find({
+      assignmentId: { $in: assignmentIds }
+    }).lean();
+
+    // Create a map of submissions by assignment ID
+    const submissionMap = new Map();
+    submissions.forEach(submission => {
+      submissionMap.set(submission.assignmentId.toString(), submission);
+    });
+
+    // Group class assignments together and filter out completed ones
     const classAssignmentsMap = new Map();
     const individualAssignments = [];
 
     for (const assignment of assignments) {
+      // Check if this assignment is completed
+      const submission = submissionMap.get(assignment._id.toString());
+      const isCompleted = submission && (submission.status === 'graded' || submission.status === 'completed');
+      
+      // Skip completed assignments from main list
+      if (isCompleted) {
+        continue;
+      }
+
       if (assignment.type === 'class' && assignment.classId) {
         // Create a unique key for grouping: classId + title + dueDate
         const key = `${assignment.classId._id}-${assignment.title}-${assignment.dueDate}`;
