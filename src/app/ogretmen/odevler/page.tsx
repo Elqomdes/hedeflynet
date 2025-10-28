@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye, Target, BookOpen, Zap, BarChart3 } from 'lucide-react';
+import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye, Target, BookOpen, Zap, BarChart3, Printer } from 'lucide-react';
 import WeekCalendar from '@/components/WeekCalendar';
 import StudentFolder from '@/components/StudentFolder';
 import AssignmentDetailModal from '@/components/AssignmentDetailModal';
@@ -338,6 +338,199 @@ export default function TeacherAssignments() {
     setSelectedStudentForDetail(null);
   };
 
+  const handlePrintCalendar = () => {
+    if (!selectedStudentForCalendar) return;
+    
+    const studentName = students.find(s => s._id === selectedStudentForCalendar);
+    const studentFullName = studentName ? `${studentName.firstName} ${studentName.lastName}` : 'Öğrenci';
+    
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    // Get calendar items for the selected student
+    const calendarItems = getStudentCalendarItems();
+    
+    // Create HTML content for printing
+    const printContent = `
+      <!DOCTYPE html>
+      <html lang="tr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${studentFullName} - Ödev Takvimi</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: white;
+            color: #333;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+          }
+          .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+            color: #1f2937;
+          }
+          .header p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 5px 0 0 0;
+          }
+          .calendar-info {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+          }
+          .calendar-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            color: #374151;
+          }
+          .calendar-info p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+          }
+          .assignments-list {
+            margin-top: 20px;
+          }
+          .assignment-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          }
+          .assignment-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 8px 0;
+          }
+          .assignment-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0 0 10px 0;
+            line-height: 1.5;
+          }
+          .assignment-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #6b7280;
+          }
+          .assignment-type {
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+          }
+          .assignment-type.class {
+            background: #10b981;
+          }
+          .assignment-type.individual {
+            background: #8b5cf6;
+          }
+          .due-date {
+            font-weight: 500;
+            color: #374151;
+          }
+          .no-assignments {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            font-style: italic;
+          }
+          .print-date {
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 30px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+          @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>${studentFullName} - Ödev Takvimi</h1>
+          <p>Haftalık Ödev Programı</p>
+        </div>
+        
+        <div class="calendar-info">
+          <h3>📅 Takvim Bilgileri</h3>
+          <p><strong>Öğrenci:</strong> ${studentFullName}</p>
+          <p><strong>Toplam Ödev:</strong> ${calendarItems.length} adet</p>
+          <p><strong>Yazdırma Tarihi:</strong> ${new Date().toLocaleDateString('tr-TR', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            weekday: 'long'
+          })}</p>
+        </div>
+        
+        <div class="assignments-list">
+          ${calendarItems.length === 0 ? 
+            '<div class="no-assignments">Bu öğrenci için bu hafta ödev bulunmuyor.</div>' :
+            calendarItems.map(item => `
+              <div class="assignment-item">
+                <div class="assignment-title">${item.title}</div>
+                <div class="assignment-description">${item.description}</div>
+                <div class="assignment-meta">
+                  <span class="assignment-type ${item.type}">${item.type === 'class' ? 'Sınıf Ödevi' : 'Bireysel Ödev'}</span>
+                  <span class="due-date">📅 Teslim: ${new Date(item.date).toLocaleDateString('tr-TR', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric',
+                    weekday: 'long'
+                  })}</span>
+                </div>
+              </div>
+            `).join('')
+          }
+        </div>
+        
+        <div class="print-date">
+          Bu belge ${new Date().toLocaleString('tr-TR')} tarihinde yazdırılmıştır.
+        </div>
+      </body>
+      </html>
+    `;
+    
+    // Write content to the new window
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // Wait for content to load, then trigger print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      
+      // Close the window after printing (optional)
+      setTimeout(() => {
+        printWindow.close();
+      }, 1000);
+    };
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -500,11 +693,23 @@ export default function TeacherAssignments() {
         <div className="mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
             <div className="px-6 py-4 border-b border-secondary-200">
-              <h3 className="text-lg font-semibold text-secondary-900 flex items-center">
-                <Calendar className="h-5 w-5 mr-2" />
-                {students.find(s => s._id === selectedStudentForCalendar)?.firstName} {students.find(s => s._id === selectedStudentForCalendar)?.lastName} - Haftalık Takvim
-              </h3>
-              <p className="text-sm text-secondary-600">Seçilen öğrencinin ödev takvimi</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-secondary-900 flex items-center">
+                    <Calendar className="h-5 w-5 mr-2" />
+                    {students.find(s => s._id === selectedStudentForCalendar)?.firstName} {students.find(s => s._id === selectedStudentForCalendar)?.lastName} - Haftalık Takvim
+                  </h3>
+                  <p className="text-sm text-secondary-600">Seçilen öğrencinin ödev takvimi</p>
+                </div>
+                <button
+                  onClick={handlePrintCalendar}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                  title="Takvimi Yazdır"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Yazdır
+                </button>
+              </div>
             </div>
             <div className="p-6">
               <WeekCalendar 
