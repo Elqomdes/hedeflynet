@@ -123,10 +123,6 @@ export async function POST(request: NextRequest) {
 
     // Parse dueDate as local time to avoid timezone conversion issues
     const localDueDate = new Date(dueDate + ':00'); // Add seconds to make it a valid ISO string
-    console.log('API - Due Date Input:', dueDate);
-    console.log('API - Local Due Date:', localDueDate);
-    console.log('API - Local Hours:', localDueDate.getHours());
-    console.log('API - Local Minutes:', localDueDate.getMinutes());
 
     await connectDB();
 
