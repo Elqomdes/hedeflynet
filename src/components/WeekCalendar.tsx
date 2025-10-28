@@ -106,9 +106,18 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
                 {grouped[iso] && grouped[iso].length > 0 ? (
                   grouped[iso].slice(0, 4).map((g) => {
                     const dt = new Date(g.date);
+                    console.log('WeekCalendar - Title:', g.title);
+                    console.log('WeekCalendar - Original Date:', g.date);
+                    console.log('WeekCalendar - Parsed Date:', dt);
+                    console.log('WeekCalendar - Local Hours:', dt.getHours());
+                    console.log('WeekCalendar - Local Minutes:', dt.getMinutes());
+                    console.log('WeekCalendar - UTC Hours:', dt.getUTCHours());
+                    console.log('WeekCalendar - UTC Minutes:', dt.getUTCMinutes());
+                    
                     const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
                     // Use consistent time formatting
                     const timeLabel = hasTime ? `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}` : '';
+                    console.log('WeekCalendar - Time Label:', timeLabel);
                     const statusColor = (() => {
                       const isPast = !isNaN(dt.getTime()) && dt.getTime() < new Date().getTime();
                       if (g.status === 'completed' || g.status === 'graded') return 'bg-green-100 text-green-800';

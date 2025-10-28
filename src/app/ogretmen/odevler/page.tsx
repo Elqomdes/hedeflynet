@@ -81,12 +81,21 @@ interface Submission {
 // Helper function to format date for datetime-local input
 const formatDateForInput = (date: string | Date): string => {
   const d = new Date(date);
+  console.log('formatDateForInput - Input:', date);
+  console.log('formatDateForInput - Parsed Date:', d);
+  console.log('formatDateForInput - Local Hours:', d.getHours());
+  console.log('formatDateForInput - Local Minutes:', d.getMinutes());
+  console.log('formatDateForInput - UTC Hours:', d.getUTCHours());
+  console.log('formatDateForInput - UTC Minutes:', d.getUTCMinutes());
+  
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   const hours = String(d.getHours()).padStart(2, '0');
   const minutes = String(d.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+  const result = `${year}-${month}-${day}T${hours}:${minutes}`;
+  console.log('formatDateForInput - Result:', result);
+  return result;
 };
 
 // Helper function to format time for display (same logic as WeekCalendar)
@@ -1021,16 +1030,22 @@ export default function TeacherAssignments() {
                   return;
                 }
                 
+                const dueDateValue = formData.get('dueDate') as string;
+                console.log('Form Submission - Due Date Input:', dueDateValue);
+                console.log('Form Submission - Parsed Date:', new Date(dueDateValue));
+                
                 const assignmentData = {
                   title: title.trim(),
                   description: description.trim(),
                   type: formData.get('type'),
                   classId: formData.get('classId'),
                   studentId: formData.get('studentId'),
-                  dueDate: formData.get('dueDate'),
+                  dueDate: dueDateValue,
                   maxGrade: formData.get('maxGrade') ? parseInt(formData.get('maxGrade') as string) : 100,
                   attachments: []
                 };
+                
+                console.log('Form Submission - Assignment Data:', assignmentData);
 
                 try {
                   const isEdit = Boolean(editingAssignment);

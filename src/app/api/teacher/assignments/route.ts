@@ -121,6 +121,13 @@ export async function POST(request: NextRequest) {
     }
     const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, tags, rubricId, category, priority, successCriteria } = parsed.data;
 
+    // Parse dueDate as local time to avoid timezone conversion issues
+    const localDueDate = new Date(dueDate + ':00'); // Add seconds to make it a valid ISO string
+    console.log('API - Due Date Input:', dueDate);
+    console.log('API - Local Due Date:', localDueDate);
+    console.log('API - Local Hours:', localDueDate.getHours());
+    console.log('API - Local Minutes:', localDueDate.getMinutes());
+
     await connectDB();
 
     if (type === 'class') {
@@ -143,7 +150,7 @@ export async function POST(request: NextRequest) {
           classId: classId,
           studentId: student._id,
           attachments: attachments || [],
-          dueDate: new Date(dueDate),
+          dueDate: localDueDate,
           maxGrade: maxGrade ?? 100,
           tags: Array.isArray(tags) ? tags : undefined,
           rubricId: rubricId || undefined,
@@ -171,7 +178,7 @@ export async function POST(request: NextRequest) {
         teacherId: authResult._id,
         studentId: studentId,
         attachments: attachments || [],
-        dueDate: new Date(dueDate),
+        dueDate: localDueDate,
         maxGrade: maxGrade ?? 100,
         tags: Array.isArray(tags) ? tags : undefined,
         rubricId: rubricId || undefined,

@@ -110,7 +110,7 @@ export async function PUT(
     // Only allow safe field updates here
     if (title !== undefined) assignment.title = title;
     if (description !== undefined) assignment.description = description;
-    if (dueDate !== undefined) assignment.dueDate = new Date(dueDate);
+    if (dueDate !== undefined) assignment.dueDate = new Date(dueDate + ':00');
     if (attachments !== undefined) assignment.attachments = attachments;
     if (maxGrade !== undefined) assignment.maxGrade = maxGrade;
     if (category !== undefined) assignment.category = category;
