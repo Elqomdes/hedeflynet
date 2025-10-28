@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { FileText, Plus, Clock, Users, User, Calendar, Edit3, Trash2, ExternalLink, CheckCircle, Star, MessageSquare, Eye, Target, BookOpen, Zap, BarChart3 } from 'lucide-react';
 import WeekCalendar from '@/components/WeekCalendar';
+import StudentFolder from '@/components/StudentFolder';
+import AssignmentDetailModal from '@/components/AssignmentDetailModal';
 
 interface Attachment {
   type: 'pdf' | 'video' | 'link';
@@ -41,6 +43,17 @@ interface Assignment {
   progress?: number; // 0-100
   createdAt: string;
   updatedAt: string;
+  // For student folder assignments
+  submission?: {
+    _id: string;
+    status: 'completed' | 'incomplete' | 'not_started' | 'submitted' | 'graded' | 'late';
+    grade?: number;
+    maxGrade?: number;
+    teacherFeedback?: string;
+    submittedAt?: string;
+    gradedAt?: string;
+    content?: string;
+  } | null;
 }
 
 interface Submission {
@@ -85,6 +98,8 @@ export default function TeacherAssignments() {
   const [showOnlyOverdue, setShowOnlyOverdue] = useState(false);
   const [allowLatePolicy, setAllowLatePolicy] = useState<'no' | 'untilClose' | 'always'>('untilClose');
   const [penaltyPercent, setPenaltyPercent] = useState<number>(0);
+  const [selectedAssignmentForDetail, setSelectedAssignmentForDetail] = useState<Assignment | null>(null);
+  const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<any>(null);
 
   useEffect(() => {
     fetchAssignments();
@@ -312,6 +327,16 @@ export default function TeacherAssignments() {
   };
 
   const studentCalendarItems = getStudentCalendarItems();
+
+  const handleAssignmentClick = (assignment: any, student: any) => {
+    setSelectedAssignmentForDetail(assignment);
+    setSelectedStudentForDetail(student);
+  };
+
+  const handleCloseAssignmentDetail = () => {
+    setSelectedAssignmentForDetail(null);
+    setSelectedStudentForDetail(null);
+  };
 
   if (loading) {
     return (
@@ -1041,6 +1066,20 @@ export default function TeacherAssignments() {
           </div>
         </div>
       )}
+
+      {/* Student Folder Section */}
+      <StudentFolder 
+        students={students} 
+        onAssignmentClick={handleAssignmentClick}
+      />
+
+      {/* Assignment Detail Modal */}
+      <AssignmentDetailModal
+        assignment={selectedAssignmentForDetail}
+        student={selectedStudentForDetail}
+        isOpen={!!selectedAssignmentForDetail}
+        onClose={handleCloseAssignmentDetail}
+      />
     </div>
   );
 }
