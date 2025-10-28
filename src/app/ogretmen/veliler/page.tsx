@@ -41,6 +41,9 @@ export default function ParentsPage() {
   const [loading, setLoading] = useState(true);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddChildModal, setShowAddChildModal] = useState(false);
+  const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   const [editingParent, setEditingParent] = useState<Parent | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
