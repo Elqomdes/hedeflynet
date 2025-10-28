@@ -39,9 +39,9 @@ export default function ParentsPage() {
   const [parents, setParents] = useState<Parent[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showAddChildModal, setShowAddChildModal] = useState(false);
-  const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingParent, setEditingParent] = useState<Parent | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedParents, setExpandedParents] = useState<Set<string>>(new Set());
@@ -246,6 +246,56 @@ export default function ParentsPage() {
     }
   };
 
+  const handleViewParent = (parent: Parent) => {
+    setSelectedParent(parent);
+    setShowViewModal(true);
+  };
+
+  const handleEditParent = (parent: Parent) => {
+    setEditingParent(parent);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateParent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingParent) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/teacher/parents/${editingParent._id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+        body: JSON.stringify({
+          firstName: editingParent.firstName,
+          lastName: editingParent.lastName,
+          email: editingParent.email,
+          phone: editingParent.phone,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchParents();
+        setShowEditModal(false);
+        setEditingParent(null);
+        alert('Veli bilgileri başarıyla güncellendi!');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Veli güncellenirken bir hata oluştu');
+      }
+    } catch (error) {
+      console.error('Update parent error:', error);
+      alert('Veli güncellenirken bir hata oluştu');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const toggleParentExpansion = (parentId: string) => {
     const newExpanded = new Set(expandedParents);
     if (newExpanded.has(parentId)) {
@@ -411,14 +461,14 @@ export default function ParentsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => {/* View parent details */}}
+                            onClick={() => handleViewParent(parent)}
                             className="text-primary-600 hover:text-primary-900 transition-colors duration-150"
                             title="Görüntüle"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => {/* Edit parent */}}
+                            onClick={() => handleEditParent(parent)}
                             className="text-secondary-600 hover:text-secondary-900 transition-colors duration-150"
                             title="Düzenle"
                           >
@@ -733,6 +783,210 @@ export default function ParentsPage() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Parent Modal */}
+      {showViewModal && selectedParent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-secondary-900">
+                  Veli Detayları
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    setSelectedParent(null);
+                  }}
+                  className="text-secondary-400 hover:text-secondary-600 transition-colors duration-150"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
+                    <User className="h-6 w-6 text-primary-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-secondary-900">
+                      {selectedParent.firstName} {selectedParent.lastName}
+                    </h3>
+                    <p className="text-sm text-secondary-500">@{selectedParent.username}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Mail className="w-5 h-5 text-secondary-400" />
+                    <div>
+                      <p className="text-sm font-medium text-secondary-700">E-posta</p>
+                      <p className="text-sm text-secondary-900">{selectedParent.email}</p>
+                    </div>
+                  </div>
+
+                  {selectedParent.phone && (
+                    <div className="flex items-center space-x-3">
+                      <Phone className="w-5 h-5 text-secondary-400" />
+                      <div>
+                        <p className="text-sm font-medium text-secondary-700">Telefon</p>
+                        <p className="text-sm text-secondary-900">{selectedParent.phone}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center space-x-3">
+                    <GraduationCap className="w-5 h-5 text-secondary-400" />
+                    <div>
+                      <p className="text-sm font-medium text-secondary-700">Öğrenci Sayısı</p>
+                      <p className="text-sm text-secondary-900">{selectedParent.children.length} öğrenci</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <div className={`w-3 h-3 rounded-full ${selectedParent.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-secondary-700">Durum</p>
+                      <p className="text-sm text-secondary-900">{selectedParent.isActive ? 'Aktif' : 'Pasif'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedParent.childrenDetails && selectedParent.childrenDetails.length > 0 && (
+                  <div className="pt-4 border-t border-secondary-200">
+                    <h4 className="text-sm font-medium text-secondary-900 mb-3">Bağlı Öğrenciler</h4>
+                    <div className="space-y-2">
+                      {selectedParent.childrenDetails.map((student: Student) => (
+                        <div key={student._id} className="flex items-center space-x-3 p-3 bg-secondary-50 rounded-lg">
+                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                            <GraduationCap className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-secondary-900">
+                              {student.firstName} {student.lastName}
+                            </p>
+                            <p className="text-xs text-secondary-500">{student.email}</p>
+                            {student.className && (
+                              <p className="text-xs text-blue-600">{student.className}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Parent Modal */}
+      {showEditModal && editingParent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-secondary-900">Veli Düzenle</h2>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingParent(null);
+                  }}
+                  className="text-secondary-400 hover:text-secondary-600 transition-colors duration-150"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateParent} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700 mb-1">
+                      Ad *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editingParent.firstName}
+                      onChange={(e) => setEditingParent({ ...editingParent, firstName: e.target.value })}
+                      className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="Ad"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700 mb-1">
+                      Soyad *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editingParent.lastName}
+                      onChange={(e) => setEditingParent({ ...editingParent, lastName: e.target.value })}
+                      className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="Soyad"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-1">
+                    E-posta *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={editingParent.email}
+                    onChange={(e) => setEditingParent({ ...editingParent, email: e.target.value })}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="ornek@email.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-1">
+                    Telefon
+                  </label>
+                  <input
+                    type="tel"
+                    value={editingParent.phone}
+                    onChange={(e) => setEditingParent({ ...editingParent, phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="0555 123 45 67"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingParent(null);
+                    }}
+                    className="px-4 py-2 text-secondary-700 bg-secondary-100 rounded-lg hover:bg-secondary-200 transition-colors duration-150"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                  >
+                    {isSubmitting ? 'Güncelleniyor...' : 'Güncelle'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
