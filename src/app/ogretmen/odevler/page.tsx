@@ -351,6 +351,42 @@ export default function TeacherAssignments() {
     // Get calendar items for the selected student
     const calendarItems = getStudentCalendarItems();
     
+    // Get current week days (same logic as WeekCalendar)
+    const getWeekDays = (reference: Date): Date[] => {
+      const ref = new Date(reference);
+      const day = ref.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1 - day);
+      const monday = new Date(ref);
+      monday.setDate(ref.getDate() + diffToMonday);
+      return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return d;
+      });
+    };
+    
+    const formatISODate = (d: Date): string => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    const days = getWeekDays(new Date());
+    const dayNames = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+    
+    // Group items by day
+    const grouped: Record<string, any[]> = {};
+    for (const d of days) {
+      grouped[formatISODate(d)] = [];
+    }
+    for (const item of calendarItems) {
+      const key = formatISODate(new Date(item.date));
+      if (grouped[key]) {
+        grouped[key].push(item);
+      }
+    }
+    
     // Create HTML content for printing
     const printContent = `
       <!DOCTYPE html>
@@ -358,7 +394,7 @@ export default function TeacherAssignments() {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${studentFullName} - Ödev Takvimi</title>
+        <title>${studentFullName} - Haftalık Ödev Takvimi</title>
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -402,58 +438,79 @@ export default function TeacherAssignments() {
             color: #6b7280;
             margin: 0;
           }
-          .assignments-list {
+          .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
             margin-top: 20px;
-          }
-          .assignment-item {
-            background: white;
-            border: 1px solid #e5e7eb;
+            border: 2px solid #e5e7eb;
             border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
           }
-          .assignment-title {
-            font-size: 16px;
+          .calendar-day {
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 12px 8px;
+            min-height: 120px;
+          }
+          .calendar-day:last-child {
+            border-right: none;
+          }
+          .day-header {
             font-weight: 600;
-            color: #1f2937;
-            margin: 0 0 8px 0;
-          }
-          .assignment-description {
             font-size: 14px;
-            color: #6b7280;
-            margin: 0 0 10px 0;
-            line-height: 1.5;
+            color: #374151;
+            margin-bottom: 8px;
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f3f4f6;
           }
-          .assignment-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+          .day-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f2937;
+          }
+          .day-name {
             font-size: 12px;
             color: #6b7280;
+            margin-top: 2px;
+          }
+          .assignment-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 6px;
+            margin-bottom: 4px;
+            font-size: 11px;
+          }
+          .assignment-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 2px;
+            line-height: 1.2;
           }
           .assignment-type {
-            background: #3b82f6;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 9px;
             font-weight: 500;
+            margin-top: 2px;
           }
           .assignment-type.class {
-            background: #10b981;
+            background: #dcfce7;
+            color: #166534;
           }
           .assignment-type.individual {
-            background: #8b5cf6;
-          }
-          .due-date {
-            font-weight: 500;
-            color: #374151;
+            background: #e0e7ff;
+            color: #3730a3;
           }
           .no-assignments {
             text-align: center;
-            padding: 40px;
-            color: #6b7280;
+            color: #9ca3af;
+            font-size: 11px;
             font-style: italic;
+            padding: 20px 0;
           }
           .print-date {
             text-align: center;
@@ -463,16 +520,25 @@ export default function TeacherAssignments() {
             border-top: 1px solid #e5e7eb;
             padding-top: 15px;
           }
+          .week-range {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 20px;
+            font-weight: 500;
+          }
           @media print {
-            body { margin: 0; }
+            body { margin: 0; padding: 15px; }
             .no-print { display: none; }
+            .calendar-grid { break-inside: avoid; }
+            .calendar-day { break-inside: avoid; }
           }
         </style>
       </head>
       <body>
         <div class="header">
-          <h1>${studentFullName} - Ödev Takvimi</h1>
-          <p>Haftalık Ödev Programı</p>
+          <h1>${studentFullName} - Haftalık Ödev Takvimi</h1>
+          <p>Ödev Programı ve Teslim Tarihleri</p>
         </div>
         
         <div class="calendar-info">
@@ -487,25 +553,37 @@ export default function TeacherAssignments() {
           })}</p>
         </div>
         
-        <div class="assignments-list">
-          ${calendarItems.length === 0 ? 
-            '<div class="no-assignments">Bu öğrenci için bu hafta ödev bulunmuyor.</div>' :
-            calendarItems.map(item => `
-              <div class="assignment-item">
-                <div class="assignment-title">${item.title}</div>
-                <div class="assignment-description">${item.description}</div>
-                <div class="assignment-meta">
-                  <span class="assignment-type ${item.type}">${item.type === 'class' ? 'Sınıf Ödevi' : 'Bireysel Ödev'}</span>
-                  <span class="due-date">📅 Teslim: ${new Date(item.date).toLocaleDateString('tr-TR', { 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric',
-                    weekday: 'long'
-                  })}</span>
+        <div class="week-range">
+          📅 ${days[0].toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })} - ${days[6].toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </div>
+        
+        <div class="calendar-grid">
+          ${days.map((day, idx) => {
+            const iso = formatISODate(day);
+            const dayItems = grouped[iso] || [];
+            const isToday = formatISODate(new Date()) === iso;
+            
+            return `
+              <div class="calendar-day">
+                <div class="day-header">
+                  <div class="day-number">${day.getDate()}</div>
+                  <div class="day-name">${dayNames[idx]}</div>
+                  ${isToday ? '<div style="font-size: 10px; color: #dc2626; font-weight: bold;">BUGÜN</div>' : ''}
+                </div>
+                <div style="min-height: 80px;">
+                  ${dayItems.length === 0 ? 
+                    '<div class="no-assignments">Ödev yok</div>' :
+                    dayItems.map(item => `
+                      <div class="assignment-item">
+                        <div class="assignment-title">${item.title}</div>
+                        <div class="assignment-type ${item.type}">${item.type === 'class' ? 'Sınıf' : 'Bireysel'}</div>
+                      </div>
+                    `).join('')
+                  }
                 </div>
               </div>
-            `).join('')
-          }
+            `;
+          }).join('')}
         </div>
         
         <div class="print-date">
