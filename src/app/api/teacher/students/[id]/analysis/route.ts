@@ -141,6 +141,47 @@ export async function GET(
       (assignmentCompletion + averageSubjectPerformance) / 2
     );
 
+    // Generate weekly assignment data for current week
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - currentDay + 1); // Monday
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    // Get assignments for current week
+    const weeklyAssignments = await Assignment.find({
+      studentId,
+      createdAt: { $gte: startOfWeek, $lte: endOfWeek }
+    });
+
+    // Get submissions for weekly assignments
+    const weeklyAssignmentIds = weeklyAssignments.map(a => a._id);
+    const weeklySubmissions = await AssignmentSubmission.find({
+      assignmentId: { $in: weeklyAssignmentIds },
+      studentId,
+      status: 'submitted'
+    });
+
+    const weeklyGradedSubmissions = await AssignmentSubmission.find({
+      assignmentId: { $in: weeklyAssignmentIds },
+      studentId,
+      status: 'graded'
+    });
+
+    // Calculate weekly statistics
+    const weeklyStats = {
+      totalAssignments: weeklyAssignments.length,
+      submittedAssignments: weeklySubmissions.length,
+      gradedAssignments: weeklyGradedSubmissions.length,
+      pendingAssignments: weeklyAssignments.length - weeklySubmissions.length,
+      weekStart: startOfWeek.toLocaleDateString('tr-TR'),
+      weekEnd: endOfWeek.toLocaleDateString('tr-TR')
+    };
+
     // Generate monthly progress data (last 6 months, dynamic)
     const monthlyProgress = [] as any[];
     const base = new Date();
@@ -220,7 +261,8 @@ export async function GET(
       subjectDetails,
       overallPerformance,
       monthlyProgress,
-      assignmentTitleCounts
+      assignmentTitleCounts,
+      weeklyStats
     });
   } catch (error) {
     console.error('Student analysis error:', error);

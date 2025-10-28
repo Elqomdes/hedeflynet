@@ -32,6 +32,14 @@ interface AnalysisData {
     assignments: number;
   }>;
   assignmentTitleCounts?: Array<{ title: string; count: number }>;
+  weeklyStats: {
+    totalAssignments: number;
+    submittedAssignments: number;
+    gradedAssignments: number;
+    pendingAssignments: number;
+    weekStart: string;
+    weekEnd: string;
+  };
 }
 
 export default function StudentAnalysisPage() {
@@ -185,7 +193,7 @@ export default function StudentAnalysisPage() {
         {/* Assignment Status Distribution - Pie Chart */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Ödev Durum Dağılımı
+            Bu Hafta Ödev Durumu ({analysisData.weeklyStats.weekStart} - {analysisData.weeklyStats.weekEnd})
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -193,14 +201,19 @@ export default function StudentAnalysisPage() {
                 <Pie
                   data={[
                     { 
-                      name: 'Yapılan Ödevler', 
-                      value: analysisData.submittedAssignments || 0,
+                      name: 'Teslim Edilen', 
+                      value: analysisData.weeklyStats.submittedAssignments || 0,
                       color: '#10B981'
                     },
                     { 
-                      name: 'Yapılmayan Ödevler', 
-                      value: Math.max(0, (analysisData.totalAssignments || 0) - (analysisData.submittedAssignments || 0)),
+                      name: 'Bekleyen', 
+                      value: analysisData.weeklyStats.pendingAssignments || 0,
                       color: '#EF4444'
+                    },
+                    { 
+                      name: 'Değerlendirilen', 
+                      value: analysisData.weeklyStats.gradedAssignments || 0,
+                      color: '#3B82F6'
                     }
                   ]}
                   cx="50%"
@@ -213,6 +226,7 @@ export default function StudentAnalysisPage() {
                 >
                   <Cell fill="#10B981" />
                   <Cell fill="#EF4444" />
+                  <Cell fill="#3B82F6" />
                 </Pie>
                 <Tooltip 
                   formatter={(value, name) => [`${value}`, name as string]}
@@ -227,6 +241,10 @@ export default function StudentAnalysisPage() {
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+          <div className="mt-4 text-sm text-secondary-600">
+            <p>Toplam: {analysisData.weeklyStats.totalAssignments} ödev</p>
+            <p>Bu hafta için {analysisData.weeklyStats.totalAssignments > 0 ? 'ödev verisi mevcut' : 'ödev verisi bulunmuyor'}</p>
           </div>
         </div>
 
