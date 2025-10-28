@@ -112,12 +112,18 @@ export async function PUT(
     if (description !== undefined) assignment.description = description;
     if (dueDate !== undefined) {
       // Parse dueDate as local time to avoid timezone conversion issues
-      const [datePart, timePart] = dueDate.split('T');
-      const [year, month, day] = datePart.split('-').map(Number);
-      const [hours, minutes] = timePart.split(':').map(Number);
-      
-      // Create date in local timezone
-      assignment.dueDate = new Date(year, month - 1, day, hours, minutes, 0);
+      if (typeof dueDate === 'string' && dueDate.includes('T')) {
+        // Handle datetime-local format: "YYYY-MM-DDTHH:MM"
+        const [datePart, timePart] = dueDate.split('T');
+        const [year, month, day] = datePart.split('-').map(Number);
+        const [hours, minutes] = timePart.split(':').map(Number);
+        
+        // Create date in local timezone
+        assignment.dueDate = new Date(year, month - 1, day, hours, minutes, 0);
+      } else {
+        // Fallback to regular Date parsing
+        assignment.dueDate = new Date(dueDate);
+      }
     }
     if (attachments !== undefined) assignment.attachments = attachments;
     if (maxGrade !== undefined) assignment.maxGrade = maxGrade;
