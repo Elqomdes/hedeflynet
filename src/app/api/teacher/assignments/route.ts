@@ -122,22 +122,8 @@ export async function POST(request: NextRequest) {
     const { title, description, type, classId, studentId, attachments, dueDate, maxGrade, tags, rubricId, category, priority, successCriteria } = parsed.data;
 
     // Parse dueDate as local time to avoid timezone conversion issues
-    // datetime-local input gives us "YYYY-MM-DDTHH:MM" format without timezone info
-    // We need to create a Date object that represents the local time, not UTC
-    let localDueDate;
-    
-    if (typeof dueDate === 'string' && dueDate.includes('T')) {
-      // Handle datetime-local format: "YYYY-MM-DDTHH:MM"
-      const [datePart, timePart] = dueDate.split('T');
-      const [year, month, day] = datePart.split('-').map(Number);
-      const [hours, minutes] = timePart.split(':').map(Number);
-      
-      // Create date in local timezone
-      localDueDate = new Date(year, month - 1, day, hours, minutes, 0);
-    } else {
-      // Fallback to regular Date parsing
-      localDueDate = new Date(dueDate);
-    }
+    // The schema already transforms dueDate to a Date object, so we can use it directly
+    let localDueDate = dueDate;
 
     await connectDB();
 
