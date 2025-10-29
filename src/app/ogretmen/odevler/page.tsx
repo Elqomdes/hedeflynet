@@ -152,16 +152,6 @@ export default function TeacherAssignments() {
       if (response.ok) {
         const data = await response.json();
         
-        // Debug: Log assignment due dates from API
-        console.log('Frontend - Assignments from API:');
-        data.forEach((assignment: any) => {
-          console.log(`Assignment: ${assignment.title}`);
-          console.log(`  Raw dueDate: ${assignment.dueDate}`);
-          console.log(`  Parsed Date: ${parseApiDate(assignment.dueDate)}`);
-          console.log(`  Hours: ${parseApiDate(assignment.dueDate).getHours()}, Minutes: ${parseApiDate(assignment.dueDate).getMinutes()}`);
-          console.log('---');
-        });
-        
         // Parse dates to avoid timezone issues
         const parsedData = data.map((assignment: any) => ({
           ...assignment,

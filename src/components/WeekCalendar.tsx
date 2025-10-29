@@ -116,13 +116,6 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
                       rawDate.getSeconds()
                     );
                     
-                    // Debug: Log calendar item dates
-                    console.log(`WeekCalendar - Item: ${g.title}`);
-                    console.log(`  Raw date: ${g.date}`);
-                    console.log(`  Parsed Date: ${dt}`);
-                    console.log(`  Hours: ${dt.getHours()}, Minutes: ${dt.getMinutes()}`);
-                    console.log('---');
-                    
                     const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
                     // Use consistent time formatting - ensure local time display
                     const timeLabel = hasTime ? `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}` : '';
