@@ -81,6 +81,7 @@ interface Submission {
 // Helper function to format date for datetime-local input
 const formatDateForInput = (date: string | Date): string => {
   const d = new Date(date);
+  // Ensure we're working with local time, not UTC
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
@@ -615,17 +616,8 @@ export default function TeacherAssignments() {
                     '<div class="no-assignments">Ödev yok</div>' :
                     dayItems.map(item => {
                       const itemDate = new Date(item.date);
-                      console.log('Assignment item:', {
-                        title: item.title,
-                        originalDate: item.date,
-                        parsedDate: itemDate,
-                        hours: itemDate.getHours(),
-                        minutes: itemDate.getMinutes(),
-                        seconds: itemDate.getSeconds(),
-                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-                      });
                       
-                      // Fix timezone conversion issue by using local time directly
+                      // Use local time display consistently
                       const hasTime = !isNaN(itemDate.getTime()) && (itemDate.getHours() !== 0 || itemDate.getMinutes() !== 0 || itemDate.getSeconds() !== 0);
                       const timeLabel = hasTime ? `${String(itemDate.getHours()).padStart(2, '0')}:${String(itemDate.getMinutes()).padStart(2, '0')}` : '';
                       const description = item.description || '';

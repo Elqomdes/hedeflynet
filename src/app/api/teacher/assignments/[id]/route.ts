@@ -112,13 +112,13 @@ export async function PUT(
     if (description !== undefined) assignment.description = description;
     if (dueDate !== undefined) {
       // Parse dueDate as local time to avoid timezone conversion issues
-      if (typeof dueDate === 'string' && dueDate.includes('T')) {
+      if (typeof dueDate === 'string' && dueDate.includes('T') && !dueDate.includes('Z') && !dueDate.includes('+')) {
         // Handle datetime-local format: "YYYY-MM-DDTHH:MM"
         const [datePart, timePart] = dueDate.split('T');
         const [year, month, day] = datePart.split('-').map(Number);
         const [hours, minutes] = timePart.split(':').map(Number);
         
-        // Create date in local timezone
+        // Create date in local timezone (no timezone conversion)
         assignment.dueDate = new Date(year, month - 1, day, hours, minutes, 0);
       } else {
         // Fallback to regular Date parsing

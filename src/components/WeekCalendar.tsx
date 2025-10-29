@@ -107,7 +107,7 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
                   grouped[iso].slice(0, 4).map((g) => {
                     const dt = new Date(g.date);
                     const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
-                    // Use consistent time formatting
+                    // Use consistent time formatting - ensure local time display
                     const timeLabel = hasTime ? `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}` : '';
                     const statusColor = (() => {
                       const isPast = !isNaN(dt.getTime()) && dt.getTime() < new Date().getTime();

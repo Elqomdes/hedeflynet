@@ -30,6 +30,16 @@ export const AssignmentCreateSchema = z.object({
   attachments: z.array(z.any()).optional(),
   dueDate: z.union([z.string(), z.date()]).transform((val) => {
     if (typeof val === 'string') {
+      // Handle datetime-local format: "YYYY-MM-DDTHH:MM"
+      if (val.includes('T') && !val.includes('Z') && !val.includes('+')) {
+        // This is a datetime-local input value, treat it as local time
+        const [datePart, timePart] = val.split('T');
+        const [year, month, day] = datePart.split('-').map(Number);
+        const [hours, minutes] = timePart.split(':').map(Number);
+        
+        // Create date in local timezone (no timezone conversion)
+        return new Date(year, month - 1, day, hours, minutes, 0);
+      }
       return new Date(val);
     }
     return val;
