@@ -33,6 +33,17 @@ export async function GET(request: NextRequest) {
       .populate('studentId', 'firstName lastName')
       .sort({ dueDate: 1 });
 
+    // Debug: Log assignment due dates
+    console.log('Assignments due dates debug:');
+    assignments.forEach(assignment => {
+      console.log(`Assignment: ${assignment.title}`);
+      console.log(`  Raw dueDate: ${assignment.dueDate}`);
+      console.log(`  ISO String: ${assignment.dueDate.toISOString()}`);
+      console.log(`  Local String: ${assignment.dueDate.toLocaleString('tr-TR')}`);
+      console.log(`  Hours: ${assignment.dueDate.getHours()}, Minutes: ${assignment.dueDate.getMinutes()}`);
+      console.log('---');
+    });
+
     // Get all submissions to check completion status
     const assignmentIds = assignments.map(a => a._id);
     const submissions = await AssignmentSubmission.find({

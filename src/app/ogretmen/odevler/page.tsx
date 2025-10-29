@@ -135,6 +135,17 @@ export default function TeacherAssignments() {
       });
       if (response.ok) {
         const data = await response.json();
+        
+        // Debug: Log assignment due dates from API
+        console.log('Frontend - Assignments from API:');
+        data.forEach((assignment: any) => {
+          console.log(`Assignment: ${assignment.title}`);
+          console.log(`  Raw dueDate: ${assignment.dueDate}`);
+          console.log(`  New Date: ${new Date(assignment.dueDate)}`);
+          console.log(`  Hours: ${new Date(assignment.dueDate).getHours()}, Minutes: ${new Date(assignment.dueDate).getMinutes()}`);
+          console.log('---');
+        });
+        
         setAssignments(data);
       }
     } catch (error) {
