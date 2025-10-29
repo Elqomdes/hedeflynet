@@ -99,7 +99,28 @@ export async function GET(request: NextRequest) {
     // Combine class assignments (grouped) and individual assignments
     const result = Array.from(classAssignmentsMap.values()).concat(individualAssignments);
 
-    return NextResponse.json(result);
+    // Transform assignments to fix timezone issues
+    const transformedResult = result.map(assignment => {
+      const assignmentObj = assignment.toObject ? assignment.toObject() : assignment;
+      
+      // Convert dueDate to local time string to avoid timezone issues
+      const dueDate = new Date(assignmentObj.dueDate);
+      const localDueDate = new Date(
+        dueDate.getFullYear(),
+        dueDate.getMonth(),
+        dueDate.getDate(),
+        dueDate.getHours(),
+        dueDate.getMinutes(),
+        dueDate.getSeconds()
+      );
+      
+      return {
+        ...assignmentObj,
+        dueDate: localDueDate.toISOString() // Send as ISO string
+      };
+    });
+
+    return NextResponse.json(transformedResult);
   } catch (error) {
     console.error('Teacher assignments error:', error);
     return NextResponse.json(

@@ -105,7 +105,16 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
               <div className="space-y-1 min-h-[2rem]">
                 {grouped[iso] && grouped[iso].length > 0 ? (
                   grouped[iso].slice(0, 4).map((g) => {
-                    const dt = new Date(g.date);
+                    // Parse date to avoid timezone issues
+                    const rawDate = new Date(g.date);
+                    const dt = new Date(
+                      rawDate.getFullYear(),
+                      rawDate.getMonth(),
+                      rawDate.getDate(),
+                      rawDate.getHours(),
+                      rawDate.getMinutes(),
+                      rawDate.getSeconds()
+                    );
                     
                     // Debug: Log calendar item dates
                     console.log(`WeekCalendar - Item: ${g.title}`);

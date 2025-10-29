@@ -90,6 +90,22 @@ const formatDateForInput = (date: string | Date): string => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
+// Helper function to parse date from API response
+const parseApiDate = (dateString: string): Date => {
+  // If the date string is already in ISO format, parse it directly
+  const date = new Date(dateString);
+  
+  // Create a new date in local timezone to avoid timezone conversion
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds()
+  );
+};
+
 // Helper function to format time for display (same logic as WeekCalendar)
 const formatTimeForDisplay = (date: string | Date): string => {
   const d = new Date(date);
@@ -141,12 +157,18 @@ export default function TeacherAssignments() {
         data.forEach((assignment: any) => {
           console.log(`Assignment: ${assignment.title}`);
           console.log(`  Raw dueDate: ${assignment.dueDate}`);
-          console.log(`  New Date: ${new Date(assignment.dueDate)}`);
-          console.log(`  Hours: ${new Date(assignment.dueDate).getHours()}, Minutes: ${new Date(assignment.dueDate).getMinutes()}`);
+          console.log(`  Parsed Date: ${parseApiDate(assignment.dueDate)}`);
+          console.log(`  Hours: ${parseApiDate(assignment.dueDate).getHours()}, Minutes: ${parseApiDate(assignment.dueDate).getMinutes()}`);
           console.log('---');
         });
         
-        setAssignments(data);
+        // Parse dates to avoid timezone issues
+        const parsedData = data.map((assignment: any) => ({
+          ...assignment,
+          dueDate: parseApiDate(assignment.dueDate).toISOString()
+        }));
+        
+        setAssignments(parsedData);
       }
     } catch (error) {
       console.error('Assignments fetch error:', error);
