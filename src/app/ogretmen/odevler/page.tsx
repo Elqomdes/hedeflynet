@@ -151,14 +151,8 @@ export default function TeacherAssignments() {
       });
       if (response.ok) {
         const data = await response.json();
-        
-        // Parse dates to avoid timezone issues
-        const parsedData = data.map((assignment: any) => ({
-          ...assignment,
-          dueDate: parseApiDate(assignment.dueDate).toISOString()
-        }));
-        
-        setAssignments(parsedData);
+        // Keep server-provided date values as-is to avoid double timezone conversions
+        setAssignments(data);
       }
     } catch (error) {
       console.error('Assignments fetch error:', error);
