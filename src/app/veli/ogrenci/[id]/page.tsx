@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
-  ArrowLeft, FileText, TrendingUp, Star, Clock, Target, Award, 
-  BarChart3, Calendar, BookOpen, CheckCircle, AlertCircle, 
-  Eye, Download, PieChart, Activity, Users
+  ArrowLeft, FileText, Star, Target, BookOpen, CheckCircle, 
+  AlertCircle, Clock, Users, BarChart3, Eye, Mail, Calendar
 } from 'lucide-react';
 import Link from 'next/link';
+import { useDataFetching } from '@/hooks/useDataFetching';
+import LoadingSpinner, { CardSkeleton } from '@/components/LoadingSpinner';
 
 interface StudentData {
   id: string;
@@ -31,10 +31,6 @@ interface StudentData {
     grade?: number;
     maxGrade?: number;
   }>;
-  performanceChart: Array<{
-    month: string;
-    average: number;
-  }>;
 }
 
 export default function StudentDetail() {
@@ -42,58 +38,79 @@ export default function StudentDetail() {
   const router = useRouter();
   const studentId = params.id as string;
   
-  const [data, setData] = useState<StudentData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchStudentData = async () => {
-    try {
-      const response = await fetch(`/api/parent/students/${studentId}`, {
-        credentials: 'include',
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        setData(result.data || result);
-      } else {
-        console.error('Student data fetch failed');
-      }
-    } catch (error) {
-      console.error('Student data fetch error:', error);
-    } finally {
-      setLoading(false);
+  const { 
+    data: response, 
+    loading, 
+    error,
+    refetch 
+  } = useDataFetching<{ success: boolean; data: StudentData }>(
+    `/api/parent/students/${studentId}`,
+    {
+      enabled: !!studentId,
+      staleTime: 2 * 60 * 1000, // 2 minutes
     }
-  };
+  );
 
-  useEffect(() => {
-    if (studentId) {
-      fetchStudentData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studentId]);
+  const data = response?.data || response as StudentData | null;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 bg-secondary-200 rounded w-64 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-secondary-200 rounded w-48 animate-pulse"></div>
+          </div>
+          <div className="h-10 bg-secondary-200 rounded w-32 animate-pulse"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+        
+        <CardSkeleton />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-sm font-medium text-secondary-900">Veri yüklenirken hata oluştu</h3>
+        <p className="mt-1 text-sm text-secondary-500">{error}</p>
+        <button 
+          onClick={() => refetch()}
+          className="mt-4 btn-primary"
+        >
+          Tekrar Dene
+        </button>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-secondary-900 mb-2">Veri Bulunamadı</h2>
-          <p className="text-secondary-600 mb-4">Öğrenci bilgileri yüklenemedi</p>
-          <button
-            onClick={() => router.push('/veli')}
-            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-          >
-            Geri Dön
-          </button>
-        </div>
+      <div className="text-center py-12">
+        <Users className="mx-auto h-12 w-12 text-secondary-400" />
+        <h3 className="mt-2 text-sm font-medium text-secondary-900">Öğrenci bulunamadı</h3>
+        <p className="mt-1 text-sm text-secondary-500">
+          Öğrenci bilgileri yüklenemedi veya erişim yetkiniz yok.
+        </p>
+        <button
+          onClick={() => router.push('/veli')}
+          className="mt-4 btn-primary"
+        >
+          Dashboard&apos;a Dön
+        </button>
       </div>
     );
   }
@@ -107,89 +124,111 @@ export default function StudentDetail() {
     : 0;
 
   return (
-    <div className="animate-fade-in">
+    <div>
       {/* Header */}
       <div className="mb-8">
         <Link
           href="/veli"
-          className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4 transition-colors"
+          className="inline-flex items-center text-secondary-600 hover:text-secondary-900 mb-4 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          <span className="font-semibold">Dashboard&apos;a Dön</span>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Geri Dön
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-secondary-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-2">
               {data.firstName} {data.lastName}
             </h1>
-            {data.className && (
-              <p className="text-lg text-secondary-600 flex items-center">
-                <Users className="w-5 h-5 mr-2" />
-                {data.className}
-              </p>
-            )}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-sm sm:text-base text-secondary-600">
+              {data.className && (
+                <div className="flex items-center">
+                  <Users className="w-4 h-4 mr-2" />
+                  {data.className}
+                </div>
+              )}
+              <div className="flex items-center">
+                <Mail className="w-4 h-4 mr-2" />
+                {data.email}
+              </div>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <Link
-              href={`/veli/ogrenci/${studentId}/rapor`}
-              className="flex items-center px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors font-semibold"
-            >
-              <Eye className="w-5 h-5 mr-2" />
-              Rapor Görüntüle
-            </Link>
-          </div>
+          <Link
+            href={`/veli/ogrenci/${studentId}/rapor`}
+            className="btn-primary flex items-center justify-center space-x-2 min-h-[44px] touch-manipulation"
+          >
+            <Eye className="w-4 h-4" />
+            <span>Rapor Görüntüle</span>
+          </Link>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div className="card">
           <div className="flex items-center justify-between mb-2">
-            <FileText className="w-8 h-8" />
-            <span className="text-sm opacity-90">Tamamlanma</span>
+            <div className="p-2 rounded-lg bg-blue-500">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm text-secondary-600">Tamamlanma</span>
           </div>
-          <div className="text-3xl font-bold mb-1">{completionRate}%</div>
-          <div className="text-sm opacity-90">{data.stats?.completedAssignments}/{data.stats?.totalAssignments} Ödev</div>
+          <div className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-1">
+            {completionRate}%
+          </div>
+          <div className="text-sm text-secondary-600">
+            {data.stats?.completedAssignments}/{data.stats?.totalAssignments} Ödev
+          </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg">
+        <div className="card">
           <div className="flex items-center justify-between mb-2">
-            <Star className="w-8 h-8" />
-            <span className="text-sm opacity-90">Ortalama</span>
+            <div className="p-2 rounded-lg bg-green-500">
+              <Star className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm text-secondary-600">Ortalama</span>
           </div>
-          <div className="text-3xl font-bold mb-1">{data.stats?.averageGrade || 0}</div>
-          <div className="text-sm opacity-90">Not Ortalaması</div>
+          <div className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-1">
+            {data.stats?.averageGrade || 0}
+          </div>
+          <div className="text-sm text-secondary-600">Not Ortalaması</div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
+        <div className="card">
           <div className="flex items-center justify-between mb-2">
-            <Target className="w-8 h-8" />
-            <span className="text-sm opacity-90">Hedefler</span>
+            <div className="p-2 rounded-lg bg-purple-500">
+              <Target className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm text-secondary-600">Hedefler</span>
           </div>
-          <div className="text-3xl font-bold mb-1">{goalsRate}%</div>
-          <div className="text-sm opacity-90">{data.stats?.goalsAchieved}/{data.stats?.goalsTotal} Tamamlandı</div>
+          <div className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-1">
+            {goalsRate}%
+          </div>
+          <div className="text-sm text-secondary-600">
+            {data.stats?.goalsAchieved}/{data.stats?.goalsTotal} Tamamlandı
+          </div>
         </div>
 
-        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-6 text-white shadow-lg">
+        <div className="card">
           <div className="flex items-center justify-between mb-2">
-            <Award className="w-8 h-8" />
-            <span className="text-sm opacity-90">Başarı</span>
+            <div className="p-2 rounded-lg bg-yellow-500">
+              <BarChart3 className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm text-secondary-600">Performans</span>
           </div>
-          <div className="text-3xl font-bold mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-1">
             {data.stats?.averageGrade >= 80 ? '⭐️⭐️⭐️' : 
              data.stats?.averageGrade >= 60 ? '⭐️⭐️' : '⭐️'}
           </div>
-          <div className="text-sm opacity-90">Performans Seviyesi</div>
+          <div className="text-sm text-secondary-600">Seviye</div>
         </div>
       </div>
 
-      {/* Progress Bars */}
+      {/* Progress Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Assignment Progress */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <div className="card">
           <div className="flex items-center mb-4">
-            <FileText className="w-6 h-6 text-primary-600 mr-2" />
-            <h2 className="text-xl font-bold text-secondary-900">Ödev Tamamlama Oranı</h2>
+            <FileText className="w-5 h-5 text-primary-600 mr-2" />
+            <h2 className="text-lg sm:text-xl font-semibold text-secondary-900">Ödev Tamamlama Oranı</h2>
           </div>
           <div className="space-y-3">
             <div>
@@ -197,26 +236,30 @@ export default function StudentDetail() {
                 <span>Toplam Ödev</span>
                 <span className="font-semibold">{data.stats?.totalAssignments || 0}</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-secondary-200 rounded-full h-2">
                 <div 
-                  className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000"
-                  style={{ width: `${completionRate}%` }}
+                  className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(completionRate, 100)}%` }}
                 ></div>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-center pt-4 border-t">
+            <div className="grid grid-cols-3 gap-3 text-center pt-4 border-t border-secondary-200">
               <div>
-                <div className="text-2xl font-bold text-green-600">{data.stats?.completedAssignments || 0}</div>
+                <div className="text-xl sm:text-2xl font-bold text-green-600">
+                  {data.stats?.completedAssignments || 0}
+                </div>
                 <div className="text-xs text-secondary-600">Tamamlanan</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-yellow-600">
+                <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                   {(data.stats?.totalAssignments || 0) - (data.stats?.completedAssignments || 0)}
                 </div>
                 <div className="text-xs text-secondary-600">Bekleyen</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-secondary-900">{completionRate}%</div>
+                <div className="text-xl sm:text-2xl font-bold text-secondary-900">
+                  {completionRate}%
+                </div>
                 <div className="text-xs text-secondary-600">Oran</div>
               </div>
             </div>
@@ -224,10 +267,10 @@ export default function StudentDetail() {
         </div>
 
         {/* Goals Progress */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <div className="card">
           <div className="flex items-center mb-4">
-            <Target className="w-6 h-6 text-purple-600 mr-2" />
-            <h2 className="text-xl font-bold text-secondary-900">Hedef İlerlemesi</h2>
+            <Target className="w-5 h-5 text-purple-600 mr-2" />
+            <h2 className="text-lg sm:text-xl font-semibold text-secondary-900">Hedef İlerlemesi</h2>
           </div>
           <div className="space-y-3">
             <div>
@@ -235,26 +278,30 @@ export default function StudentDetail() {
                 <span>Toplam Hedef</span>
                 <span className="font-semibold">{data.stats?.goalsTotal || 0}</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-secondary-200 rounded-full h-2">
                 <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000"
-                  style={{ width: `${goalsRate}%` }}
+                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(goalsRate, 100)}%` }}
                 ></div>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-center pt-4 border-t">
+            <div className="grid grid-cols-3 gap-3 text-center pt-4 border-t border-secondary-200">
               <div>
-                <div className="text-2xl font-bold text-purple-600">{data.stats?.goalsAchieved || 0}</div>
+                <div className="text-xl sm:text-2xl font-bold text-purple-600">
+                  {data.stats?.goalsAchieved || 0}
+                </div>
                 <div className="text-xs text-secondary-600">Başarılı</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-xl sm:text-2xl font-bold text-orange-600">
                   {(data.stats?.goalsTotal || 0) - (data.stats?.goalsAchieved || 0)}
                 </div>
                 <div className="text-xs text-secondary-600">Devam Eden</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-secondary-900">{goalsRate}%</div>
+                <div className="text-xl sm:text-2xl font-bold text-secondary-900">
+                  {goalsRate}%
+                </div>
                 <div className="text-xs text-secondary-600">Tamamlama</div>
               </div>
             </div>
@@ -263,57 +310,67 @@ export default function StudentDetail() {
       </div>
 
       {/* Recent Assignments */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+      <div className="card">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-secondary-900 flex items-center">
-            <BookOpen className="w-6 h-6 mr-2 text-primary-600" />
+          <h2 className="text-xl sm:text-2xl font-semibold text-secondary-900 flex items-center">
+            <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary-600" />
             Son Ödevler
           </h2>
         </div>
         
         {data.recentAssignments && data.recentAssignments.length > 0 ? (
-          <div className="space-y-4">
-            {data.recentAssignments.slice(0, 5).map((assignment, index) => {
+          <div className="space-y-3 sm:space-y-4">
+            {data.recentAssignments.slice(0, 5).map((assignment) => {
               const dueDate = new Date(assignment.dueDate);
               const isOverdue = dueDate < new Date() && assignment.status === 'pending';
               
               return (
                 <div 
                   key={assignment.id} 
-                  className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
+                  className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border transition-all ${
                     assignment.status === 'graded' ? 'bg-green-50 border-green-200' :
                     assignment.status === 'submitted' ? 'bg-blue-50 border-blue-200' :
                     isOverdue ? 'bg-red-50 border-red-200' :
-                    'bg-gray-50 border-gray-200'
+                    'bg-secondary-50 border-secondary-200'
                   }`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="flex items-center flex-1">
-                    {assignment.status === 'graded' && <CheckCircle className="w-5 h-5 text-green-600 mr-3" />}
-                    {assignment.status === 'submitted' && <Clock className="w-5 h-5 text-blue-600 mr-3" />}
-                    {(assignment.status === 'pending' || isOverdue) && (
-                      <AlertCircle className={`w-5 h-5 mr-3 ${isOverdue ? 'text-red-600' : 'text-yellow-600'}`} />
+                  <div className="flex items-center flex-1 mb-3 sm:mb-0">
+                    {assignment.status === 'graded' && (
+                      <CheckCircle className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
                     )}
-                    <div>
-                      <h3 className="font-semibold text-secondary-900">{assignment.title}</h3>
+                    {assignment.status === 'submitted' && (
+                      <Clock className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
+                    )}
+                    {(assignment.status === 'pending' || isOverdue) && (
+                      <AlertCircle className={`w-5 h-5 mr-3 flex-shrink-0 ${isOverdue ? 'text-red-600' : 'text-yellow-600'}`} />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-secondary-900 truncate">
+                        {assignment.title}
+                      </h3>
                       <p className="text-sm text-secondary-600">{assignment.subject}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-sm font-semibold text-secondary-900">
-                        {assignment.status === 'graded' && assignment.grade !== undefined ? (
-                          <>
+                  <div className="flex items-center justify-between sm:justify-end gap-4 sm:ml-4">
+                    <div className="text-right sm:text-left">
+                      {assignment.status === 'graded' && assignment.grade !== undefined ? (
+                        <>
+                          <div className="text-sm font-semibold text-secondary-900">
                             <span className="text-green-600">{assignment.grade}</span>
                             <span className="text-secondary-500">/{assignment.maxGrade}</span>
-                          </>
-                        ) : (
-                          <span className="text-secondary-500">
+                          </div>
+                          <div className="text-xs text-secondary-500">Değerlendirildi</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-sm font-semibold text-secondary-500">
                             {dueDate.toLocaleDateString('tr-TR')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-secondary-500 capitalize">{assignment.status}</div>
+                          </div>
+                          <div className="text-xs text-secondary-500 capitalize">
+                            {assignment.status === 'pending' ? (isOverdue ? 'Gecikmiş' : 'Bekliyor') : 'Teslim Edildi'}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -322,7 +379,7 @@ export default function StudentDetail() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <FileText className="w-16 h-16 text-secondary-400 mx-auto mb-4" />
+            <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-secondary-400 mx-auto mb-4" />
             <p className="text-secondary-600">Henüz ödev eklenmedi</p>
           </div>
         )}
