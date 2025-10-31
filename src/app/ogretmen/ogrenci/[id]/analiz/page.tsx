@@ -30,6 +30,7 @@ interface AnalysisData {
   monthlyProgress: Array<{
     month: string;
     assignments: number;
+    pending: number;
   }>;
   assignmentTitleCounts?: Array<{ title: string; count: number }>;
   weeklyStats: {
@@ -190,7 +191,7 @@ export default function StudentAnalysisPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Assignment Status Distribution - Pie Chart */}
+        {/* Assignment Status Distribution - Donut Chart */}
         <div className="card">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">
             Bu Hafta Ödev Durumu ({analysisData.weeklyStats.weekStart} - {analysisData.weeklyStats.weekEnd})
@@ -219,8 +220,12 @@ export default function StudentAnalysisPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ value }) => value > 0 ? value : ''}
-                  outerRadius={80}
+                  label={({ name, value, percent }) => {
+                    if (value === 0) return '';
+                    return `${name}: ${value} (${(percent * 100).toFixed(0)}%)`;
+                  }}
+                  outerRadius={100}
+                  innerRadius={50}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -229,7 +234,7 @@ export default function StudentAnalysisPage() {
                   <Cell fill="#3B82F6" />
                 </Pie>
                 <Tooltip 
-                  formatter={(value, name) => [`${value}`, name as string]}
+                  formatter={(value, name) => [`${value} ödev`, name as string]}
                   contentStyle={{
                     backgroundColor: 'white',
                     border: '1px solid #e5e7eb',
@@ -356,7 +361,8 @@ export default function StudentAnalysisPage() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="assignments" stroke="#3B82F6" name="Ödevler" strokeWidth={2} />
+              <Line type="monotone" dataKey="assignments" stroke="#3B82F6" name="Yapılan Ödevler" strokeWidth={2} />
+              <Line type="monotone" dataKey="pending" stroke="#EF4444" name="Yapılmayan Ödevler" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -368,7 +374,9 @@ export default function StudentAnalysisPage() {
           Branş Detayları
         </h3>
         <div className="space-y-6">
-          {Object.entries(analysisData.subjectDetails || {}).map(([subject, details]) => (
+          {Object.entries(analysisData.subjectDetails || {})
+            .filter(([subject]) => subject.toLowerCase() !== 'deneme')
+            .map(([subject, details]) => (
             <div key={subject} className="border border-secondary-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-lg font-medium text-secondary-900">{subject}</h4>

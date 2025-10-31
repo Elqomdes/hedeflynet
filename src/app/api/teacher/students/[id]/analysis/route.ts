@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Assignment, AssignmentSubmission } from '@/lib/models';
+import { Assignment, AssignmentSubmission, User } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -22,19 +22,29 @@ export async function GET(
 
     const studentId = params.id;
 
+    // Fetch student to determine class assignments as well
+    const student = await User.findById(studentId).select('_id classId').lean();
+    if (!student) {
+      return NextResponse.json(
+        { error: 'Student not found' },
+        { status: 404 }
+      );
+    }
+
+    const assignmentMatch: any = { $or: [ { studentId } ] };
+    if (student.classId) {
+      assignmentMatch.$or.push({ classId: student.classId });
+    }
+
     // Get assignment statistics
-    const totalAssignments = await Assignment.countDocuments({ studentId });
+    const totalAssignments = await Assignment.countDocuments(assignmentMatch);
     const submittedAssignments = await AssignmentSubmission.countDocuments({ 
       studentId, 
-      status: 'submitted' 
+      status: { $in: ['submitted', 'graded', 'completed'] }
     });
     const gradedAssignments = await AssignmentSubmission.countDocuments({ 
       studentId, 
-      status: 'graded' 
-    });
-    const completedAssignments = await AssignmentSubmission.countDocuments({ 
-      studentId, 
-      status: 'completed' 
+      status: { $in: ['graded', 'completed'] }
     });
     
     let assignmentCompletion = totalAssignments > 0 
@@ -49,8 +59,8 @@ export async function GET(
     // Get average grade
     const gradedSubmissions = await AssignmentSubmission.find({
       studentId,
-      status: 'graded',
-      grade: { $exists: true }
+      status: { $in: ['graded', 'completed'] },
+      grade: { $exists: true, $ne: null }
     }).populate('assignmentId', 'maxGrade');
 
     let averageGrade = 0;
@@ -66,17 +76,27 @@ export async function GET(
 
     // Get real subject statistics from assignments
     const subjectStats: { [key: string]: number } = {};
-    const assignments = await Assignment.find({ studentId }).populate('classId', 'name');
+    const assignments = await Assignment.find(assignmentMatch).populate('classId', 'name');
     
     // Group assignments by subject (using class name as subject for now)
+    // Filter out 'deneme' subjects - only show 'Genel'
     const subjectGroups: { [key: string]: any[] } = {};
     assignments.forEach(assignment => {
       const subject = (assignment.classId as any)?.name || 'Genel';
+      // Skip 'deneme' subjects
+      if (subject && subject.toLowerCase() === 'deneme') {
+        return;
+      }
       if (!subjectGroups[subject]) {
         subjectGroups[subject] = [];
       }
       subjectGroups[subject].push(assignment);
     });
+    
+    // If no valid subjects found after filtering, use Genel
+    if (Object.keys(subjectGroups).length === 0) {
+      subjectGroups['Genel'] = assignments;
+    }
 
     // Calculate average completion rate and grade per subject
     const subjectDetails: { [key: string]: { completion: number; averageGrade: number; totalAssignments: number; submittedAssignments: number; gradedAssignments: number } } = {};
@@ -86,21 +106,21 @@ export async function GET(
       const submittedInSubject = await AssignmentSubmission.countDocuments({
         assignmentId: { $in: subjectAssignmentIds },
         studentId,
-        status: 'submitted'
+        status: { $in: ['submitted', 'graded', 'completed'] }
       });
       
       const gradedInSubject = await AssignmentSubmission.countDocuments({
         assignmentId: { $in: subjectAssignmentIds },
         studentId,
-        status: 'graded'
+        status: { $in: ['graded', 'completed'] }
       });
 
       // Get average grade for this subject
       const subjectGradedSubmissions = await AssignmentSubmission.find({
         assignmentId: { $in: subjectAssignmentIds },
         studentId,
-        status: 'graded',
-        grade: { $exists: true }
+        status: { $in: ['graded', 'completed'] },
+        grade: { $exists: true, $ne: null }
       }).populate('assignmentId', 'maxGrade');
 
       let subjectAverageGrade = 0;
@@ -152,32 +172,46 @@ export async function GET(
     endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
     endOfWeek.setHours(23, 59, 59, 999);
 
-    // Get assignments for current week
+    // Get assignments for current week - include assignments due in this week, not just created
     const weeklyAssignments = await Assignment.find({
-      studentId,
-      createdAt: { $gte: startOfWeek, $lte: endOfWeek }
+      ...assignmentMatch,
+      $or: [
+        { createdAt: { $gte: startOfWeek, $lte: endOfWeek } },
+        { dueDate: { $gte: startOfWeek, $lte: endOfWeek } }
+      ]
     });
 
     // Get submissions for weekly assignments
     const weeklyAssignmentIds = weeklyAssignments.map(a => a._id);
-    const weeklySubmissions = await AssignmentSubmission.find({
+    
+    // Get all submissions for these assignments
+    const allWeeklySubmissions = await AssignmentSubmission.find({
       assignmentId: { $in: weeklyAssignmentIds },
-      studentId,
-      status: 'submitted'
+      studentId
     });
 
-    const weeklyGradedSubmissions = await AssignmentSubmission.find({
-      assignmentId: { $in: weeklyAssignmentIds },
-      studentId,
-      status: 'graded'
-    });
+    // Count submitted (including graded/completed) - unique by assignmentId
+    const submittedAssignmentIds = new Set(
+      allWeeklySubmissions
+        .filter(s => ['submitted', 'graded', 'completed'].includes(s.status))
+        .map(s => s.assignmentId.toString())
+    );
+    const weeklyAllSubmitted = submittedAssignmentIds.size;
+
+    // Count graded (unique by assignmentId)
+    const gradedAssignmentIds = new Set(
+      allWeeklySubmissions
+        .filter(s => ['graded', 'completed'].includes(s.status))
+        .map(s => s.assignmentId.toString())
+    );
+    const weeklyGradedSubmissions = gradedAssignmentIds.size;
 
     // Calculate weekly statistics
     const weeklyStats = {
       totalAssignments: weeklyAssignments.length,
-      submittedAssignments: weeklySubmissions.length,
-      gradedAssignments: weeklyGradedSubmissions.length,
-      pendingAssignments: weeklyAssignments.length - weeklySubmissions.length,
+      submittedAssignments: weeklyAllSubmitted,
+      gradedAssignments: weeklyGradedSubmissions,
+      pendingAssignments: Math.max(0, weeklyAssignments.length - weeklyAllSubmitted),
       weekStart: startOfWeek.toLocaleDateString('tr-TR'),
       weekEnd: endOfWeek.toLocaleDateString('tr-TR')
     };
@@ -191,20 +225,33 @@ export async function GET(
       const endDate = new Date(base.getFullYear(), base.getMonth() - i + 1, 0);
       const label = startDate.toLocaleString('tr-TR', { month: 'short' });
 
-      const monthlyAssignments = await Assignment.countDocuments({
-        studentId,
+      const monthlyAssignments = await Assignment.find({
+        ...assignmentMatch,
         createdAt: { $gte: startDate, $lte: endDate }
+      });
+
+      const monthlyAssignmentIds = monthlyAssignments.map(a => a._id);
+      const monthlySubmitted = await AssignmentSubmission.countDocuments({
+        assignmentId: { $in: monthlyAssignmentIds },
+        studentId,
+        status: { $in: ['submitted', 'graded', 'completed'] }
       });
 
       monthlyProgress.push({
         month: label,
-        assignments: monthlyAssignments
+        assignments: monthlyAssignments.length,
+        pending: Math.max(0, monthlyAssignments.length - monthlySubmitted)
       });
     }
 
     // Build assignment title counts for bar chart
+    const titleMatch: any = { $or: [ { studentId } ] };
+    if (student.classId) {
+      titleMatch.$or.push({ classId: student.classId });
+    }
+
     const titleGroups = await Assignment.aggregate([
-      { $match: { studentId } },
+      { $match: titleMatch },
       { $group: { _id: '$title', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: 10 }
@@ -221,7 +268,7 @@ export async function GET(
     // If no specific titles found, try to get actual assignment titles
     if (assignmentTitleCounts.length === 0 && totalAssignments > 0) {
       // Get actual assignment titles from database
-      const actualAssignments = await Assignment.find({ studentId })
+      const actualAssignments = await Assignment.find(titleMatch)
         .select('title')
         .lean();
       
