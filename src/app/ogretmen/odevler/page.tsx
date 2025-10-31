@@ -416,8 +416,22 @@ export default function TeacherAssignments() {
     for (const d of days) {
       grouped[formatISODate(d)] = [];
     }
+    // Helper to reconstruct local date from UTC components
+    const toLocalFromUTC = (input: string): Date => {
+      const d = new Date(input);
+      if (isNaN(d.getTime())) return d;
+      return new Date(
+        d.getUTCFullYear(),
+        d.getUTCMonth(),
+        d.getUTCDate(),
+        d.getUTCHours(),
+        d.getUTCMinutes(),
+        d.getUTCSeconds()
+      );
+    };
+
     for (const item of calendarItems) {
-      const key = formatISODate(new Date(item.date));
+      const key = formatISODate(toLocalFromUTC(item.date));
       if (grouped[key]) {
         grouped[key].push(item);
       }
@@ -632,8 +646,15 @@ export default function TeacherAssignments() {
                   ${dayItems.length === 0 ? 
                     '<div class="no-assignments">Ödev yok</div>' :
                     dayItems.map(item => {
-                      const itemDate = new Date(item.date);
-                      
+                      const utc = new Date(item.date);
+                      const itemDate = new Date(
+                        utc.getUTCFullYear(),
+                        utc.getUTCMonth(),
+                        utc.getUTCDate(),
+                        utc.getUTCHours(),
+                        utc.getUTCMinutes(),
+                        utc.getUTCSeconds()
+                      );
                       // Use local time display consistently
                       const hasTime = !isNaN(itemDate.getTime()) && (itemDate.getHours() !== 0 || itemDate.getMinutes() !== 0 || itemDate.getSeconds() !== 0);
                       const timeLabel = hasTime ? `${String(itemDate.getHours()).padStart(2, '0')}:${String(itemDate.getMinutes()).padStart(2, '0')}` : '';

@@ -52,14 +52,27 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
   }, [referenceDate]);
 
   const grouped = useMemo(() => {
+    // Helper: reconstruct local Date from UTC components to neutralize timezone shift
+    const toLocalFromUTC = (input: string): Date => {
+      const d = new Date(input);
+      if (isNaN(d.getTime())) return d;
+      return new Date(
+        d.getUTCFullYear(),
+        d.getUTCMonth(),
+        d.getUTCDate(),
+        d.getUTCHours(),
+        d.getUTCMinutes(),
+        d.getUTCSeconds()
+      );
+    };
     const map: Record<string, CalendarItem[]> = {};
     for (const d of days) {
       map[formatISODate(d)] = [];
     }
     for (const item of items) {
-      // Group by day component (using local time of the item)
+      // Group by corrected local day derived from UTC components
       const key = (() => {
-        const dt = new Date(item.date);
+        const dt = toLocalFromUTC(item.date);
         if (isNaN(dt.getTime())) return item.date; // fallback
         const y = dt.getFullYear();
         const m = String(dt.getMonth() + 1).padStart(2, '0');
@@ -72,8 +85,8 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
     // Sort each day's items by time (if any)
     Object.keys(map).forEach((k) => {
       map[k].sort((a, b) => {
-        const ta = new Date(a.date).getTime();
-        const tb = new Date(b.date).getTime();
+        const ta = toLocalFromUTC(a.date).getTime();
+        const tb = toLocalFromUTC(b.date).getTime();
         return ta - tb;
       });
     });
@@ -105,15 +118,15 @@ export default function WeekCalendar({ referenceDate, items, onSelectDate, readO
               <div className="space-y-1 min-h-[2rem]">
                 {grouped[iso] && grouped[iso].length > 0 ? (
                   grouped[iso].slice(0, 4).map((g) => {
-                    // Parse date to avoid timezone issues
-                    const rawDate = new Date(g.date);
+                    // Display time using local date reconstructed from UTC components
+                    const utc = new Date(g.date);
                     const dt = new Date(
-                      rawDate.getFullYear(),
-                      rawDate.getMonth(),
-                      rawDate.getDate(),
-                      rawDate.getHours(),
-                      rawDate.getMinutes(),
-                      rawDate.getSeconds()
+                      utc.getUTCFullYear(),
+                      utc.getUTCMonth(),
+                      utc.getUTCDate(),
+                      utc.getUTCHours(),
+                      utc.getUTCMinutes(),
+                      utc.getUTCSeconds()
                     );
                     
                     const hasTime = !isNaN(dt.getTime()) && (dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0);
