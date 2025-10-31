@@ -99,8 +99,7 @@ export async function POST(
     await submission.save();
 
     // Create notification for parent
-    const studentId = String(authResult._id);
-    await createParentNotificationsForStudent(studentId, {
+    await createParentNotificationsForStudent(String(studentId), {
       type: 'assignment_completed',
       title: 'Ödev Teslim Edildi',
       message: `${assignment.title} ödevi başarıyla teslim edildi.`,
