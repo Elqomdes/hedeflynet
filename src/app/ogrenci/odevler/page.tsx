@@ -321,14 +321,14 @@ export default function StudentAssignments() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-secondary-900">Ödevlerim</h1>
-        <div className="mt-4 sm:mt-0">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-secondary-900">Ödevlerim</h1>
+        <div className="mt-0 sm:mt-0">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as any)}
-            className="block w-full sm:w-auto px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            className="block w-full sm:w-auto px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px] text-base"
           >
             <option value="all">Tümü</option>
             <option value="pending">Bekleyen</option>
@@ -353,7 +353,7 @@ export default function StudentAssignments() {
       ) : (
         <div className="grid gap-6">
           {filteredAssignments.map((assignment) => (
-            <div key={assignment._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+            <div key={assignment._id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4 sm:p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3">
@@ -554,8 +554,8 @@ export default function StudentAssignments() {
 
       {/* Assignment Submission Modal */}
       {submittingAssignment && (
-        <div className="fixed inset-0 bg-secondary-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-secondary-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 p-4">
+          <div className="relative top-4 sm:top-20 mx-auto p-4 sm:p-5 border w-full max-w-md shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-secondary-900 mb-4">
                 Ödev Teslim Et
@@ -577,26 +577,26 @@ export default function StudentAssignments() {
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setSubmittingAssignment(null);
                     setSubmissionContent('');
                   }}
-                  className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 min-h-[44px] touch-manipulation order-3"
                 >
                   İptal
                 </button>
                 <button
                   onClick={() => handleSubmitAssignment(submittingAssignment)}
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 min-h-[44px] touch-manipulation order-1"
                 >
                   Teslim Et
                 </button>
                 <button
                   onClick={() => handleResubmitAssignment(submittingAssignment!)}
-                  className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 min-h-[44px] touch-manipulation order-2"
                 >
                   Yeniden Gönder
                 </button>

@@ -132,9 +132,9 @@ export default function ParentDashboard() {
   return (
     <div className="animate-fade-in">
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-secondary-900 mb-3">Veli Dashboard</h1>
-        <p className="text-lg text-secondary-600">
+      <div className="mb-6 sm:mb-10">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-2 sm:mb-3">Veli Dashboard</h1>
+        <p className="text-sm sm:text-base lg:text-lg text-secondary-600">
           Çocuklarınızın eğitim durumunu takip edin ve ilerlemeleri inceleyin
         </p>
       </div>
@@ -150,7 +150,7 @@ export default function ParentDashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-10">
         {statCards.map((stat, index) => (
           <div key={stat.name} className="group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
             <div className={`relative overflow-hidden rounded-2xl ${stat.bgColor} border ${stat.borderColor} p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:border-opacity-50`}>
@@ -178,9 +178,9 @@ export default function ParentDashboard() {
 
       {/* Children Overview */}
       {data.children && data.children.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-secondary-900 mb-4">Çocuklarınız</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-bold text-secondary-900 mb-3 sm:mb-4">Çocuklarınız</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {data.children.map((child, index) => {
               const childStats = data.stats?.find(s => s.studentId === child.id);
               const completionRate = childStats && childStats.totalAssignments > 0

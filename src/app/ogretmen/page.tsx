@@ -102,15 +102,15 @@ export default function TeacherDashboard() {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-secondary-900 mb-3">Öğretmen Dashboard</h1>
-        <p className="text-lg text-secondary-600">
+      <div className="mb-6 sm:mb-10">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-2 sm:mb-3">Öğretmen Dashboard</h1>
+        <p className="text-sm sm:text-base lg:text-lg text-secondary-600">
           Öğrenci koçluğunuzu yönetin ve ilerlemeleri takip edin
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-10">
         {statCards.map((stat, index) => (
           <Link key={stat.name} href={stat.href} className="group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
             <div className={`relative overflow-hidden rounded-2xl ${stat.bgColor} border ${stat.borderColor} p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:border-opacity-50`}>
@@ -140,7 +140,7 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Assignment Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-slide-up">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-secondary-900">Ödev Durumu</h3>
@@ -289,9 +289,9 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Video Koçluk */}
-      <div className="mb-10">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-secondary-900">Video Koçluk</h2>
+      <div className="mb-6 sm:mb-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-secondary-900">Video Koçluk</h2>
           <Link 
             href="/ogretmen/video-koçluk"
             className="text-primary-600 hover:text-primary-700 font-medium flex items-center group"
@@ -300,7 +300,7 @@ export default function TeacherDashboard() {
             <span className="ml-1 group-hover:translate-x-1 transition-transform duration-300">→</span>
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <Link href="/ogretmen/video-koçluk" className="group animate-scale-in">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
               <div className="text-center">

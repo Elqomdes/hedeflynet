@@ -76,15 +76,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-secondary-900 mb-3">Admin Dashboard</h1>
-        <p className="text-lg text-secondary-600">
+      <div className="mb-6 sm:mb-10">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-2 sm:mb-3">Admin Dashboard</h1>
+        <p className="text-sm sm:text-base lg:text-lg text-secondary-600">
           Hedefly platformunun genel durumu ve istatistikleri
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-10">
         {statCards.map((stat, index) => (
           <div key={stat.name} className="card card-hover group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
             <div className="flex items-center">
@@ -101,9 +101,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Abonelik İstatistikleri */}
-      <div className="mb-10">
-        <h2 className="text-2xl font-bold text-secondary-900 mb-6">Abonelik İstatistikleri</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="mb-6 sm:mb-10">
+        <h2 className="text-xl sm:text-2xl font-bold text-secondary-900 mb-4 sm:mb-6">Abonelik İstatistikleri</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="card card-hover group animate-scale-in">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
@@ -151,9 +151,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Platform Özellikleri */}
-      <div className="mb-10">
-        <h2 className="text-2xl font-bold text-secondary-900 mb-6">Platform Özellikleri</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="mb-6 sm:mb-10">
+        <h2 className="text-xl sm:text-2xl font-bold text-secondary-900 mb-4 sm:mb-6">Platform Özellikleri</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="card card-hover group animate-scale-in">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-glow transition-all duration-300">
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <div className="card animate-slide-up">
           <div className="card-header">
             <h3 className="card-title">

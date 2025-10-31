@@ -179,46 +179,46 @@ export default function TeachersPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-secondary-900">Öğretmenler</h1>
-        <p className="mt-2 text-secondary-600">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-secondary-900">Öğretmenler</h1>
+        <p className="mt-2 text-sm sm:text-base text-secondary-600">
           Sistemdeki öğretmenleri yönetin ve durumlarını kontrol edin
         </p>
       </div>
 
       <div className="card">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-200">
-          <div className="font-semibold text-secondary-900">Öğretmen Listesi</div>
-          <button onClick={openAddModal} className="inline-flex items-center px-3 py-2 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-700">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 border-b border-secondary-200 gap-4">
+          <div className="font-semibold text-secondary-900 text-base sm:text-lg">Öğretmen Listesi</div>
+          <button onClick={openAddModal} className="inline-flex items-center px-3 sm:px-4 py-2 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-700 min-h-[44px] touch-manipulation">
             <Plus className="h-4 w-4 mr-2" />Yeni Öğretmen
           </button>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
           <table className="min-w-full divide-y divide-secondary-200">
             <thead className="bg-secondary-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
                   Öğretmen
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider hidden sm:table-cell">
                   İletişim
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider hidden md:table-cell">
                   Kullanıcı Adı
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
                   Durum
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider hidden lg:table-cell">
                   Kayıt Tarihi
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">İşlemler</th>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">İşlemler</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-secondary-200">
               {teachers.map((teacher) => (
                 <tr key={teacher._id} className="hover:bg-secondary-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
@@ -230,9 +230,21 @@ export default function TeachersPage() {
                           {teacher.firstName} {teacher.lastName}
                         </div>
                       </div>
+                      <div className="sm:hidden mt-2 text-xs text-secondary-500">
+                        <div className="flex items-center">
+                          <Mail className="h-3 w-3 mr-1" />
+                          {teacher.email}
+                        </div>
+                        {teacher.phone && (
+                          <div className="flex items-center mt-1">
+                            <Phone className="h-3 w-3 mr-1" />
+                            {teacher.phone}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                     <div className="flex items-center text-sm text-secondary-900">
                       <Mail className="h-4 w-4 mr-2 text-secondary-400" />
                       {teacher.email}
@@ -244,10 +256,10 @@ export default function TeachersPage() {
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                     <div className="text-sm text-secondary-900">{teacher.username}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                     {teacher.isActive ? (
                       <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
                         Aktif
@@ -258,10 +270,10 @@ export default function TeachersPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-secondary-500 hidden lg:table-cell">
                     {new Date(teacher.createdAt).toLocaleDateString('tr-TR')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-3">
                       <Link
                         href={`/admin/ogretmenler/${teacher._id}`}
@@ -323,12 +335,12 @@ export default function TeachersPage() {
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg">
-            <div className="px-6 py-4 border-b flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Yeni Öğretmen Ekle</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-secondary-500 hover:text-secondary-800"><X className="h-5 w-5" /></button>
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="px-4 sm:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white">
+              <h3 className="text-base sm:text-lg font-semibold">Yeni Öğretmen Ekle</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-secondary-500 hover:text-secondary-800 min-h-[44px] min-w-[44px] flex items-center justify-center"><X className="h-5 w-5" /></button>
             </div>
-            <div className="px-6 py-4 space-y-4">
+            <div className="px-4 sm:px-6 py-4 space-y-4">
               {formError && <div className="text-sm text-red-600">{formError}</div>}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -357,9 +369,9 @@ export default function TeachersPage() {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t flex items-center justify-end gap-3">
-              <button onClick={() => setShowAddModal(false)} className="btn-secondary">Vazgeç</button>
-              <button onClick={submitAddTeacher} disabled={formSubmitting} className="btn-primary">
+            <div className="px-4 sm:px-6 py-4 border-t flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sticky bottom-0 bg-white">
+              <button onClick={() => setShowAddModal(false)} className="btn-secondary min-h-[44px] touch-manipulation order-2 sm:order-1">Vazgeç</button>
+              <button onClick={submitAddTeacher} disabled={formSubmitting} className="btn-primary min-h-[44px] touch-manipulation order-1 sm:order-2">
                 {formSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
             </div>
@@ -369,12 +381,12 @@ export default function TeachersPage() {
 
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg">
-            <div className="px-6 py-4 border-b flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Öğretmen Düzenle</h3>
-              <button onClick={() => setShowEditModal(null)} className="text-secondary-500 hover:text-secondary-800"><X className="h-5 w-5" /></button>
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="px-4 sm:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white">
+              <h3 className="text-base sm:text-lg font-semibold">Öğretmen Düzenle</h3>
+              <button onClick={() => setShowEditModal(null)} className="text-secondary-500 hover:text-secondary-800 min-h-[44px] min-w-[44px] flex items-center justify-center"><X className="h-5 w-5" /></button>
             </div>
-            <div className="px-6 py-4 space-y-4">
+            <div className="px-4 sm:px-6 py-4 space-y-4">
               {formError && <div className="text-sm text-red-600">{formError}</div>}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -403,9 +415,9 @@ export default function TeachersPage() {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t flex items-center justify-end gap-3">
-              <button onClick={() => setShowEditModal(null)} className="btn-secondary">Vazgeç</button>
-              <button onClick={submitEditTeacher} disabled={formSubmitting} className="btn-primary">
+            <div className="px-4 sm:px-6 py-4 border-t flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sticky bottom-0 bg-white">
+              <button onClick={() => setShowEditModal(null)} className="btn-secondary min-h-[44px] touch-manipulation order-2 sm:order-1">Vazgeç</button>
+              <button onClick={submitEditTeacher} disabled={formSubmitting} className="btn-primary min-h-[44px] touch-manipulation order-1 sm:order-2">
                 {formSubmitting ? 'Güncelleniyor...' : 'Güncelle'}
               </button>
             </div>
@@ -416,17 +428,17 @@ export default function TeachersPage() {
       {deleteCandidate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
-            <div className="px-6 py-4 border-b">
-              <h3 className="text-lg font-semibold">Öğretmeni silmek istediğinize emin misiniz?</h3>
+            <div className="px-4 sm:px-6 py-4 border-b">
+              <h3 className="text-base sm:text-lg font-semibold">Öğretmeni silmek istediğinize emin misiniz?</h3>
             </div>
-            <div className="px-6 py-4 text-sm text-secondary-700">
+            <div className="px-4 sm:px-6 py-4 text-sm text-secondary-700">
               <p>
                 {deleteCandidate.firstName} {deleteCandidate.lastName} ({deleteCandidate.username}) kalıcı olarak silinecek.
               </p>
             </div>
-            <div className="px-6 py-4 border-t flex items-center justify-end gap-3">
-              <button onClick={() => setDeleteCandidate(null)} className="btn-secondary">Vazgeç</button>
-              <button onClick={confirmDeleteTeacher} disabled={actionLoading === deleteCandidate._id} className="btn-danger">
+            <div className="px-4 sm:px-6 py-4 border-t flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
+              <button onClick={() => setDeleteCandidate(null)} className="btn-secondary min-h-[44px] touch-manipulation order-2 sm:order-1">Vazgeç</button>
+              <button onClick={confirmDeleteTeacher} disabled={actionLoading === deleteCandidate._id} className="btn-danger min-h-[44px] touch-manipulation order-1 sm:order-2">
                 {actionLoading === deleteCandidate._id ? 'Siliniyor...' : 'Sil'}
               </button>
             </div>

@@ -154,15 +154,15 @@ export default function StudentDashboard() {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-secondary-900 mb-3">Öğrenci Dashboard</h1>
-        <p className="text-lg text-secondary-600">
+      <div className="mb-6 sm:mb-10">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-2 sm:mb-3">Öğrenci Dashboard</h1>
+        <p className="text-sm sm:text-base lg:text-lg text-secondary-600">
           Ödevlerinizi takip edin ve ilerlemenizi görün
         </p>
       </div>
 
       {/* Calendar Section */}
-      <div className="mb-10">
+      <div className="mb-6 sm:mb-10">
         <div className="card">
           <div className="card-header">
             <h3 className="card-title flex items-center">
@@ -182,9 +182,9 @@ export default function StudentDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="mb-10">
-        <h2 className="text-2xl font-bold text-secondary-900 mb-6">Hızlı Erişim</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="mb-6 sm:mb-10">
+        <h2 className="text-xl sm:text-2xl font-bold text-secondary-900 mb-4 sm:mb-6">Hızlı Erişim</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <Link href="/ogrenci/odevler" className="group animate-scale-in">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
               <div className="text-center">
@@ -244,7 +244,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Progress Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-10">
         <div className="card card-hover animate-scale-in">
           <div className="card-header">
             <h3 className="card-title">
@@ -304,7 +304,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-10">
         {statCards.map((stat, index) => (
           <Link key={stat.name} href={stat.href} className="card card-hover group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
             <div className="flex items-center">

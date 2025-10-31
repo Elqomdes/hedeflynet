@@ -719,17 +719,17 @@ export default function TeacherAssignments() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header Section */}
       <div className="flex flex-col space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-secondary-900">Ödevlerim</h1>
-            <p className="text-sm text-secondary-600 mt-1">Tüm ödevlerinizi yönetin ve takip edin</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-secondary-900">Ödevlerim</h1>
+            <p className="text-xs sm:text-sm text-secondary-600 mt-1">Tüm ödevlerinizi yönetin ve takip edin</p>
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+            className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors min-h-[44px] touch-manipulation w-full sm:w-auto justify-center"
           >
             <Plus className="h-5 w-5 mr-2" />
             Yeni Ödev
@@ -737,8 +737,8 @@ export default function TeacherAssignments() {
         </div>
 
         {/* Filter Controls */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-3 sm:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-medium text-secondary-700 mb-2">Ödev Türü</label>
               <select
@@ -822,7 +822,7 @@ export default function TeacherAssignments() {
       </div>
 
       {/* Assignment Summary Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md border border-blue-200 p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
@@ -869,20 +869,20 @@ export default function TeacherAssignments() {
 
       {/* Student Calendar Section */}
       {showStudentCalendar && selectedStudentForCalendar && (
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
-            <div className="px-6 py-4 border-b border-secondary-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-secondary-900 flex items-center">
-                    <Calendar className="h-5 w-5 mr-2" />
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-secondary-200">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-secondary-900 flex items-center">
+                    <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                     {students.find(s => s._id === selectedStudentForCalendar)?.firstName} {students.find(s => s._id === selectedStudentForCalendar)?.lastName} - Haftalık Takvim
                   </h3>
-                  <p className="text-sm text-secondary-600">Seçilen öğrencinin ödev takvimi</p>
+                  <p className="text-xs sm:text-sm text-secondary-600 mt-1">Seçilen öğrencinin ödev takvimi</p>
                 </div>
                 <button
                   onClick={handlePrintCalendar}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                  className="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors min-h-[44px] touch-manipulation w-full sm:w-auto justify-center"
                   title="Takvimi Yazdır"
                 >
                   <Printer className="h-4 w-4 mr-2" />
@@ -890,7 +890,7 @@ export default function TeacherAssignments() {
                 </button>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-3 sm:p-6">
               <WeekCalendar 
                 items={studentCalendarItems} 
                 readOnly 
@@ -1027,17 +1027,17 @@ export default function TeacherAssignments() {
 
       {/* Create/Edit Assignment Modal */}
       {(showCreateForm || editingAssignment) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto max-w-2xl w-full shadow-2xl rounded-xl bg-white">
-            <div className="px-8 py-6 border-b border-secondary-200 bg-gradient-to-r from-primary-600 to-primary-700 rounded-t-xl">
-              <h3 className="text-2xl font-bold text-white">
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 p-4">
+          <div className="relative top-4 sm:top-10 mx-auto max-w-2xl w-full shadow-2xl rounded-xl bg-white max-h-[90vh] overflow-y-auto">
+            <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-secondary-200 bg-gradient-to-r from-primary-600 to-primary-700 rounded-t-xl sticky top-0 z-10">
+              <h3 className="text-xl sm:text-2xl font-bold text-white">
                 {editingAssignment ? 'Ödevi Düzenle' : 'Yeni Ödev Oluştur'}
               </h3>
-              <p className="text-sm text-primary-100 mt-1">
+              <p className="text-xs sm:text-sm text-primary-100 mt-1">
                 {editingAssignment ? 'Ödev bilgilerini güncelleyin' : 'Yeni bir ödev oluşturmak için formu doldurun'}
               </p>
             </div>
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
               
               <form onSubmit={async (e) => {
                 e.preventDefault();
@@ -1211,20 +1211,20 @@ export default function TeacherAssignments() {
 
                 </div>
                 
-                <div className="mt-8 flex justify-end space-x-3 pt-6 border-t border-secondary-200">
+                <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-end gap-3 pt-4 sm:pt-6 border-t border-secondary-200 sticky bottom-0 bg-white">
                   <button
                     type="button"
                     onClick={() => {
                       setShowCreateForm(false);
                       setEditingAssignment(null);
                     }}
-                    className="px-6 py-3 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                    className="px-6 py-3 border border-secondary-300 rounded-lg shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors min-h-[44px] touch-manipulation order-2"
                   >
                     İptal
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                    className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors min-h-[44px] touch-manipulation order-1"
                   >
                     {editingAssignment ? 'Güncelle' : 'Oluştur'}
                   </button>

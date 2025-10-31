@@ -106,18 +106,18 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary-50 py-12">
+    <div className="min-h-screen bg-secondary-50 py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-secondary-900 mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-3 sm:mb-4">
             Öğretmen Başvurusu
           </h1>
-          <p className="text-xl text-secondary-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-secondary-600 max-w-2xl mx-auto px-4">
             Hedefly platformunda öğretmen olmak için başvuru formunu doldurun
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
           {/* Contact Form */}
           <div className="card">
             <h2 className="text-2xl font-semibold text-secondary-900 mb-6">

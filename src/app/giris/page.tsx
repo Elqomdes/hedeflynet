@@ -108,20 +108,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen gradient-bg flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-primary-100/20"></div>
-      <div className="max-w-md w-full space-y-8 relative z-10">
+      <div className="max-w-md w-full space-y-6 sm:space-y-8 relative z-10">
         <div className="text-center animate-fade-in">
-          <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-glow">
-            <span className="text-white font-bold text-2xl">H</span>
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-glow">
+            <span className="text-white font-bold text-xl sm:text-2xl">H</span>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent mb-2">
             Hedefly
           </h1>
-          <h2 className="text-3xl font-bold text-secondary-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-3 sm:mb-4">
             Giriş Yap
           </h2>
-          <p className="text-secondary-600">
+          <p className="text-sm sm:text-base text-secondary-600">
             Hesabınıza giriş yaparak devam edin
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-primary flex items-center justify-center space-x-3 py-4 text-lg"
+              className="w-full btn-primary flex items-center justify-center space-x-3 py-3 sm:py-4 text-base sm:text-lg min-h-[48px] touch-manipulation"
             >
               {isLoading ? (
                 <>

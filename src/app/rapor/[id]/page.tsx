@@ -270,22 +270,22 @@ export default function ReportViewPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mb-8 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mb-4 sm:mb-8 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-4 sm:px-8 py-4 sm:py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="text-white">
-                <h1 className="text-3xl font-bold mb-2">{report.title}</h1>
-                <p className="text-blue-100 text-lg">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">{report.title}</h1>
+                <p className="text-blue-100 text-sm sm:text-base lg:text-lg">
                   {report.student.firstName} {report.student.lastName} - Performans Raporu
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3 mt-4 lg:mt-0">
+              <div className="flex flex-col sm:flex-row gap-3 mt-0 lg:mt-0">
                 <button
                   onClick={handleDownload}
                   disabled={downloading}
-                  className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center space-x-2 disabled:opacity-50"
+                  className="bg-white text-blue-600 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 min-h-[44px] touch-manipulation w-full sm:w-auto"
                 >
                   {downloading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -296,7 +296,7 @@ export default function ReportViewPage() {
                 </button>
                 <button
                   onClick={handleShare}
-                  className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-400 transition-colors flex items-center space-x-2"
+                  className="bg-blue-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-400 transition-colors flex items-center justify-center space-x-2 min-h-[44px] touch-manipulation w-full sm:w-auto"
                 >
                   <Share2 className="w-4 h-4" />
                   <span>Paylaş</span>
@@ -305,8 +305,8 @@ export default function ReportViewPage() {
             </div>
           </div>
           
-          <div className="px-8 py-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+          <div className="px-4 sm:px-8 py-4 sm:py-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-sm">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                   <User className="w-5 h-5 text-blue-600" />
@@ -339,7 +339,7 @@ export default function ReportViewPage() {
         </div>
 
         {/* Performance Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-8">
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 text-center hover:shadow-xl transition-shadow">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
               <FileText className="h-8 w-8 text-white" />
