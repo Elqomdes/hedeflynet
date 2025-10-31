@@ -2,8 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { 
-  ArrowLeft, FileText, Star, Target, BookOpen, CheckCircle, 
-  AlertCircle, Clock, Users, BarChart3, Eye, Mail, Calendar
+  ArrowLeft, FileText, Star, BookOpen, CheckCircle, 
+  AlertCircle, Clock, Users, BarChart3, Eye, Mail
 } from 'lucide-react';
 import Link from 'next/link';
 import { useDataFetching } from '@/hooks/useDataFetching';
@@ -19,8 +19,6 @@ interface StudentData {
     totalAssignments: number;
     completedAssignments: number;
     averageGrade: number;
-    goalsAchieved: number;
-    goalsTotal: number;
   };
   recentAssignments: Array<{
     id: string;
@@ -64,17 +62,13 @@ export default function StudentDetail() {
           <div className="h-10 bg-secondary-200 rounded w-32 animate-pulse"></div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <CardSkeleton />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <CardSkeleton />
           <CardSkeleton />
           <CardSkeleton />
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CardSkeleton />
-          <CardSkeleton />
-        </div>
+        <CardSkeleton />
         
         <CardSkeleton />
       </div>
@@ -119,10 +113,6 @@ export default function StudentDetail() {
     ? Math.round((data.stats.completedAssignments / data.stats.totalAssignments) * 100)
     : 0;
 
-  const goalsRate = data.stats?.goalsTotal > 0
-    ? Math.round((data.stats.goalsAchieved / data.stats.goalsTotal) * 100)
-    : 0;
-
   return (
     <div>
       {/* Header */}
@@ -163,7 +153,7 @@ export default function StudentDetail() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         <div className="card">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 rounded-lg bg-blue-500">
@@ -194,21 +184,6 @@ export default function StudentDetail() {
 
         <div className="card">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-lg bg-purple-500">
-              <Target className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-sm text-secondary-600">Hedefler</span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-1">
-            {goalsRate}%
-          </div>
-          <div className="text-sm text-secondary-600">
-            {data.stats?.goalsAchieved}/{data.stats?.goalsTotal} Tamamlandı
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-2">
             <div className="p-2 rounded-lg bg-yellow-500">
               <BarChart3 className="w-5 h-5 text-white" />
             </div>
@@ -222,9 +197,8 @@ export default function StudentDetail() {
         </div>
       </div>
 
-      {/* Progress Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Assignment Progress */}
+      {/* Progress Card */}
+      <div className="mb-8">
         <div className="card">
           <div className="flex items-center mb-4">
             <FileText className="w-5 h-5 text-primary-600 mr-2" />
@@ -261,48 +235,6 @@ export default function StudentDetail() {
                   {completionRate}%
                 </div>
                 <div className="text-xs text-secondary-600">Oran</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Goals Progress */}
-        <div className="card">
-          <div className="flex items-center mb-4">
-            <Target className="w-5 h-5 text-purple-600 mr-2" />
-            <h2 className="text-lg sm:text-xl font-semibold text-secondary-900">Hedef İlerlemesi</h2>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm text-secondary-600 mb-2">
-                <span>Toplam Hedef</span>
-                <span className="font-semibold">{data.stats?.goalsTotal || 0}</span>
-              </div>
-              <div className="w-full bg-secondary-200 rounded-full h-2">
-                <div 
-                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(goalsRate, 100)}%` }}
-                ></div>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3 text-center pt-4 border-t border-secondary-200">
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-purple-600">
-                  {data.stats?.goalsAchieved || 0}
-                </div>
-                <div className="text-xs text-secondary-600">Başarılı</div>
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-orange-600">
-                  {(data.stats?.goalsTotal || 0) - (data.stats?.goalsAchieved || 0)}
-                </div>
-                <div className="text-xs text-secondary-600">Devam Eden</div>
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-secondary-900">
-                  {goalsRate}%
-                </div>
-                <div className="text-xs text-secondary-600">Tamamlama</div>
               </div>
             </div>
           </div>
