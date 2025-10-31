@@ -4,6 +4,7 @@ import connectDB from '@/lib/mongodb';
 import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
 import Assignment from '@/lib/models/Assignment';
 import { Parent } from '@/lib/models';
+import { createParentNotificationsForStudent } from '@/lib/utils/createParentNotification';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,6 +97,25 @@ export async function PUT(
       { new: true }
     ).populate('studentId', 'firstName lastName email');
 
+    // Create notification for parent if assignment is graded
+    if (updatedSubmission && updateData.status === 'graded' && grade !== undefined) {
+      const student = updatedSubmission.studentId as any;
+      const studentId = String(student._id);
+      
+      await createParentNotificationsForStudent(studentId, {
+        type: 'assignment_graded',
+        title: 'Ödev Değerlendirildi',
+        message: `${student.firstName} ${student.lastName}'ın "${assignment.title}" ödevi değerlendirildi. Not: ${grade}/${assignment.maxGrade || 100}`,
+        priority: grade >= 70 ? 'low' : grade >= 50 ? 'medium' : 'high',
+        data: {
+          assignmentId: assignment._id.toString(),
+          assignmentTitle: assignment.title,
+          grade,
+          maxGrade: assignment.maxGrade || 100,
+          submissionId: updatedSubmission._id.toString()
+        }
+      });
+    }
 
     return NextResponse.json(updatedSubmission);
   } catch (error) {

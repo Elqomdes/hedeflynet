@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Assignment, AssignmentSubmission } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import { createParentNotificationsForStudent } from '@/lib/utils/createParentNotification';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,6 +97,21 @@ export async function POST(
     });
 
     await submission.save();
+
+    // Create notification for parent
+    const studentId = String(authResult._id);
+    await createParentNotificationsForStudent(studentId, {
+      type: 'assignment_completed',
+      title: 'Ödev Teslim Edildi',
+      message: `${assignment.title} ödevi başarıyla teslim edildi.`,
+      priority: isLate ? 'high' : 'medium',
+      data: {
+        assignmentId: assignment._id.toString(),
+        assignmentTitle: assignment.title,
+        submissionId: submission._id.toString(),
+        isLate
+      }
+    });
 
     return NextResponse.json(submission, { status: 201 });
   } catch (error) {
