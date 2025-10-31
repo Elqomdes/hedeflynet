@@ -225,12 +225,7 @@ export default function StudentAnalysisPage() {
                       {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} stroke="#ffffff" strokeWidth={1} />
                       ))}
-                      {/* Center total label */}
-                      <Label position="center" content={() => (
-                        <text x={0} y={0} textAnchor="middle" dominantBaseline="central" fontSize={13} fill="#111827">
-                          Toplam {total}
-                        </text>
-                      )} />
+                      {/* Removed center total label per request */}
                     </Pie>
                   );
                 })()}
