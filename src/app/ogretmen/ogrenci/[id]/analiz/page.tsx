@@ -206,23 +206,38 @@ export default function StudentAnalysisPage() {
                     { name: 'Değerlendirilen', value: analysisData.weeklyStats.gradedAssignments || 0, color: '#3B82F6' }
                   ];
                   const total = pieData.reduce((s, d) => s + (d.value || 0), 0);
+                  const CustomLabel = (props: any) => {
+                    const { x, y, name, value, percent } = props;
+                    if (!value || total === 0) return null;
+                    const text = `${name}: ${value} (${(percent * 100).toFixed(0)}%)`;
+                    return (
+                      <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={12} fill="#111827" style={{ paintOrder: 'stroke' }} stroke="#ffffff" strokeWidth={3}>
+                        {text}
+                      </text>
+                    );
+                  };
                   return (
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ name, value, percent }) => {
-                        if (!value || total === 0) return '';
-                        return `${name}: ${value} (${(percent * 100).toFixed(0)}%)`;
-                      }}
+                      labelLine={true}
                       outerRadius={95}
                       innerRadius={78}
+                      minAngle={3}
                       dataKey="value"
                     >
                       {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} stroke="#ffffff" strokeWidth={1} />
                       ))}
+                      {/* Outside labels with percent */}
+                      <LabelList position="outside" content={CustomLabel as any} />
+                      {/* Center total label */}
+                      <Label position="center" content={() => (
+                        <text x={0} y={0} textAnchor="middle" dominantBaseline="central" fontSize={13} fill="#111827">
+                          Toplam {total}
+                        </text>
+                      )} />
                     </Pie>
                   );
                 })()}
