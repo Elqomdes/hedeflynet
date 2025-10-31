@@ -191,26 +191,30 @@ export async function GET(
     });
 
     // Build union of assignmentIds from weekly assignments and weekly submissions
-    const weeklyAssignmentIds = new Set(weeklyAssignments.map(a => a._id.toString()));
-    weeklySubmissionsDocs.forEach(s => {
-      if (s.assignmentId) weeklyAssignmentIds.add(s.assignmentId.toString());
+    const weeklyAssignmentIds = new Set<string>(
+      weeklyAssignments.map((a: any) => String((a as any)._id))
+    );
+    weeklySubmissionsDocs.forEach((s: any) => {
+      if (s.assignmentId) weeklyAssignmentIds.add(String(s.assignmentId));
     });
 
     // Count submitted (including late/graded/completed) - unique by assignmentId
-    const submittedAssignmentIds = new Set(
-      weeklySubmissionsDocs
+    const submittedAssignmentIds = new Set<string>(
+      (weeklySubmissionsDocs as any[])
         .filter(s => ['submitted', 'graded', 'completed', 'late'].includes(s.status))
-        .map(s => s.assignmentId?.toString())
-        .filter(Boolean) as string[]
+        .map(s => s.assignmentId)
+        .filter(Boolean)
+        .map(id => String(id))
     );
     const weeklyAllSubmitted = submittedAssignmentIds.size;
 
     // Count graded (unique by assignmentId)
-    const gradedAssignmentIds = new Set(
-      weeklySubmissionsDocs
+    const gradedAssignmentIds = new Set<string>(
+      (weeklySubmissionsDocs as any[])
         .filter(s => ['graded', 'completed'].includes(s.status))
-        .map(s => s.assignmentId?.toString())
-        .filter(Boolean) as string[]
+        .map(s => s.assignmentId)
+        .filter(Boolean)
+        .map(id => String(id))
     );
     const weeklyGradedSubmissions = gradedAssignmentIds.size;
 
