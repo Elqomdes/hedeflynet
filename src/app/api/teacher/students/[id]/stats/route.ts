@@ -26,7 +26,7 @@ export async function GET(
       Assignment.countDocuments({ studentId }),
       AssignmentSubmission.countDocuments({ 
         studentId, 
-        status: 'completed' 
+        status: { $in: ['completed', 'submitted', 'graded'] }
       }),
       Goal.countDocuments({ studentId }),
       Goal.countDocuments({ 

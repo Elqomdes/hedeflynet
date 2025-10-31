@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { User, FileText, Target, BarChart3, Mail, Phone, Calendar, Download, Key, Eye, EyeOff } from 'lucide-react';
+import { User, FileText, BarChart3, Mail, Phone, Calendar, Key, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useDataFetching } from '@/hooks/useDataFetching';
 import LoadingSpinner, { CardSkeleton } from '@/components/LoadingSpinner';
-import { apiClient } from '@/lib/apiClient';
 
 interface Student {
   _id: string;
@@ -21,8 +20,6 @@ interface Student {
 interface StudentStats {
   totalAssignments: number;
   completedAssignments: number;
-  totalGoals: number;
-  completedGoals: number;
   averageGrade: number;
 }
 
@@ -30,7 +27,6 @@ export default function StudentDetailPage() {
   const params = useParams();
   const studentId = params.id as string;
   
-  const [isGenerating, setIsGenerating] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -59,41 +55,13 @@ export default function StudentDetailPage() {
     staleTime: 1 * 60 * 1000, // 1 minute
   });
 
-  const { 
-    data: reports, 
-    loading: reportsLoading, 
-    error: reportsError,
-    refetch: refetchReports 
-  } = useDataFetching<{ _id: string; title: string; createdAt: string; isPublic: boolean }[]>(`/api/teacher/students/${studentId}/report`, {
-    enabled: !!studentId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  const loading = studentLoading || statsLoading || reportsLoading;
-  const error = studentError || statsError || reportsError;
+  const loading = studentLoading || statsLoading;
+  const error = studentError || statsError;
 
   const refetchAll = useCallback(async () => {
-    await Promise.all([refetchStudent(), refetchStats(), refetchReports()]);
-  }, [refetchStudent, refetchStats, refetchReports]);
+    await Promise.all([refetchStudent(), refetchStats()]);
+  }, [refetchStudent, refetchStats]);
 
-  const handleGenerateReport = async () => {
-    if (!studentId) return;
-    try {
-      setIsGenerating(true);
-      // Send minimal data; API fills defaults
-      const res = await apiClient.post(`/api/teacher/students/${studentId}/report`, {});
-      if (res) {
-        // Refresh reports list
-        await refetchReports();
-        alert('Rapor oluşturuldu');
-      }
-    } catch (e) {
-      console.error(e);
-      alert(e instanceof Error ? e.message : 'Hata');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const handleUpdatePassword = async () => {
     if (!newPassword || !confirmPassword) {
@@ -140,69 +108,6 @@ export default function StudentDetailPage() {
     }
   };
 
-  const handleDownloadPdf = async () => {
-    if (!studentId) return;
-    try {
-      // Try new reliable API first
-      let res = await fetch(`/api/teacher/students/${studentId}/report/reliable`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(), // Son 3 ay
-          endDate: new Date().toISOString()
-        })
-      });
-      
-      if (!res.ok) {
-        // If reliable API fails, try fallback
-        console.log('Reliable API failed, trying fallback API');
-        res = await fetch(`/api/teacher/students/${studentId}/report?format=pdf`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({})
-        });
-      }
-      
-      const contentType = res.headers.get('content-type') || '';
-      
-      if (res.ok) {
-        if (contentType.includes('application/pdf')) {
-          const blob = await res.blob();
-          if (blob.size === 0) {
-            throw new Error('PDF dosyası boş geldi');
-          }
-          
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${student?.firstName || 'ogrenci'}_${student?.lastName || 'raporu'}_${new Date().toISOString().split('T')[0]}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          a.remove();
-          alert('PDF raporu başarıyla indirildi!');
-        } else if (contentType.includes('application/json')) {
-          const data = await res.json();
-          if (data.url) {
-            alert(`Rapor oluşturuldu! Görüntülemek için: ${window.location.origin}${data.url}`);
-          } else {
-            throw new Error(data.error || 'Bilinmeyen yanıt formatı');
-          }
-        } else {
-          throw new Error('Beklenmeyen yanıt formatı');
-        }
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${res.status}: ${res.statusText}`);
-      }
-    } catch (e) {
-      console.error('PDF download error:', e);
-      const errorMessage = e instanceof Error ? e.message : 'Bilinmeyen hata';
-      alert(`PDF indirme hatası:\n\n${errorMessage}\n\nLütfen tekrar deneyin.`);
-    }
-  };
 
   if (loading) {
     return (
@@ -263,10 +168,6 @@ export default function StudentDetailPage() {
 
   const assignmentCompletionRate = stats && stats.totalAssignments > 0 
     ? Math.round((stats.completedAssignments / stats.totalAssignments) * 100)
-    : 0;
-
-  const goalCompletionRate = stats && stats.totalGoals > 0 
-    ? Math.round((stats.completedGoals / stats.totalGoals) * 100)
     : 0;
 
   return (
@@ -364,27 +265,11 @@ export default function StudentDetailPage() {
               <div className="w-full bg-secondary-200 rounded-full h-2">
                 <div 
                   className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${assignmentCompletionRate}%` }}
+                  style={{ width: `${Math.min(assignmentCompletionRate, 100)}%` }}
                 ></div>
               </div>
               <p className="text-sm text-secondary-600 mt-1">
                 %{assignmentCompletionRate}
-              </p>
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm text-secondary-600 mb-2">
-                <span>Hedef Tamamlama</span>
-                <span>{stats?.completedGoals || 0}/{stats?.totalGoals || 0}</span>
-              </div>
-              <div className="w-full bg-secondary-200 rounded-full h-2">
-                <div 
-                  className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${goalCompletionRate}%` }}
-                ></div>
-              </div>
-              <p className="text-sm text-secondary-600 mt-1">
-                %{goalCompletionRate}
               </p>
             </div>
 
@@ -420,23 +305,6 @@ export default function StudentDetailPage() {
         </Link>
 
         <Link
-          href={`/ogretmen/ogrenci/${studentId}/hedefler`}
-          className="card hover:shadow-lg transition-shadow"
-        >
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-green-500">
-              <Target className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="font-medium text-secondary-900">Hedefler</p>
-              <p className="text-sm text-secondary-600">
-                {stats?.totalGoals || 0} hedef
-              </p>
-            </div>
-          </div>
-        </Link>
-
-        <Link
           href={`/ogretmen/ogrenci/${studentId}/analiz`}
           className="card hover:shadow-lg transition-shadow"
         >
@@ -453,31 +321,6 @@ export default function StudentDetailPage() {
           </div>
         </Link>
 
-        <div className="card">
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-medium text-secondary-900">Raporlar</p>
-            <button onClick={handleGenerateReport} disabled={isGenerating} className="btn-primary text-sm">
-              {isGenerating ? 'Oluşturuluyor...' : 'Rapor Oluştur'}
-            </button>
-          </div>
-          <div className="space-y-2">
-            {(!reports || reports.length === 0) && (
-              <p className="text-sm text-secondary-600">Henüz rapor yok</p>
-            )}
-            {reports && reports.map((r) => (
-              <div key={r._id} className="flex items-center justify-between">
-                <Link href={`/rapor/${r._id}`} className="text-primary-600 hover:text-primary-800 text-sm">
-                  {r.title}
-                </Link>
-                <span className="text-xs text-secondary-500">{new Date(r.createdAt).toLocaleDateString('tr-TR')}</span>
-              </div>
-            ))}
-          </div>
-          <button onClick={handleDownloadPdf} className="btn-outline mt-4 w-full flex items-center justify-center space-x-2">
-            <Download className="w-4 h-4" />
-            <span>PDF İndir</span>
-          </button>
-        </div>
       </div>
 
       {/* Password Update Modal */}

@@ -332,7 +332,18 @@ export default function TeacherAssignments() {
 
 
   const isOverdue = (dueDate: string) => {
-    return new Date(dueDate) < new Date();
+    if (!dueDate) return false;
+    try {
+      const due = new Date(dueDate);
+      const now = new Date();
+      // Check if the date is valid
+      if (isNaN(due.getTime())) return false;
+      // Compare: due date should be less than current date/time
+      return due.getTime() < now.getTime();
+    } catch (error) {
+      console.error('Error checking overdue date:', error);
+      return false;
+    }
   };
 
   // Calendar items for selected student
