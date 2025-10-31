@@ -108,11 +108,11 @@ export async function PUT(
         message: `${student.firstName} ${student.lastName}'ın "${assignment.title}" ödevi değerlendirildi. Not: ${grade}/${assignment.maxGrade || 100}`,
         priority: grade >= 70 ? 'low' : grade >= 50 ? 'medium' : 'high',
         data: {
-          assignmentId: assignment._id.toString(),
+          assignmentId: String(assignment._id),
           assignmentTitle: assignment.title,
           grade,
           maxGrade: assignment.maxGrade || 100,
-          submissionId: updatedSubmission._id.toString()
+          submissionId: String(updatedSubmission._id)
         }
       });
     }

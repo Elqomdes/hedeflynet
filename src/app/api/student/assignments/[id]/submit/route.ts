@@ -105,9 +105,9 @@ export async function POST(
       message: `${assignment.title} ödevi başarıyla teslim edildi.`,
       priority: isLate ? 'high' : 'medium',
       data: {
-        assignmentId: assignment._id.toString(),
+        assignmentId: String(assignment._id),
         assignmentTitle: assignment.title,
-        submissionId: submission._id.toString(),
+        submissionId: String(submission._id),
         isLate
       }
     });
