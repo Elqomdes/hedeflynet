@@ -199,40 +199,33 @@ export default function StudentAnalysisPage() {
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={[
-                    { 
-                      name: 'Teslim Edilen', 
-                      value: analysisData.weeklyStats.submittedAssignments || 0,
-                      color: '#10B981'
-                    },
-                    { 
-                      name: 'Bekleyen', 
-                      value: analysisData.weeklyStats.pendingAssignments || 0,
-                      color: '#EF4444'
-                    },
-                    { 
-                      name: 'Değerlendirilen', 
-                      value: analysisData.weeklyStats.gradedAssignments || 0,
-                      color: '#3B82F6'
-                    }
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value, percent }) => {
-                    if (value === 0) return '';
-                    return `${name}: ${value} (${(percent * 100).toFixed(0)}%)`;
-                  }}
-                  outerRadius={100}
-                  innerRadius={50}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  <Cell fill="#10B981" />
-                  <Cell fill="#EF4444" />
-                  <Cell fill="#3B82F6" />
-                </Pie>
+                {(() => {
+                  const pieData = [
+                    { name: 'Teslim Edilen', value: analysisData.weeklyStats.submittedAssignments || 0, color: '#10B981' },
+                    { name: 'Bekleyen', value: analysisData.weeklyStats.pendingAssignments || 0, color: '#EF4444' },
+                    { name: 'Değerlendirilen', value: analysisData.weeklyStats.gradedAssignments || 0, color: '#3B82F6' }
+                  ];
+                  const total = pieData.reduce((s, d) => s + (d.value || 0), 0);
+                  return (
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value, percent }) => {
+                        if (!value || total === 0) return '';
+                        return `${name}: ${value} (${(percent * 100).toFixed(0)}%)`;
+                      }}
+                      outerRadius={95}
+                      innerRadius={78}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke="#ffffff" strokeWidth={1} />
+                      ))}
+                    </Pie>
+                  );
+                })()}
                 <Tooltip 
                   formatter={(value, name) => [`${value} ödev`, name as string]}
                   contentStyle={{
