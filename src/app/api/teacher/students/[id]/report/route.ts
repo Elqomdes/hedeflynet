@@ -7,6 +7,7 @@ import ReportDataCollector, { StudentAnalysisData } from '@/lib/services/reportD
 import RobustReportDataCollector from '@/lib/services/robustReportDataCollector';
 import AdvancedPdfGenerator from '@/lib/services/advancedPdfGenerator';
 import { jsPDF } from 'jspdf';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export const dynamic = 'force-dynamic';
 
@@ -109,7 +110,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    teacherId = (authResult._id as any).toString();
+    if (!authResult._id) {
+      logError('Missing user ID', 'authResult._id is missing');
+      return NextResponse.json(
+        { error: 'Kullanıcı verisi eksik' },
+        { status: 500 }
+      );
+    }
+
+    teacherId = safeIdToString(authResult._id);
     console.log('Report API: Authentication successful', { teacherId });
 
     // Step 2: Extract student ID from URL

@@ -4,6 +4,7 @@ import { ReportDataService } from '@/lib/services/reportDataService';
 import { FallbackReportService } from '@/lib/services/fallbackReportService';
 import { ReportGenerationOptions } from '@/lib/types/report';
 import connectDB from '@/lib/mongodb';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,15 @@ export async function GET(
     }
 
     const studentId = params.id;
-    const parentId = (parent._id as any).toString();
+    
+    if (!parent._id) {
+      return NextResponse.json(
+        { error: 'Kullanıcı verisi eksik' },
+        { status: 500 }
+      );
+    }
+    
+    const parentId = safeIdToString(parent._id);
 
     // Validate student ID
     if (!studentId || studentId.length !== 24) {

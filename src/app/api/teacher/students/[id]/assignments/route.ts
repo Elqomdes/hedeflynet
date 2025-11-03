@@ -4,6 +4,7 @@ import connectDB from '@/lib/mongodb';
 import Assignment from '@/lib/models/Assignment';
 import AssignmentSubmission from '@/lib/models/AssignmentSubmission';
 import User from '@/lib/models/User';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,7 +72,7 @@ export async function GET(
 
     // Combine assignments with their submissions
     const assignmentsWithSubmissions = assignments.map(assignment => {
-      const submission = submissionMap.get((assignment._id as any).toString());
+      const submission = submissionMap.get(safeIdToString(assignment._id));
       
       return {
         _id: assignment._id,

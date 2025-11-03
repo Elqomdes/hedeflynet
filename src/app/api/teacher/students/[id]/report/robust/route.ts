@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import { getCurrentUser } from '@/lib/auth';
 import RobustReportDataCollector, { StudentAnalysisData } from '@/lib/services/robustReportDataCollector';
 import AdvancedPdfGenerator from '@/lib/services/advancedPdfGenerator';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +71,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    teacherId = (authResult._id as any).toString();
+    if (!authResult._id) {
+      logError('Missing user ID', 'authResult._id is missing');
+      return NextResponse.json(
+        { error: 'Kullanıcı verisi eksik' },
+        { status: 500 }
+      );
+    }
+
+    teacherId = safeIdToString(authResult._id);
     console.log('Robust Report API: Authentication successful', { teacherId });
 
     // Step 2: Extract student ID from URL

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser, getCurrentParent } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-
-export const dynamic = 'force-dynamic';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,9 +10,15 @@ export async function GET(request: NextRequest) {
     // Try to get parent first
     const parent = await getCurrentParent(request);
     if (parent) {
+      if (!parent._id) {
+        return NextResponse.json(
+          { error: 'Kullanıcı verisi eksik' },
+          { status: 500 }
+        );
+      }
       return NextResponse.json({
         user: {
-          id: parent._id.toString(),
+          id: safeIdToString(parent._id),
           username: parent.username,
           email: parent.email,
           role: 'parent',
@@ -44,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       user: {
-        id: user._id.toString(),
+        id: safeIdToString(user._id),
         username: user.username,
         email: user.email,
         role: user.role,

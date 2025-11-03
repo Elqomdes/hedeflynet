@@ -1,5 +1,6 @@
 import { User, Assignment, AssignmentSubmission, Class, Goal } from '@/lib/models';
 import { ReportData } from './pdfGenerator';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export interface StudentAnalysisData {
   studentId: string;
@@ -95,7 +96,7 @@ export class ReportDataCollector {
 
       const result = {
         student: {
-          _id: (studentData._id as any).toString(),
+          _id: safeIdToString(studentData._id),
           firstName: studentData.firstName || 'Bilinmeyen',
           lastName: studentData.lastName || 'Öğrenci',
           email: studentData.email || '',
@@ -103,7 +104,7 @@ export class ReportDataCollector {
           isActive: studentData.isActive
         },
         teacher: {
-          _id: (teacherData._id as any).toString(),
+          _id: safeIdToString(teacherData._id),
           firstName: teacherData.firstName || 'Bilinmeyen',
           lastName: teacherData.lastName || 'Öğretmen',
           email: teacherData.email || '',

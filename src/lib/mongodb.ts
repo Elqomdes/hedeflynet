@@ -122,7 +122,7 @@ async function connectDB(retryCount = 0): Promise<typeof mongoose> {
         cached.promise = null;
         cached.conn = null;
         throw error;
-      }) as any;
+      });
     }
 
     cached.conn = await cached.promise;

@@ -5,6 +5,7 @@ import { ReportDataService } from '@/lib/services/reportDataService';
 import { SimplePdfGenerator } from '@/lib/services/simplePdfGenerator';
 import { FallbackReportService } from '@/lib/services/fallbackReportService';
 import { ReportGenerationOptions } from '@/lib/types/report';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,15 @@ export async function POST(
     }
 
     const studentId = params.id;
-    const teacherId = (authResult._id as any).toString();
+    
+    if (!authResult._id) {
+      return NextResponse.json(
+        { error: 'Kullanıcı verisi eksik' },
+        { status: 500 }
+      );
+    }
+    
+    const teacherId = safeIdToString(authResult._id);
 
     // Validate student ID
     if (!studentId || studentId.length !== 24) {

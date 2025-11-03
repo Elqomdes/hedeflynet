@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User } from '@/lib/models';
 import { generateToken } from '@/lib/auth';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,7 +54,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate token
-    const token = generateToken((teacher._id as any).toString(), teacher.username, teacher.role);
+    if (!teacher._id) {
+      return NextResponse.json({
+        status: 'error',
+        message: 'Teacher ID is missing'
+      }, { status: 500 });
+    }
+    const token = generateToken(safeIdToString(teacher._id), teacher.username, teacher.role);
     console.log('Token generated successfully');
 
     return NextResponse.json({

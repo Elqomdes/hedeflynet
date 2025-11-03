@@ -1,5 +1,6 @@
 import { User, Assignment, AssignmentSubmission, Class, Goal } from '@/lib/models';
 import { ReliableReportData } from './reliablePdfGenerator';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export interface DataCollectionParams {
   studentId: string;
@@ -135,7 +136,7 @@ export class ReliableDataCollector {
     }
 
     return {
-      _id: (student._id as any).toString(),
+      _id: safeIdToString(student._id),
       firstName: student.firstName || 'Bilinmeyen',
       lastName: student.lastName || 'Öğrenci',
       email: student.email || '',
@@ -160,7 +161,7 @@ export class ReliableDataCollector {
     }
 
     return {
-      _id: (teacher._id as any).toString(),
+      _id: safeIdToString(teacher._id),
       firstName: teacher.firstName || 'Bilinmeyen',
       lastName: teacher.lastName || 'Öğretmen',
       email: teacher.email || '',
@@ -175,7 +176,7 @@ export class ReliableDataCollector {
         const classData = await Class.findById(student.classId);
         if (classData) {
           return {
-            _id: (classData._id as any).toString(),
+            _id: safeIdToString(classData._id),
             name: classData.name || 'Bilinmeyen Sınıf'
           };
         }
@@ -217,7 +218,7 @@ export class ReliableDataCollector {
       }).populate('teacherId', 'firstName lastName').sort({ dueDate: -1 });
       
       return assignments.map(assignment => ({
-        _id: (assignment._id as any).toString(),
+        _id: safeIdToString(assignment._id),
         title: assignment.title || 'Başlıksız Ödev',
         subject: assignment.tags && assignment.tags.length > 0 ? assignment.tags[0] : 'Genel',
         dueDate: assignment.dueDate ? assignment.dueDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
@@ -243,7 +244,7 @@ export class ReliableDataCollector {
       }).populate('assignmentId').sort({ submittedAt: -1 });
       
       return submissions.map(submission => ({
-        _id: (submission._id as any).toString(),
+        _id: safeIdToString(submission._id),
         assignmentId: submission.assignmentId?._id?.toString(),
         grade: submission.grade,
         submittedAt: submission.submittedAt,

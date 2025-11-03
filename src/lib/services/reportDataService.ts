@@ -2,6 +2,7 @@ import connectDB from '@/lib/mongodb';
 import { Assignment, AssignmentSubmission, User, Class } from '@/lib/models';
 import { IUser } from '@/lib/models/User';
 import { StudentReportData, ReportGenerationOptions } from '@/lib/types/report';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 // Type for populated assignment submission
 interface PopulatedAssignmentSubmission {
@@ -101,14 +102,14 @@ export class ReportDataService {
 
       return {
         student: {
-          id: (student._id as any).toString(),
+          id: safeIdToString(student._id),
           firstName: student.firstName,
           lastName: student.lastName,
           email: student.email,
           class: studentClass?.name
         },
         teacher: {
-          id: (teacher._id as any).toString(),
+          id: safeIdToString(teacher._id),
           firstName: teacher.firstName,
           lastName: teacher.lastName,
           email: teacher.email

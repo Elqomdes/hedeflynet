@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import { Assignment, AssignmentSubmission, Class, User } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { AssignmentCreateSchema } from '@/lib/validation';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 // Type for populated student
 interface PopulatedStudent {
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
 
     for (const assignment of assignments) {
       // Check if this assignment is completed
-      const submission = submissionMap.get((assignment._id as any).toString());
+      const submission = submissionMap.get(safeIdToString(assignment._id));
       const isCompleted = submission && (submission.status === 'graded' || submission.status === 'completed');
       
       // Skip completed assignments from main list

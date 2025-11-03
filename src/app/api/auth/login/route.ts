@@ -6,6 +6,7 @@ import { Parent, IParent } from '@/lib/models/Parent';
 import { generateToken } from '@/lib/auth';
 import { rateLimit } from '@/lib/rateLimit';
 import { z } from 'zod';
+import { safeIdToString } from '@/lib/utils/idHelper';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,17 +92,36 @@ export async function POST(request: NextRequest) {
     let cookieName;
     
     if (userRole === 'parent') {
-      token = generateToken(parent!._id.toString(), parent!.username, 'parent');
+      if (!parent!._id) {
+        return NextResponse.json(
+          { error: 'Kullanıcı verisi eksik' },
+          { status: 500 }
+        );
+      }
+      token = generateToken(safeIdToString(parent!._id), parent!.username, 'parent');
       cookieName = 'parent-token';
     } else {
-      token = generateToken((user!._id as any).toString(), user!.username, userRole);
+      if (!user!._id) {
+        return NextResponse.json(
+          { error: 'Kullanıcı verisi eksik' },
+          { status: 500 }
+        );
+      }
+      token = generateToken(safeIdToString(user!._id), user!.username, userRole);
       cookieName = 'auth-token';
+    }
+
+    if (!authenticatedUser._id) {
+      return NextResponse.json(
+        { error: 'Kullanıcı verisi eksik' },
+        { status: 500 }
+      );
     }
 
     const response = NextResponse.json({
       message: 'Giriş başarılı',
       user: {
-        id: (authenticatedUser._id as any).toString(),
+        id: safeIdToString(authenticatedUser._id),
         username: authenticatedUser.username,
         email: authenticatedUser.email,
         role: userRole,
