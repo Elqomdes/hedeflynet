@@ -103,7 +103,6 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['mongoose'],
     optimizePackageImports: ['lucide-react', 'chart.js', 'recharts'],
-    optimizeCss: true,
   },
   webpack: (config, { isServer, dev }) => {
     if (isServer) {
