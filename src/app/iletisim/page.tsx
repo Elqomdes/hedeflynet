@@ -208,7 +208,7 @@ export default function ContactPage() {
                   value={formData.message}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Eklemek istediğiniz bilgiler"
+                  placeholder="Eklemek istediğiniz bilgiler (lütfen kaç aylık üyelik istediğinizi belirtin)"
                 />
               </div>
 
@@ -273,7 +273,7 @@ export default function ContactPage() {
                     <span className="text-primary-600 text-sm font-semibold">1</span>
                   </div>
                   <p className="text-secondary-700">
-                    Başvuru formunu doldurun
+                    Başvuru formunu doldurun (mesaj kısmında kaç aylık üyelik istediğinizi belirtin)
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
