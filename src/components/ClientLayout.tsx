@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useMemo, memo } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -9,16 +10,16 @@ interface ClientLayoutProps {
   children: React.ReactNode;
 }
 
-export default function ClientLayout({ children }: ClientLayoutProps) {
+function ClientLayout({ children }: ClientLayoutProps) {
   const pathname = usePathname();
   
   // Dashboard sayfalarında navbar ve footer'ı gizle
-  const isDashboardPage = pathname && (
+  const isDashboardPage = useMemo(() => pathname && (
     pathname.startsWith('/admin') || 
     pathname.startsWith('/ogrenci') || 
     pathname.startsWith('/ogretmen') ||
     pathname.startsWith('/veli')
-  );
+  ), [pathname]);
 
   return (
     <ErrorBoundary>
@@ -30,3 +31,5 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     </ErrorBoundary>
   );
 }
+
+export default memo(ClientLayout);

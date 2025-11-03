@@ -8,7 +8,12 @@ import { AppProvider } from '@/contexts/AppContext';
 import { CacheBusterProvider } from '@/components/CacheBusterProvider';
 import { CacheUpdateNotification } from '@/components/CacheUpdateNotification';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-inter',
+});
 
 export const metadata: Metadata = {
   title: 'Hedefly - Öğrenci Koçluk Platformu',
@@ -20,13 +25,16 @@ export const metadata: Metadata = {
       { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' }
     ],
   },
-  other: {
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
-    'X-Cache-Buster': Date.now().toString(),
-    'X-Request-Time': Date.now().toString()
-  }
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://hedefly.com'),
+  openGraph: {
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'Hedefly',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -37,14 +45,11 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
-        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-        <meta httpEquiv="Pragma" content="no-cache" />
-        <meta httpEquiv="Expires" content="0" />
-        <meta name="cache-buster" content={Date.now().toString()} />
         <meta name="version" content={process.env.NEXT_PUBLIC_BUILD_HASH || 'dev'} />
-        <meta name="last-modified" content={new Date().toISOString()} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${inter.variable}`}>
         <AppProvider>
           <CacheBusterProvider>
             <ClientLayout>

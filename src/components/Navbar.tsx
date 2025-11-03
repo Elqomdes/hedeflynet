@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { useDataFetching } from '@/hooks/useDataFetching';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
-export default function Navbar() {
+function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   interface User {
     id: string;
@@ -35,7 +35,7 @@ export default function Navbar() {
 
   const user = authData?.user || null;
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST' });
       if (response.ok) {
@@ -50,9 +50,9 @@ export default function Navbar() {
       // Force logout even if API fails
       router.push('/');
     }
-  };
+  }, [router]);
 
-  const getDashboardLink = () => {
+  const getDashboardLink = useMemo(() => {
     if (!user) return '/giris';
     switch (user.role) {
       case 'admin': return '/admin';
@@ -60,7 +60,7 @@ export default function Navbar() {
       case 'student': return '/ogrenci';
       default: return '/giris';
     }
-  };
+  }, [user]);
 
   if (loading) {
     return (
@@ -119,7 +119,7 @@ export default function Navbar() {
                   </span>
                 </div>
                 <Link
-                  href={getDashboardLink()}
+                  href={getDashboardLink}
                   className="btn-primary flex items-center space-x-2 btn-sm"
                 >
                   <User className="w-4 h-4" />
@@ -206,7 +206,7 @@ export default function Navbar() {
                       </div>
                     </div>
                     <Link
-                      href={getDashboardLink()}
+                      href={getDashboardLink}
                       className="block w-full btn-primary text-center mb-3"
                       onClick={() => setIsOpen(false)}
                     >
@@ -241,3 +241,5 @@ export default function Navbar() {
     </nav>
   );
 }
+
+export default memo(Navbar);

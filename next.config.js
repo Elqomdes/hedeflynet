@@ -15,26 +15,66 @@ const nextConfig = {
       pagesBufferLength: 2,
     },
   }),
-  // Cache control headers
+  // Optimized cache control headers for better performance
   async headers() {
     return [
+      // Static assets - cache for 1 year
+      {
+        source: '/favicon.ico',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/favicon-:size(16|32)x:size.png',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Pages - short cache with revalidation
       {
         source: '/(.*)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
+            value: 'public, max-age=60, stale-while-revalidate=300',
           },
         ],
       },
+      // API routes - no cache for dynamic data
       {
         source: '/api/(.*)',
         headers: [
@@ -62,27 +102,58 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ['mongoose'],
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['lucide-react', 'chart.js', 'recharts'],
+    optimizeCss: true,
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     if (isServer) {
       config.externals.push('mongoose');
     }
     
     // Optimize bundle size
-    config.optimization = {
-      ...config.optimization,
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
+    if (!dev) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            framework: {
+              chunks: 'all',
+              name: 'framework',
+              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+              priority: 40,
+              enforce: true,
+            },
+            lib: {
+              test(module: any) {
+                return module.size() > 160000 && /node_modules[/\\]/.test(module.identifier());
+              },
+              name(module: any) {
+                const hash = require('crypto').createHash('sha1');
+                hash.update(module.identifier());
+                return hash.digest('hex').substring(0, 8);
+              },
+              priority: 30,
+              minChunks: 1,
+              reuseExistingChunk: true,
+            },
+            commons: {
+              name: 'commons',
+              minChunks: 2,
+              priority: 20,
+            },
+            shared: {
+              name: 'shared',
+              minChunks: 2,
+              priority: 10,
+              reuseExistingChunk: true,
+            },
           },
         },
-      },
-    };
+      };
+    }
     
     return config;
   },

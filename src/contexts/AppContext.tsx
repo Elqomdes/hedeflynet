@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useServiceWorker } from '@/hooks/useServiceWorker';
 import { cacheBuster } from '@/lib/cacheBuster';
@@ -104,20 +104,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, []);
 
-  // Track user activity
+  // Track user activity with throttling for better performance
   useEffect(() => {
+    let lastUpdate = 0;
+    const throttleDelay = 5000; // Update max once per 5 seconds
+    
     const updateActivity = () => {
-      dispatch({ type: 'UPDATE_ACTIVITY' });
+      const now = Date.now();
+      if (now - lastUpdate >= throttleDelay) {
+        lastUpdate = now;
+        dispatch({ type: 'UPDATE_ACTIVITY' });
+      }
     };
 
+    // Use passive listeners for better scroll performance
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    const options = { passive: true, capture: true };
+    
     events.forEach(event => {
-      document.addEventListener(event, updateActivity, true);
+      document.addEventListener(event, updateActivity, options);
     });
 
     return () => {
       events.forEach(event => {
-        document.removeEventListener(event, updateActivity, true);
+        document.removeEventListener(event, updateActivity, options);
       });
     };
   }, []);
@@ -170,11 +180,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [state.user, state.lastActivity]);
 
-  const login = (user: User) => {
+  const login = useCallback((user: User) => {
     dispatch({ type: 'SET_USER', payload: user });
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
@@ -183,9 +193,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'LOGOUT' });
       router.push('/');
     }
-  };
+  }, [router]);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await fetch('/api/auth/me', {
@@ -207,7 +217,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       console.error('User refresh failed:', error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to refresh user data' });
     }
-  };
+  }, []);
 
   return (
     <AppContext.Provider value={{ state, dispatch, login, logout, refreshUser }}>
