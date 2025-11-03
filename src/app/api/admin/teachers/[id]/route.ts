@@ -85,11 +85,10 @@ export async function PUT(
     }
 
     // Update allowed fields
-    const allowed = ['username', 'email', 'firstName', 'lastName', 'phone', 'password'] as const;
+    const allowed: Array<keyof typeof body> = ['username', 'email', 'firstName', 'lastName', 'phone', 'password'];
     for (const key of allowed) {
       if (key in body && typeof body[key] !== 'undefined') {
-        // @ts-ignore
-        teacher[key] = body[key];
+        (teacher as any)[key] = body[key];
       }
     }
     await teacher.save();

@@ -15,6 +15,16 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
+// Safe metadata base URL
+const getMetadataBase = (): URL | undefined => {
+  try {
+    const url = process.env.NEXT_PUBLIC_SITE_URL || 'https://hedefly.com';
+    return new URL(url);
+  } catch {
+    return undefined;
+  }
+};
+
 export const metadata: Metadata = {
   title: 'Hedefly - Öğrenci Koçluk Platformu',
   description: 'Modern öğrenci koçluk platformu ile öğrencilerinizin hedeflerine ulaşmasına yardımcı olun',
@@ -25,7 +35,7 @@ export const metadata: Metadata = {
       { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' }
     ],
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://hedefly.com'),
+  ...(getMetadataBase() && { metadataBase: getMetadataBase() }),
   openGraph: {
     type: 'website',
     locale: 'tr_TR',

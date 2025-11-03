@@ -122,15 +122,15 @@ const nextConfig = {
             framework: {
               chunks: 'all',
               name: 'framework',
-              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
               priority: 40,
               enforce: true,
             },
             lib: {
-              test(module: any) {
+              test(module) {
                 return module.size() > 160000 && /node_modules[/\\]/.test(module.identifier());
               },
-              name(module: any) {
+              name(module) {
                 const hash = require('crypto').createHash('sha1');
                 hash.update(module.identifier());
                 return hash.digest('hex').substring(0, 8);
