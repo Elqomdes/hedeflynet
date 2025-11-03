@@ -41,6 +41,7 @@ export default function AdminSubscriptions() {
   const [searchTerm, setSearchTerm] = useState('');
   const [planSelections, setPlanSelections] = useState<Record<string, '3months' | '6months' | '12months'>>({});
   const [savingFor, setSavingFor] = useState<string | null>(null);
+  const [cancellingFor, setCancellingFor] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -92,6 +93,24 @@ export default function AdminSubscriptions() {
       alert('Abonelik ayarlanırken hata oluştu');
     } finally {
       setSavingFor(null);
+    }
+  };
+
+  const handleCancelSubscription = async (subscriptionId: string) => {
+    try {
+      setCancellingFor(subscriptionId);
+      const res = await fetch('/api/admin/subscriptions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscriptionId })
+      });
+      if (!res.ok) throw new Error('Abonelik iptal edilemedi');
+      await fetchData();
+    } catch (e) {
+      console.error(e);
+      alert('Abonelik iptal edilirken hata oluştu');
+    } finally {
+      setCancellingFor(null);
     }
   };
 
@@ -283,6 +302,7 @@ export default function AdminSubscriptions() {
                 <th className="text-left py-4 px-6 font-semibold text-secondary-900">Kalan Gün</th>
                 <th className="text-left py-4 px-6 font-semibold text-secondary-900">Fiyat</th>
                 <th className="text-left py-4 px-6 font-semibold text-secondary-900">Süreyi Ayarla</th>
+                <th className="text-left py-4 px-6 font-semibold text-secondary-900">İşlemler</th>
               </tr>
             </thead>
             <tbody>
@@ -369,6 +389,19 @@ export default function AdminSubscriptions() {
                             {savingFor === teacher._id ? 'Kaydediliyor...' : 'Süreyi Ayarla'}
                           </button>
                         </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        {sub ? (
+                          <button
+                            onClick={() => handleCancelSubscription(sub._id)}
+                            className={`px-4 py-2 rounded-lg font-medium text-white ${cancellingFor === sub._id ? 'bg-secondary-400' : 'bg-red-600 hover:bg-red-700'}`}
+                            disabled={cancellingFor === sub._id}
+                          >
+                            {cancellingFor === sub._id ? 'İptal Ediliyor...' : 'Aboneliği İptal Et'}
+                          </button>
+                        ) : (
+                          <span className="text-secondary-500">—</span>
+                        )}
                       </td>
                     </tr>
                   );

@@ -124,3 +124,51 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+const CancelSubscriptionSchema = z.object({
+  subscriptionId: z.string()
+});
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const authResult = await requireAuth(['admin'])(request);
+    if ('error' in authResult) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
+    }
+
+    await connectDB();
+
+    const json = await request.json();
+    const parsed = CancelSubscriptionSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Geçersiz veri', details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { subscriptionId } = parsed.data;
+    const sub = await Subscription.findById(subscriptionId);
+    if (!sub) {
+      return NextResponse.json(
+        { error: 'Abonelik bulunamadı' },
+        { status: 404 }
+      );
+    }
+
+    sub.isActive = false;
+    sub.endDate = new Date();
+    await sub.save();
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Admin cancel subscription error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Abonelik iptal edilemedi' },
+      { status: 500 }
+    );
+  }
+}
