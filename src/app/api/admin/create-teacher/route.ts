@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { User } from '@/lib/models';
+import { User, FreeTeacherSlot, Subscription } from '@/lib/models';
 import { requireAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -84,8 +84,49 @@ export async function POST(request: NextRequest) {
     await teacher.save();
     console.log('Teacher saved successfully with ID:', teacher._id);
 
+    // Check if there are free teacher slots available and assign one
+    console.log('Checking for available free teacher slots...');
+    const usedSlots = await FreeTeacherSlot.countDocuments({ isActive: true });
+    const TOTAL_SLOTS = 20;
+    const isFreeTrial = usedSlots < TOTAL_SLOTS;
+    let slotNumber = null;
+
+    if (isFreeTrial) {
+      console.log(`Free slot available. Assigning slot ${usedSlots + 1}...`);
+      // Assign free teacher slot
+      slotNumber = usedSlots + 1;
+      const freeSlot = new FreeTeacherSlot({
+        teacherId: teacher._id,
+        slotNumber: slotNumber,
+        isActive: true,
+        assignedAt: new Date(),
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
+      });
+      await freeSlot.save();
+      console.log('Free teacher slot assigned successfully');
+
+      // Create free subscription
+      console.log('Creating free subscription...');
+      const freeSubscription = new Subscription({
+        teacherId: teacher._id,
+        planType: '12months', // Free trial is 12 months
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+        isActive: true,
+        isFreeTrial: true,
+        originalPrice: 0,
+        paymentStatus: 'paid'
+      });
+      await freeSubscription.save();
+      console.log('Free subscription created successfully');
+    } else {
+      console.log('No free slots available. Teacher will need a paid subscription.');
+    }
+
     return NextResponse.json({
-      message: 'Öğretmen başarıyla oluşturuldu',
+      message: isFreeTrial 
+        ? 'Öğretmen başarıyla oluşturuldu ve ücretsiz deneme slotu atandı.'
+        : 'Öğretmen başarıyla oluşturuldu. Abonelik gerekli.',
       teacher: {
         id: teacher._id,
         username: teacher.username,
@@ -93,7 +134,9 @@ export async function POST(request: NextRequest) {
         firstName: teacher.firstName,
         lastName: teacher.lastName,
         role: teacher.role
-      }
+      },
+      isFreeTrial,
+      slotNumber: slotNumber
     });
   } catch (error) {
     console.error('Create teacher error:', error);
