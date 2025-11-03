@@ -344,6 +344,218 @@ export default function StudentAnalysisPage() {
         </div>
       </div>
 
+      {/* Tüm Zamanlarda Ödev Durumu - Detaylı Grafik */}
+      <div className="card mb-8">
+        <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+          Tüm Zamanlarda Ödev Durumu
+        </h3>
+        <div className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-700">Teslim Edilen</p>
+                  <p className="text-2xl font-bold text-green-900 mt-1">
+                    {analysisData.submittedAssignments || 0}
+                  </p>
+                  <p className="text-xs text-green-600 mt-1">
+                    {analysisData.totalAssignments > 0 
+                      ? `%${Math.round((analysisData.submittedAssignments / analysisData.totalAssignments) * 100)}`
+                      : '%0'} oranında
+                  </p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              </div>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-red-700">Bekleyen</p>
+                  <p className="text-2xl font-bold text-red-900 mt-1">
+                    {Math.max(0, (analysisData.totalAssignments || 0) - (analysisData.submittedAssignments || 0))}
+                  </p>
+                  <p className="text-xs text-red-600 mt-1">
+                    {analysisData.totalAssignments > 0 
+                      ? `%${Math.round(((analysisData.totalAssignments - analysisData.submittedAssignments) / analysisData.totalAssignments) * 100)}`
+                      : '%0'} oranında
+                  </p>
+                </div>
+                <FileText className="h-8 w-8 text-red-500" />
+              </div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-700">Değerlendirilen</p>
+                  <p className="text-2xl font-bold text-blue-900 mt-1">
+                    {analysisData.gradedAssignments || 0}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    {analysisData.submittedAssignments > 0 
+                      ? `%${Math.round((analysisData.gradedAssignments / analysisData.submittedAssignments) * 100)}`
+                      : '%0'} teslim edilen içinde
+                  </p>
+                </div>
+                <Star className="h-8 w-8 text-blue-500" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={[
+                {
+                  name: 'Ödev Durumu',
+                  'Teslim Edilen': analysisData.submittedAssignments || 0,
+                  'Bekleyen': Math.max(0, (analysisData.totalAssignments || 0) - (analysisData.submittedAssignments || 0)),
+                  'Değerlendirilen': analysisData.gradedAssignments || 0,
+                  'Toplam': analysisData.totalAssignments || 0
+                }
+              ]}
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fontSize: 12 }}
+                stroke="#6b7280"
+              />
+              <YAxis 
+                tick={{ fontSize: 12 }}
+                stroke="#6b7280"
+                label={{ value: 'Ödev Sayısı', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 12 } }}
+              />
+              <Tooltip 
+                formatter={(value: number, name: string) => {
+                  const total = analysisData.totalAssignments || 0;
+                  const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                  return [`${value} ödev (${percentage}%)`, name];
+                }}
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  fontSize: '13px',
+                  padding: '12px'
+                }}
+                cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+              />
+              <Legend 
+                verticalAlign="top" 
+                height={40}
+                wrapperStyle={{ fontSize: '13px', paddingBottom: '10px' }}
+                iconType="rect"
+              />
+              <Bar 
+                dataKey="Teslim Edilen" 
+                stackId="a" 
+                fill="#10B981" 
+                radius={[4, 4, 0, 0]}
+                stroke="#ffffff"
+                strokeWidth={1}
+              >
+                <LabelList 
+                  dataKey="Teslim Edilen" 
+                  position="top" 
+                  formatter={(value: number) => value > 0 ? value : ''}
+                  style={{ fontSize: '12px', fontWeight: 'bold' }}
+                />
+              </Bar>
+              <Bar 
+                dataKey="Bekleyen" 
+                stackId="a" 
+                fill="#EF4444" 
+                radius={[0, 0, 4, 4]}
+                stroke="#ffffff"
+                strokeWidth={1}
+              >
+                <LabelList 
+                  dataKey="Bekleyen" 
+                  position="top" 
+                  formatter={(value: number) => value > 0 ? value : ''}
+                  style={{ fontSize: '12px', fontWeight: 'bold' }}
+                />
+              </Bar>
+              <Bar 
+                dataKey="Değerlendirilen" 
+                fill="#3B82F6" 
+                radius={[4, 4, 4, 4]}
+                stroke="#ffffff"
+                strokeWidth={2}
+                opacity={0.8}
+              >
+                <LabelList 
+                  dataKey="Değerlendirilen" 
+                  position="top" 
+                  formatter={(value: number) => value > 0 ? value : ''}
+                  style={{ fontSize: '12px', fontWeight: 'bold' }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-700">Teslim Oranı</p>
+                <p className="text-3xl font-bold text-green-900 mt-2">
+                  %{analysisData.assignmentCompletion || 0}
+                </p>
+                <p className="text-xs text-green-600 mt-2">
+                  {analysisData.submittedAssignments || 0} / {analysisData.totalAssignments || 0} ödev teslim edildi
+                </p>
+              </div>
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-white" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-700">Değerlendirme Oranı</p>
+                <p className="text-3xl font-bold text-blue-900 mt-2">
+                  %{analysisData.gradingRate || 0}
+                </p>
+                <p className="text-xs text-blue-600 mt-2">
+                  {analysisData.gradedAssignments || 0} / {analysisData.submittedAssignments || 0} teslim değerlendirildi
+                </p>
+              </div>
+              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
+                <Star className="h-8 w-8 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 p-4 bg-secondary-50 border border-secondary-200 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <FileText className="h-5 w-5 text-secondary-600 mt-0.5" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-secondary-900 mb-2">Grafik Açıklaması</h4>
+              <ul className="text-xs text-secondary-600 space-y-1">
+                <li className="flex items-center">
+                  <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                  <strong>Teslim Edilen:</strong> Öğrencinin teslim ettiği ödevlerin sayısı
+                </li>
+                <li className="flex items-center">
+                  <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+                  <strong>Bekleyen:</strong> Henüz teslim edilmemiş ödevlerin sayısı
+                </li>
+                <li className="flex items-center">
+                  <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                  <strong>Değerlendirilen:</strong> Teslim edilen ödevlerden değerlendirilenlerin sayısı
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Monthly Progress Chart */}
       <div className="card mb-8">
         <h3 className="text-lg font-semibold text-secondary-900 mb-4">
