@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Send, Mail, Phone, MapPin } from 'lucide-react';
-import emailjs from '@emailjs/browser';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -17,17 +16,7 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  // EmailJS configuration
-  const EMAILJS_SERVICE_ID = 'service_iqwh4mo';
-  const EMAILJS_TEMPLATE_ID = 'template_ypcggf8';
-  const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'quNu5gUgfBaEvzkq9';
-
-  useEffect(() => {
-    // EmailJS'i initialize et - sadece public key varsa
-    if (EMAILJS_PUBLIC_KEY) {
-      emailjs.init(EMAILJS_PUBLIC_KEY);
-    }
-  }, [EMAILJS_PUBLIC_KEY]);
+  // Email gönderimi kaldırıldı; yalnızca başvuru kaydı yapılır
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -41,34 +30,8 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // EmailJS konfigürasyonu kontrolü
-    if (!EMAILJS_PUBLIC_KEY) {
-      console.error('EmailJS Public Key not configured');
-      setSubmitStatus('error');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      // 1) EmailJS ile email gönder
-      const templateParams = {
-        from_name: `${formData.firstName} ${formData.lastName}`,
-        from_email: formData.email,
-        phone: formData.phone,
-        experience: formData.experience,
-        subjects: formData.subjects,
-        message: formData.message,
-        to_name: 'Hedefly Ekibi'
-      };
-
-      const emailResult = await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams,
-        EMAILJS_PUBLIC_KEY
-      );
-
-      // 2) Sunucuya kaydet (admin/istekler'de listelenecek)
+      // Sunucuya kaydet (admin/istekler'de listelenecek)
       const apiResult = await fetch('/api/teacher-applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,7 +46,7 @@ export default function ContactPage() {
         })
       });
 
-      if (emailResult.status === 200 && apiResult.ok) {
+      if (apiResult.ok) {
         setSubmitStatus('success');
         setFormData({
           firstName: '',
@@ -126,13 +89,13 @@ export default function ContactPage() {
             
             {submitStatus === 'success' && (
               <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                Başvurunuz başarıyla email olarak gönderildi! En kısa sürede sizinle iletişime geçeceğiz.
+                Başvurunuz başarıyla alındı! En kısa sürede admin panelinden değerlendirilecektir.
               </div>
             )}
 
             {submitStatus === 'error' && (
               <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                Email gönderilirken bir hata oluştu. Lütfen tekrar deneyin veya doğrudan iletisim@edulyedu.com adresine yazın.
+                Başvurunuz kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.
               </div>
             )}
 
