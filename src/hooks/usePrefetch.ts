@@ -85,7 +85,7 @@ export function useSmartPrefetch() {
       setTimeout(() => {
         prefetchRoute('/ogrenci/odevler');
         prefetchRoute('/ogrenci/hedefler');
-        prefetchRoute('/ogrenci/analiz');
+      // analiz sayfası kaldırıldı
       }, 1000);
     } else if (currentPath.startsWith('/admin')) {
       // Prefetch common admin routes

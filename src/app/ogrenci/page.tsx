@@ -260,15 +260,6 @@ export default function StudentDashboard() {
       color: 'bg-teal-500',
       href: '/ogrenci/video-koçluk',
       subtitle: 'Video oturumu'
-    },
-    {
-      name: 'Ortalama Not',
-      value: stats.averageGrade > 0 ? stats.averageGrade.toFixed(1) : 'N/A',
-      completed: stats.averageGrade,
-      icon: Star,
-      color: 'bg-yellow-500',
-      href: '/ogrenci/analiz',
-      subtitle: 'Genel performans'
     }
   ];
 
@@ -517,20 +508,7 @@ export default function StudentDashboard() {
                 </p>
               </div>
             </Link>
-            <Link
-              href="/ogrenci/analiz"
-              className="flex items-center p-3 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl hover:from-orange-100 hover:to-orange-200 transition-all duration-300 group"
-            >
-              <div className="p-2 bg-orange-500 rounded-lg group-hover:bg-orange-600 transition-colors duration-300">
-                <TrendingUp className="h-5 w-5 text-white" />
-              </div>
-              <div className="ml-3">
-                <p className="font-semibold text-secondary-900 text-sm">Analizim</p>
-                <p className="text-xs text-secondary-600">
-                  Performans raporu
-                </p>
-              </div>
-            </Link>
+            {/* Analiz linki kaldırıldı */}
           </div>
         </div>
       </div>

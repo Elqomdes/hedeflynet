@@ -60,7 +60,6 @@ export default function StudentLayout({
     { name: 'Teslimlerim', href: '/ogrenci/teslimler', icon: Inbox },
     { name: 'Sınıflarım', href: '/ogrenci/siniflar', icon: Users },
     { name: 'Video Koçluk', href: '/ogrenci/video-koçluk', icon: Video },
-    { name: 'Analizim', href: '/ogrenci/analiz', icon: BarChart3 },
     { name: 'Profilim', href: '/ogrenci/profil', icon: Settings },
   ];
 
