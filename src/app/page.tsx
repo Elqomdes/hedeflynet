@@ -214,7 +214,7 @@ function EnhancedFreeTeacherProgressSection() {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4">
           <Link 
-            href="/giris" 
+            href="/iletisim" 
             className="inline-flex items-center justify-center px-6 sm:px-8 lg:px-12 py-4 sm:py-5 lg:py-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-base sm:text-lg lg:text-xl rounded-xl sm:rounded-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-3xl transform hover:scale-105 min-h-[48px] touch-manipulation"
           >
             <Gift className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
