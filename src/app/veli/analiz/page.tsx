@@ -56,11 +56,7 @@ export default function ParentAnalysis() {
   const [loading, setLoading] = useState(true);
   const [childrenLoading, setChildrenLoading] = useState(true);
 
-  useEffect(() => {
-    fetchChildren();
-  }, []);
-
-  const fetchChildren = async () => {
+  const fetchChildren = useCallback(async () => {
     try {
       const response = await fetch('/api/parent/dashboard', {
         credentials: 'include',
@@ -78,9 +74,12 @@ export default function ParentAnalysis() {
           setChildren(childrenData);
           
           // Auto-select first child if available
-          if (childrenData.length > 0 && !selectedChildId) {
-            setSelectedChildId(childrenData[0].id);
-          }
+          setSelectedChildId((prev) => {
+            if (childrenData.length > 0 && !prev) {
+              return childrenData[0].id;
+            }
+            return prev;
+          });
         }
       }
     } catch (error) {
@@ -88,7 +87,11 @@ export default function ParentAnalysis() {
     } finally {
       setChildrenLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchChildren();
+  }, [fetchChildren]);
 
   const fetchAnalysisData = useCallback(async () => {
     if (!selectedChildId) {

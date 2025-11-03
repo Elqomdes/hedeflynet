@@ -359,8 +359,8 @@ export default function StudentAnalysisPage() {
                     {analysisData.submittedAssignments || 0}
                   </p>
                   <p className="text-xs text-green-600 mt-1">
-                    {analysisData.totalAssignments > 0 
-                      ? `%${Math.round((analysisData.submittedAssignments / analysisData.totalAssignments) * 100)} oranında`
+                    {(analysisData.totalAssignments ?? 0) > 0 
+                      ? `%${Math.round((analysisData.submittedAssignments / (analysisData.totalAssignments ?? 1)) * 100)} oranında`
                       : '%0 oranında'}
                   </p>
                 </div>
@@ -375,8 +375,8 @@ export default function StudentAnalysisPage() {
                     {Math.max(0, (analysisData.totalAssignments || 0) - (analysisData.submittedAssignments || 0))}
                   </p>
                   <p className="text-xs text-red-600 mt-1">
-                    {analysisData.totalAssignments > 0 
-                      ? `%${Math.round(((analysisData.totalAssignments - analysisData.submittedAssignments) / analysisData.totalAssignments) * 100)} oranında`
+                    {(analysisData.totalAssignments ?? 0) > 0 
+                      ? `%${Math.round(((analysisData.totalAssignments ?? 0) - analysisData.submittedAssignments) / (analysisData.totalAssignments ?? 1) * 100)} oranında`
                       : '%0 oranında'}
                   </p>
                 </div>
