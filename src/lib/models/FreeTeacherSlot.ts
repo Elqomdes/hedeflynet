@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IFreeTeacherSlot extends Document {
   teacherId: mongoose.Types.ObjectId;
-  slotNumber: number; // 1-50 arası
+  slotNumber: number; // 1-20 arası
   isActive: boolean;
   assignedAt: Date;
   expiresAt: Date;
@@ -21,7 +21,7 @@ const FreeTeacherSlotSchema = new Schema<IFreeTeacherSlot>({
     type: Number,
     required: true,
     min: 1,
-    max: 50,
+    max: 20,
     unique: true,
     index: true
   },

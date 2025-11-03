@@ -146,7 +146,7 @@ function EnhancedFreeTeacherProgressSection() {
           </h2>
           
           <p className="text-base sm:text-lg lg:text-xl xl:text-2xl text-white/90 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed drop-shadow-lg px-4">
-            Platformumuzun açılışında ilk 50 öğretmenimize 1 yıl boyunca ücretsiz erişim imkanı sunuyoruz.
+            Platformumuzun açılışında ilk 20 öğretmenimize 1 yıl boyunca ücretsiz erişim imkanı sunuyoruz.
             <br className="hidden sm:block" />
             <span className="block sm:inline font-bold text-yellow-300 mt-2 sm:mt-0">Hemen başvurun ve bu fırsattan yararlanın!</span>
           </p>

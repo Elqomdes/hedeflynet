@@ -70,7 +70,8 @@ export async function POST(
 
     // Check if there are free teacher slots available
     const usedSlots = await FreeTeacherSlot.countDocuments({ isActive: true });
-    const isFreeTrial = usedSlots < 50;
+    const TOTAL_SLOTS = 20;
+    const isFreeTrial = usedSlots < TOTAL_SLOTS;
 
     if (isFreeTrial) {
       // Assign free teacher slot
