@@ -217,9 +217,12 @@ export default function StudentDashboard() {
     };
   };
 
-  // Recent assignments (next 7 days)
+  // Recent assignments (next 7 days) - only active (not graded/completed) and not closed
   const upcomingAssignments = (assignments || [])
     .filter(assignment => {
+      // exclude completed/graded
+      const status = assignment.submission?.status;
+      if (status === 'completed' || status === 'graded') return false;
       const dueDate = new Date(assignment.dueDate);
       const now = new Date();
       const diffTime = dueDate.getTime() - now.getTime();
