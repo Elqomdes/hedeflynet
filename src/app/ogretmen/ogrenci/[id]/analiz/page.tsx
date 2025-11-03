@@ -360,8 +360,8 @@ export default function StudentAnalysisPage() {
                   </p>
                   <p className="text-xs text-green-600 mt-1">
                     {analysisData.totalAssignments > 0 
-                      ? `%${Math.round((analysisData.submittedAssignments / analysisData.totalAssignments) * 100)}`
-                      : '%0'} oranında
+                      ? `%${Math.round((analysisData.submittedAssignments / analysisData.totalAssignments) * 100)} oranında`
+                      : '%0 oranında'}
                   </p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-500" />
@@ -376,8 +376,8 @@ export default function StudentAnalysisPage() {
                   </p>
                   <p className="text-xs text-red-600 mt-1">
                     {analysisData.totalAssignments > 0 
-                      ? `%${Math.round(((analysisData.totalAssignments - analysisData.submittedAssignments) / analysisData.totalAssignments) * 100)}`
-                      : '%0'} oranında
+                      ? `%${Math.round(((analysisData.totalAssignments - analysisData.submittedAssignments) / analysisData.totalAssignments) * 100)} oranında`
+                      : '%0 oranında'}
                   </p>
                 </div>
                 <FileText className="h-8 w-8 text-red-500" />
@@ -392,8 +392,8 @@ export default function StudentAnalysisPage() {
                   </p>
                   <p className="text-xs text-blue-600 mt-1">
                     {analysisData.submittedAssignments > 0 
-                      ? `%${Math.round((analysisData.gradedAssignments / analysisData.submittedAssignments) * 100)}`
-                      : '%0'} teslim edilen içinde
+                      ? `%${Math.round((analysisData.gradedAssignments / analysisData.submittedAssignments) * 100)} teslim edilen içinde`
+                      : '%0 teslim edilen içinde'}
                   </p>
                 </div>
                 <Star className="h-8 w-8 text-blue-500" />
