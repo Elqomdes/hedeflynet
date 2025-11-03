@@ -112,8 +112,8 @@ export default function TeacherDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-10">
         {statCards.map((stat, index) => (
-          <Link key={stat.name} href={stat.href} className="group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
-            <div className={`relative overflow-hidden rounded-2xl ${stat.bgColor} border ${stat.borderColor} p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:border-opacity-50`}>
+          <Link key={stat.name} href={stat.href} className="group animate-scale-in h-full flex" style={{animationDelay: `${index * 0.1}s`}}>
+            <div className={`relative overflow-hidden rounded-2xl ${stat.bgColor} border ${stat.borderColor} p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:border-opacity-50 w-full h-full flex flex-col`}>
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:shadow-glow transition-all duration-300`}>
                   <stat.icon className="h-6 w-6 text-white" />
@@ -127,7 +127,7 @@ export default function TeacherDashboard() {
                   )}
                 </div>
               </div>
-              <div>
+              <div className="flex-1 flex flex-col justify-end">
                 <h3 className="text-lg font-semibold text-secondary-900 mb-1 group-hover:text-primary-600 transition-colors duration-300">
                   {stat.name}
                 </h3>
