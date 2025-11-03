@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import User from '@/lib/models/User';
-import { getCurrentUser } from '@/lib/auth';
+import { User } from '@/lib/models';
+import { requireAuth, getCurrentUser } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -55,5 +55,78 @@ export async function GET(
       { error: 'Sunucu hatası' },
       { status: 500 }
     );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const authResult = await requireAuth(['admin'])(request);
+    if ('error' in authResult) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
+    }
+
+    await connectDB();
+
+    const teacherId = params.id;
+    const body = await request.json();
+
+    const teacher = await User.findById(teacherId);
+    if (!teacher) {
+      return NextResponse.json({ error: 'Öğretmen bulunamadı' }, { status: 404 });
+    }
+    if (teacher.role !== 'teacher') {
+      return NextResponse.json({ error: 'Bu kullanıcı öğretmen değil' }, { status: 400 });
+    }
+
+    // Update allowed fields
+    const allowed = ['username', 'email', 'firstName', 'lastName', 'phone', 'password'] as const;
+    for (const key of allowed) {
+      if (key in body && typeof body[key] !== 'undefined') {
+        // @ts-ignore
+        teacher[key] = body[key];
+      }
+    }
+    await teacher.save();
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Update teacher error:', error);
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const authResult = await requireAuth(['admin'])(request);
+    if ('error' in authResult) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
+    }
+
+    await connectDB();
+    const teacher = await User.findById(params.id);
+    if (!teacher) {
+      return NextResponse.json({ error: 'Öğretmen bulunamadı' }, { status: 404 });
+    }
+    if (teacher.role !== 'teacher') {
+      return NextResponse.json({ error: 'Bu kullanıcı öğretmen değil' }, { status: 400 });
+    }
+
+    await User.deleteOne({ _id: params.id });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete teacher error:', error);
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }
