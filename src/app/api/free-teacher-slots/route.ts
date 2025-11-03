@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     await connectDB();
     
     // Toplam slot sayısını ve kullanılan slot sayısını al
-    const totalSlots = 50;
+    const totalSlots = 20;
     const usedSlots = await FreeTeacherSlot.countDocuments({ isActive: true });
     const availableSlots = totalSlots - usedSlots;
     

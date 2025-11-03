@@ -106,6 +106,11 @@ function EnhancedFreeTeacherProgressSection() {
     );
   }
 
+  // Hide the promo section automatically when slots are full (>= total)
+  if (slotData && slotData.usedSlots >= slotData.totalSlots) {
+    return null;
+  }
+
   const progressPercentage = (slotData.usedSlots / slotData.totalSlots) * 100;
 
   return (
@@ -133,7 +138,7 @@ function EnhancedFreeTeacherProgressSection() {
         <div className="mb-12 sm:mb-16">
           <div className="inline-flex items-center justify-center px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-6 sm:mb-8 shadow-2xl animate-pulse">
             <Gift className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-white mr-2 sm:mr-3" />
-            <span className="text-white font-bold text-sm sm:text-lg lg:text-2xl">İLK 50 ÖĞRETMEN ÜCRETSİZ!</span>
+            <span className="text-white font-bold text-sm sm:text-lg lg:text-2xl">İLK 20 ÖĞRETMEN ÜCRETSİZ!</span>
           </div>
           
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-6 sm:mb-8 drop-shadow-xl px-4">
@@ -361,7 +366,7 @@ function PricingSection() {
               </ul>
 
               <Link 
-                href="/giris" 
+                href="/iletisim" 
                 className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 ${
                   plan.popular 
                     ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700' 
@@ -869,41 +874,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-primary-600 to-primary-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
-            Hemen Başlayın
-          </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-primary-100 mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
-            Öğrenci koçluğunuzu dijitalleştirin ve daha etkili sonuçlar alın. 
-            Ücretsiz deneme ile platformu keşfedin.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
-            <Link href="/giris" className="btn-primary btn-lg group min-h-[48px] touch-manipulation">
-              Ücretsiz Başla
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-            </Link>
-            <Link href="/iletisim" className="btn-secondary btn-lg min-h-[48px] touch-manipulation">
-              Demo Talep Et
-            </Link>
-          </div>
-          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-6 lg:space-x-8 text-primary-100">
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">Ücretsiz</span>
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">Hızlı Kurulum</span>
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">Güvenli</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
     </div>
   );
