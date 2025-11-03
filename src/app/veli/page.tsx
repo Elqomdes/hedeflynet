@@ -349,15 +349,7 @@ export default function ParentDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-slide-up" style={{animationDelay: '0.3s'}}>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Video className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-lg font-bold text-secondary-900 mb-2">Video Koçluk</h3>
-            <p className="text-sm text-secondary-600">Video oturumları</p>
-          </div>
-        </div>
+        
       </div>
     </div>
   );

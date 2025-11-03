@@ -12,8 +12,7 @@ import {
   Menu, 
   X,
   User,
-  Bell,
-  Video
+  Bell
 } from 'lucide-react';
 import AuthWrapper from '@/components/AuthWrapper';
 
@@ -59,7 +58,6 @@ export default function ParentLayout({
     { name: 'Dashboard', href: '/veli', icon: Home },
     { name: 'Raporlar', href: '/veli/raporlar', icon: FileText },
     { name: 'Analiz', href: '/veli/analiz', icon: BarChart3 },
-    { name: 'Video Koçluk', href: '/veli/video-kocluk', icon: Video },
     { name: 'Bildirimler', href: '/veli/bildirimler', icon: Bell },
   ];
 
