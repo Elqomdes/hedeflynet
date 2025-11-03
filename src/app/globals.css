@@ -113,6 +113,18 @@
   .alert-info {
     @apply bg-blue-50 text-blue-800 border border-blue-200;
   }
+
+  .nav-link {
+    @apply text-secondary-700 hover:text-primary-600 transition-colors duration-200;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  .btn-outline {
+    @apply bg-transparent border-2 border-primary-600 text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
 }
 
 /* Page setup for printing */

@@ -77,10 +77,14 @@ function EnhancedFreeTeacherProgressSection() {
   useEffect(() => {
     const fetchSlotData = async () => {
       try {
-        const response = await fetch('/api/free-teacher-slots');
+        const response = await fetch('/api/free-teacher-slots', {
+          cache: 'no-store'
+        });
         if (response.ok) {
           const data = await response.json();
-          setSlotData(data.data);
+          if (data.success && data.data) {
+            setSlotData(data.data);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch free teacher slots:', error);
@@ -92,9 +96,10 @@ function EnhancedFreeTeacherProgressSection() {
     fetchSlotData();
   }, []);
 
-  if (loading || !slotData) {
+  // Show loading state
+  if (loading) {
     return (
-      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 overflow-hidden pt-20">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10 text-center">
           <div className="animate-pulse">
@@ -106,15 +111,23 @@ function EnhancedFreeTeacherProgressSection() {
     );
   }
 
+  // If error or no data, use default values
+  const displayData: FreeTeacherSlotData = slotData || {
+    totalSlots: 20,
+    usedSlots: 0,
+    availableSlots: 20,
+    recentAssignments: []
+  };
+
   // Hide the promo section automatically when slots are full (>= total)
-  if (slotData && slotData.usedSlots >= slotData.totalSlots) {
+  if (displayData.usedSlots >= displayData.totalSlots) {
     return null;
   }
 
-  const progressPercentage = (slotData.usedSlots / slotData.totalSlots) * 100;
+  const progressPercentage = (displayData.usedSlots / displayData.totalSlots) * 100;
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 overflow-hidden pt-20">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full animate-pulse"></div>
@@ -160,7 +173,7 @@ function EnhancedFreeTeacherProgressSection() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
                 <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">İlerleme Durumu</h3>
                 <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-yellow-300">
-                  {slotData.usedSlots}/{slotData.totalSlots}
+                  {displayData.usedSlots}/{displayData.totalSlots}
                 </span>
               </div>
               <div className="w-full bg-white/20 rounded-full h-6 sm:h-8 mb-4 sm:mb-6">
@@ -170,19 +183,19 @@ function EnhancedFreeTeacherProgressSection() {
                 ></div>
               </div>
               <div className="flex flex-col sm:flex-row justify-between text-sm sm:text-base lg:text-lg text-white/80 gap-2">
-                <span>Kullanılan: {slotData.usedSlots}</span>
-                <span>Kalan: {slotData.availableSlots}</span>
+                <span>Kullanılan: {displayData.usedSlots}</span>
+                <span>Kalan: {displayData.availableSlots}</span>
               </div>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
               <div className="text-center p-4 sm:p-6 lg:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20">
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-yellow-300 mb-2 sm:mb-3">{slotData.usedSlots}</div>
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-yellow-300 mb-2 sm:mb-3">{displayData.usedSlots}</div>
                 <div className="text-sm sm:text-base lg:text-lg text-white/80">Kullanılan Slot</div>
               </div>
               <div className="text-center p-4 sm:p-6 lg:p-8 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20">
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-300 mb-2 sm:mb-3">{slotData.availableSlots}</div>
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-300 mb-2 sm:mb-3">{displayData.availableSlots}</div>
                 <div className="text-sm sm:text-base lg:text-lg text-white/80">Kalan Slot</div>
               </div>
             </div>
@@ -212,7 +225,7 @@ function EnhancedFreeTeacherProgressSection() {
         {/* Urgency Message */}
         <div className="mt-8 sm:mt-12 text-center px-4">
           <p className="text-white/80 text-sm sm:text-base lg:text-lg">
-            ⚡ <span className="font-bold text-yellow-300">Sınırlı Sayıda!</span> Sadece {slotData.availableSlots} slot kaldı!
+            ⚡ <span className="font-bold text-yellow-300">Sınırlı Sayıda!</span> Sadece {displayData.availableSlots} slot kaldı!
           </p>
         </div>
       </div>
@@ -460,7 +473,6 @@ export default function HomePage() {
   // If user is not logged in, show public homepage
   return (
     <div className="min-h-screen bg-secondary-50">
-
       {/* Enhanced Free Teacher Slots Progress Section - Now Hero */}
       <EnhancedFreeTeacherProgressSection />
 
