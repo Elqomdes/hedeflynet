@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, Calendar, BookOpen, Target, FileText, BarChart3, Edit3, Save, X } from 'lucide-react';
+import { User, Mail, Phone, Calendar, FileText, BarChart3, Edit3, Save, X } from 'lucide-react';
 
 interface StudentProfile {
   _id: string;
@@ -30,12 +30,7 @@ interface StudentProfile {
 interface StudentStats {
   totalAssignments: number;
   completedAssignments: number;
-  totalGoals: number;
-  completedGoals: number;
-  totalPlans: number;
-  completedPlans: number;
   averageGrade: number;
-  totalVideoSessions: number;
 }
 
 export default function StudentProfile() {
@@ -360,25 +355,7 @@ export default function StudentProfile() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center">
-                    <Target className="h-5 w-5 text-green-600 mr-3" />
-                    <span className="text-sm font-medium text-green-900">Hedefler</span>
-                  </div>
-                  <span className="text-sm font-bold text-green-600">
-                    {stats.completedGoals}/{stats.totalGoals}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <div className="flex items-center">
-                    <BookOpen className="h-5 w-5 text-purple-600 mr-3" />
-                    <span className="text-sm font-medium text-purple-900">Planlar</span>
-                  </div>
-                  <span className="text-sm font-bold text-purple-600">
-                    {stats.completedPlans}/{stats.totalPlans}
-                  </span>
-                </div>
+                {/* Hedefler ve Planlar kaldırıldı */}
 
                 {stats.averageGrade > 0 && (
                   <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
