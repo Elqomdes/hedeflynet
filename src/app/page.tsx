@@ -189,27 +189,7 @@ function EnhancedFreeTeacherProgressSection() {
           </div>
         </div>
 
-        {/* Recent Assignments */}
-        {slotData.recentAssignments.length > 0 && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-8 sm:mb-12 border border-white/20 shadow-2xl mx-2 sm:mx-0">
-            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-6 sm:mb-8 text-center">
-              Son Atanan Öğretmenler
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {slotData.recentAssignments.map((assignment, index) => (
-                <div key={index} className="flex items-center p-4 sm:p-6 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-300">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0">
-                    <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-bold text-white text-base sm:text-lg truncate">{assignment.teacherName}</div>
-                    <div className="text-white/70 text-sm sm:text-base">Slot #{assignment.slotNumber}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4">
