@@ -49,7 +49,7 @@ interface Assignment {
 export default function StudentAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'completed' | 'graded'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'submitted'>('all');
   const [updatingProgress, setUpdatingProgress] = useState<string | null>(null);
   const [submittingAssignment, setSubmittingAssignment] = useState<string | null>(null);
   const [submissionContent, setSubmissionContent] = useState('');
@@ -303,12 +303,30 @@ export default function StudentAssignments() {
     }
   };
 
-  const filteredAssignments = assignments.filter(assignment => {
+  // Partition assignments for display
+  const now = new Date();
+  const isOverdueFn = (a: Assignment) => {
+    const noSubmission = !a.submission;
+    const duePassed = new Date(a.dueDate) < now;
+    const markedLate = a.submission?.status === 'late';
+    return (noSubmission && duePassed) || markedLate;
+  };
+  const isCompletedFn = (a: Assignment) => {
+    const status = a.submission?.status;
+    return status === 'completed' || status === 'graded';
+  };
+  const isActiveFn = (a: Assignment) => {
+    return !isOverdueFn(a) && !isCompletedFn(a);
+  };
+
+  const activeAssignments = assignments.filter(isActiveFn);
+  const overdueAssignments = assignments.filter(isOverdueFn);
+  const completedAssignments = assignments.filter(isCompletedFn);
+
+  const filteredAssignments = activeAssignments.filter(assignment => {
     if (filter === 'all') return true;
     if (filter === 'pending') return !assignment.submission;
     if (filter === 'submitted') return assignment.submission?.status === 'submitted';
-    if (filter === 'completed') return assignment.submission?.status === 'completed';
-    if (filter === 'graded') return assignment.submission?.status === 'graded';
     return true;
   });
 
@@ -333,8 +351,6 @@ export default function StudentAssignments() {
             <option value="all">Tümü</option>
             <option value="pending">Bekleyen</option>
             <option value="submitted">Teslim Edilen</option>
-            <option value="completed">Tamamlanan</option>
-            <option value="graded">Değerlendirilen</option>
           </select>
         </div>
       </div>
@@ -345,8 +361,8 @@ export default function StudentAssignments() {
           <h3 className="mt-2 text-sm font-medium text-secondary-900">Ödev bulunamadı</h3>
           <p className="mt-1 text-sm text-secondary-500">
             {filter === 'all' 
-              ? 'Henüz size atanmış bir ödev bulunmuyor.'
-              : 'Bu kategoride ödev bulunmuyor.'
+              ? 'Görüntülenecek aktif ödev bulunmuyor.'
+              : 'Bu kategoride aktif ödev bulunmuyor.'
             }
           </p>
         </div>
@@ -551,6 +567,126 @@ export default function StudentAssignments() {
           ))}
         </div>
       )}
+
+      {/* Completed and Overdue Folders */}
+      <div className="space-y-4">
+        {/* Completed Folder */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
+          <button
+            className="w-full px-4 py-3 text-left hover:bg-secondary-50 transition-colors rounded-lg"
+            onClick={(e) => {
+              const section = (e.currentTarget.nextElementSibling as HTMLDivElement);
+              if (section) {
+                section.classList.toggle('hidden');
+              }
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-green-500 p-2 rounded-lg">
+                  <CheckCircle className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary-900">Tamamlanan Ödevler</h4>
+                  <p className="text-sm text-secondary-600">{completedAssignments.length} ödev</p>
+                </div>
+              </div>
+            </div>
+          </button>
+          <div className="px-4 pb-4 border-t border-secondary-100 hidden">
+            {completedAssignments.length === 0 ? (
+              <div className="py-4 text-center text-sm text-secondary-500">Henüz tamamlanan ödev yok.</div>
+            ) : (
+              <div className="space-y-2 mt-3">
+                {completedAssignments.map((assignment) => (
+                  <div key={assignment._id} className="p-3 bg-white border border-secondary-200 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <FileText className="h-4 w-4 text-secondary-500 flex-shrink-0" />
+                          <h5 className="font-medium text-secondary-900 truncate">{assignment.title}</h5>
+                        </div>
+                        <div className="flex items-center space-x-3 text-xs text-secondary-600">
+                          <span className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{new Date(assignment.dueDate).toLocaleDateString('tr-TR')}</span>
+                          </span>
+                          {assignment.submission?.grade !== undefined && (
+                            <span className="flex items-center space-x-1 text-yellow-600 font-semibold">
+                              <Star className="h-3 w-3" />
+                              <span>
+                                {assignment.submission.grade}/{assignment.submission.maxGrade || assignment.maxGrade || 100}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-green-700 bg-green-50">
+                        Tamamlandı
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Overdue Folder */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
+          <button
+            className="w-full px-4 py-3 text-left hover:bg-secondary-50 transition-colors rounded-lg"
+            onClick={(e) => {
+              const section = (e.currentTarget.nextElementSibling as HTMLDivElement);
+              if (section) {
+                section.classList.toggle('hidden');
+              }
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-red-500 p-2 rounded-lg">
+                  <AlertCircle className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-secondary-900">Süresi Geçmiş Ödevler</h4>
+                  <p className="text-sm text-secondary-600">{overdueAssignments.length} ödev</p>
+                </div>
+              </div>
+            </div>
+          </button>
+          <div className="px-4 pb-4 border-t border-secondary-100 hidden">
+            {overdueAssignments.length === 0 ? (
+              <div className="py-4 text-center text-sm text-secondary-500">Süresi geçmiş ödev yok.</div>
+            ) : (
+              <div className="space-y-2 mt-3">
+                {overdueAssignments.map((assignment) => (
+                  <div key={assignment._id} className="p-3 bg-white border border-secondary-200 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <FileText className="h-4 w-4 text-secondary-500 flex-shrink-0" />
+                          <h5 className="font-medium text-secondary-900 truncate">{assignment.title}</h5>
+                        </div>
+                        <div className="flex items-center space-x-3 text-xs text-secondary-600">
+                          <span className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{new Date(assignment.dueDate).toLocaleDateString('tr-TR')}</span>
+                          </span>
+                          <span className="text-red-600 font-medium">Süresi geçmiş</span>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-red-700 bg-red-50">
+                        Geçti
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Assignment Submission Modal */}
       {submittingAssignment && (
