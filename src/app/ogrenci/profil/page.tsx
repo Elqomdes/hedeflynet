@@ -46,10 +46,7 @@ export default function StudentProfile() {
   const [editForm, setEditForm] = useState({
     firstName: '',
     lastName: '',
-    phone: '',
-    dateOfBirth: '',
-    school: '',
-    grade: ''
+    phone: ''
   });
 
   useEffect(() => {
@@ -70,10 +67,7 @@ export default function StudentProfile() {
         setEditForm({
           firstName: data.firstName || '',
           lastName: data.lastName || '',
-          phone: data.phone || '',
-          dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : '',
-          school: data.school || '',
-          grade: data.grade || ''
+          phone: data.phone || ''
         });
       }
     } catch (error) {
@@ -131,10 +125,7 @@ export default function StudentProfile() {
       setEditForm({
         firstName: profile.firstName || '',
         lastName: profile.lastName || '',
-        phone: profile.phone || '',
-        dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split('T')[0] : '',
-        school: profile.school || '',
-        grade: profile.grade || ''
+        phone: profile.phone || ''
       });
     }
     setEditing(false);
@@ -266,51 +257,24 @@ export default function StudentProfile() {
                 <label className="block text-sm font-medium text-secondary-700 mb-2">
                   Doğum Tarihi
                 </label>
-                {editing ? (
-                  <input
-                    type="date"
-                    value={editForm.dateOfBirth}
-                    onChange={(e) => setEditForm({...editForm, dateOfBirth: e.target.value})}
-                    className="block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                  />
-                ) : (
-                  <p className="text-sm text-secondary-900 flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-secondary-400" />
-                    {profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
-                  </p>
-                )}
+                <p className="text-sm text-secondary-900 flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-secondary-400" />
+                  {'Belirtilmemiş'}
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">
                   Okul
                 </label>
-                {editing ? (
-                  <input
-                    type="text"
-                    value={editForm.school}
-                    onChange={(e) => setEditForm({...editForm, school: e.target.value})}
-                    className="block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                  />
-                ) : (
-                  <p className="text-sm text-secondary-900">{profile.school || 'Belirtilmemiş'}</p>
-                )}
+                <p className="text-sm text-secondary-900">{'Belirtilmemiş'}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">
                   Sınıf
                 </label>
-                {editing ? (
-                  <input
-                    type="text"
-                    value={editForm.grade}
-                    onChange={(e) => setEditForm({...editForm, grade: e.target.value})}
-                    className="block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                  />
-                ) : (
-                  <p className="text-sm text-secondary-900">{profile.grade || 'Belirtilmemiş'}</p>
-                )}
+                <p className="text-sm text-secondary-900">{'Belirtilmemiş'}</p>
               </div>
             </div>
           </div>
