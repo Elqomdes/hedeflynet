@@ -110,7 +110,7 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-10">
         {statCards.map((stat, index) => (
           <Link key={stat.name} href={stat.href} className="group animate-scale-in" style={{animationDelay: `${index * 0.1}s`}}>
             <div className={`relative overflow-hidden rounded-2xl ${stat.bgColor} border ${stat.borderColor} p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105 group-hover:border-opacity-50`}>
