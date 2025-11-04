@@ -59,10 +59,17 @@ export async function GET(request: NextRequest) {
         assignmentId: { $in: await Assignment.find({ teacherId }).distinct('_id') },
         status: 'submitted'
       }),
-      // Parent count - using Parent model
+      // Parent count - only count parents of students in teacher's classes
       (async () => {
+        if (teacherStudentIds.length === 0) {
+          return 0;
+        }
         const { Parent } = await import('@/lib/models/Parent');
-        return Parent.countDocuments({ isActive: true });
+        // Count distinct parents who have children in teacher's classes
+        return Parent.countDocuments({ 
+          isActive: true,
+          children: { $in: teacherStudentIds }
+        });
       })()
     ]);
 
