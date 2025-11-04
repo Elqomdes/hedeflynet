@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { User, Class } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
+import { Parent } from '@/lib/models/Parent';
 
 export async function GET(
   request: NextRequest,
@@ -62,17 +63,71 @@ export async function GET(
       }
     }
 
+    // If teacher has no students, return empty list
+    if (studentIds.size === 0) {
+      return NextResponse.json({
+        success: true,
+        parents: []
+      });
+    }
+
     // Get parents who have children in teacher's classes
-    const parents = await User.find({
-      role: 'parent',
+    const parents = await Parent.find({
       children: { $in: Array.from(studentIds) }
     })
-    .select('_id firstName lastName email phone isActive children createdAt')
+    .select('_id username email firstName lastName phone children isActive createdAt')
+    .sort({ createdAt: -1 })
     .lean();
+
+    // Add children details for each parent - only show children that are in teacher's classes
+    const parentsWithChildrenDetails = await Promise.all(
+      parents.map(async (parent) => {
+        let childrenDetails: any[] = [];
+        
+        if (parent.children && parent.children.length > 0) {
+          // Filter to only get children that are in teacher's classes
+          const relevantChildren = parent.children.filter((childId: any) => 
+            studentIds.has(String(childId))
+          );
+
+          if (relevantChildren.length > 0) {
+            const allChildrenDetails = await User.find({
+              _id: { $in: relevantChildren },
+              role: 'student'
+            })
+              .select('_id firstName lastName email classId')
+              .lean();
+
+            // Add class names to children
+            childrenDetails = await Promise.all(
+              allChildrenDetails.map(async (child: any) => {
+                if (child.classId) {
+                  const classInfo = await Class.findById(child.classId).select('name').lean();
+                  return {
+                    ...child,
+                    className: classInfo?.name || null
+                  };
+                }
+                return child;
+              })
+            );
+          }
+        }
+
+        return {
+          ...parent,
+          // Only include children that are in teacher's classes
+          children: parent.children?.filter((childId: any) => 
+            studentIds.has(String(childId))
+          ) || [],
+          childrenDetails: childrenDetails
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
-      parents: parents
+      parents: parentsWithChildrenDetails
     });
 
   } catch (error) {

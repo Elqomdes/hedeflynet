@@ -38,19 +38,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all parents from database
-    const { Parent } = await import('@/lib/models/Parent');
-    
-    // Log to debug
-    const allParents = await Parent.find({}).lean();
-    console.log('Total parents in database:', allParents.length);
-    console.log('Sample parent:', allParents[0]);
-    
-    const parents = await Parent.find({})
-      .select('_id username email firstName lastName phone children isActive createdAt')
-      .sort({ createdAt: -1 })
-      .lean();
-
     // Get teacher's classes to filter students
     const classes = await Class.find({
       $or: [
@@ -59,6 +46,7 @@ export async function GET(request: NextRequest) {
       ]
     }).select('students').lean();
 
+    // Get all student IDs from teacher's classes
     const teacherStudentIds = new Set<string>();
     for (const cls of classes) {
       if (Array.isArray((cls as any).students)) {
@@ -68,7 +56,26 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Add children details for each parent - show all parents regardless of children
+    // If teacher has no students, return empty list
+    if (teacherStudentIds.size === 0) {
+      return NextResponse.json({
+        success: true,
+        parents: []
+      });
+    }
+
+    // Get parents who have children in teacher's classes
+    const { Parent } = await import('@/lib/models/Parent');
+    
+    // Only get parents whose children are in this teacher's classes
+    const parents = await Parent.find({
+      children: { $in: Array.from(teacherStudentIds) }
+    })
+      .select('_id username email firstName lastName phone children isActive createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Add children details for each parent - only show children that are in teacher's classes
     const parentsWithChildrenDetails = await Promise.all(
       parents.map(async (parent) => {
         type ChildDetail = {
@@ -83,36 +90,45 @@ export async function GET(request: NextRequest) {
         let childrenDetails: ChildDetail[] = [];
         
         if (parent.children && parent.children.length > 0) {
-          const allChildrenDetails = await User.find({
-            _id: { $in: parent.children },
-            role: 'student'
-          })
-            .select('_id firstName lastName email classId')
-            .lean();
-
-          // Add class names to children
-          childrenDetails = await Promise.all(
-            allChildrenDetails.map(async (child: any) => {
-              if (child.classId) {
-                const classInfo = await Class.findById(child.classId).select('name').lean();
-                return {
-                  ...child,
-                  className: classInfo?.name || null
-                };
-              }
-              return child;
-            })
+          // Filter to only get children that are in teacher's classes
+          const relevantChildren = parent.children.filter((childId: any) => 
+            teacherStudentIds.has(String(childId))
           );
+
+          if (relevantChildren.length > 0) {
+            const allChildrenDetails = await User.find({
+              _id: { $in: relevantChildren },
+              role: 'student'
+            })
+              .select('_id firstName lastName email classId')
+              .lean();
+
+            // Add class names to children
+            childrenDetails = await Promise.all(
+              allChildrenDetails.map(async (child: any) => {
+                if (child.classId) {
+                  const classInfo = await Class.findById(child.classId).select('name').lean();
+                  return {
+                    ...child,
+                    className: classInfo?.name || null
+                  };
+                }
+                return child;
+              })
+            );
+          }
         }
 
         return {
           ...parent,
+          // Only include children that are in teacher's classes
+          children: parent.children?.filter((childId: any) => 
+            teacherStudentIds.has(String(childId))
+          ) || [],
           childrenDetails: childrenDetails
         };
       })
     );
-    
-    console.log('Parents with details:', parentsWithChildrenDetails.length);
 
     return NextResponse.json({
       success: true,

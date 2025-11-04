@@ -113,3 +113,29 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+.cursor/
+
+# System files
+AppData/
+.cache/
+Contacts/
+Desktop/
+Documents/
+Downloads/
+Favorites/
+Links/
+Music/
+OneDrive/
+Pictures/
+Saved Games/
+Searches/
+Videos/
+NTUSER.DAT*
+ntuser.dat*
+ntuser.ini
+.gitconfig
+.lesshst
+.python_history
+.streamlit/
+.vscode-R/
+.matplotlib/
