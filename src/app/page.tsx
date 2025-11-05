@@ -472,7 +472,6 @@ export default function HomePage() {
 
   // If user is not logged in, show public homepage
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-secondary-50">
       {/* Enhanced Free Teacher Slots Progress Section - Now Hero */}
       <EnhancedFreeTeacherProgressSection />
@@ -480,10 +479,6 @@ export default function HomePage() {
       {/* Pricing Section */}
       <PricingSection />
 
-      {/* Core Features Section */}
-      <section id="features" className="py-12 sm:py-16 lg:py-20 bg-white">
-=======
-    <div className="min-h-screen">
       {/* Hero Section */}
       <section className="gradient-bg py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-primary-100/30"></div>
@@ -629,7 +624,6 @@ export default function HomePage() {
 
       {/* Features Section */}
       <section className="py-24 bg-white relative">
->>>>>>> 73eabcc (chore: push pending changes)
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-3 sm:mb-4">Platform Özellikleri</h2>
