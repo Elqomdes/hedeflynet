@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { firstName, lastName, username, email, password, phone } = body || {};
+    const { firstName, lastName, username, email, password, phone, classId } = body || {};
 
     if (!firstName || !lastName || !username || !email || !password) {
       return NextResponse.json(
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure username/email uniqueness implicitly uses schema constraints; handle duplicate key errors gracefully
-    const { User } = await import('@/lib/models');
+    const { User, Class } = await import('@/lib/models');
 
     const newStudent = new (User as any)({
       firstName,
@@ -109,6 +109,25 @@ export async function POST(request: NextRequest) {
     });
 
     await newStudent.save();
+
+    // If classId provided, assign student to the class and set student's classId
+    if (classId) {
+      try {
+        const cls = await (Class as any).findById(classId);
+        if (cls) {
+          // Avoid duplicates
+          const alreadyIn = Array.isArray(cls.students) && cls.students.some((sid: any) => String(sid) === String(newStudent._id));
+          if (!alreadyIn) {
+            cls.students.push(newStudent._id);
+            await cls.save();
+          }
+          newStudent.classId = cls._id;
+          await newStudent.save();
+        }
+      } catch (e) {
+        console.error('Class assignment error:', e);
+      }
+    }
 
     return NextResponse.json({
       success: true,

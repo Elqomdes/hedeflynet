@@ -19,6 +19,7 @@ export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [classes, setClasses] = useState<Array<{ _id: string; name: string }>>([]);
   const [newStudent, setNewStudent] = useState({
     username: '',
     email: '',
@@ -27,6 +28,7 @@ export default function StudentsPage() {
     lastName: '',
     phone: ''
   });
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -53,12 +55,30 @@ export default function StudentsPage() {
     }
   };
 
+  const fetchClasses = async () => {
+    try {
+      const response = await fetch('/api/teacher/classes', {
+        credentials: 'include',
+        cache: 'no-store'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // keep only id and name
+        const mapped = (data || []).map((c: any) => ({ _id: c._id, name: c.name }));
+        setClasses(mapped);
+      }
+    } catch (error) {
+      console.error('Classes fetch error:', error);
+    }
+  };
+
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      console.log('Submitting student data:', newStudent);
+      const payload = { ...newStudent, classId: selectedClassId || undefined };
+      console.log('Submitting student data:', payload);
       
       const response = await fetch('/api/teacher/students', {
         method: 'POST',
@@ -68,7 +88,7 @@ export default function StudentsPage() {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache',
         },
-        body: JSON.stringify(newStudent),
+        body: JSON.stringify(payload),
       });
 
       console.log('Response status:', response.status);
@@ -87,6 +107,7 @@ export default function StudentsPage() {
           lastName: '',
           phone: ''
         });
+        setSelectedClassId('');
         alert('Öğrenci başarıyla eklendi!');
       } else {
         const error = await response.json();
@@ -293,6 +314,25 @@ export default function StudentsPage() {
                           placeholder="Soyad"
                         />
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-secondary-700 mb-2">
+                        Sınıf (opsiyonel)
+                      </label>
+                      <select
+                        value={selectedClassId}
+                        onChange={(e) => setSelectedClassId(e.target.value)}
+                        onFocus={() => {
+                          if (classes.length === 0) fetchClasses();
+                        }}
+                        className="input-field"
+                      >
+                        <option value="">Sınıf seçin (opsiyonel)</option>
+                        {classes.map((c) => (
+                          <option key={c._id} value={c._id}>{c.name}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>
