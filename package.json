@@ -10,7 +10,8 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
-    "build:analyze": "ANALYZE=true next build"
+    "build:analyze": "ANALYZE=true next build",
+    "clear:assignments": "node scripts/clear-assignments.js"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
