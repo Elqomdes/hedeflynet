@@ -115,11 +115,53 @@ export async function POST(request: NextRequest) {
 
     await newStudent.save();
 
-    // If classId provided, assign student to the class and set student's classId
-    if (classId) {
+    // If classId provided and valid, assign student to the class and set student's classId
+    // Only proceed if classId is a non-empty string and a valid ObjectId
+    if (classId && typeof classId === 'string' && classId.trim() !== '') {
       try {
+        // Validate that classId is a valid MongoDB ObjectId format
+        const mongoose = await import('mongoose');
+        if (!mongoose.default.Types.ObjectId.isValid(classId)) {
+          console.warn('Invalid classId format:', classId);
+          return NextResponse.json({
+            success: true,
+            student: {
+              id: newStudent._id,
+              firstName: newStudent.firstName,
+              lastName: newStudent.lastName,
+              email: newStudent.email,
+              username: newStudent.username,
+              phone: newStudent.phone || '',
+              isActive: newStudent.isActive,
+              createdAt: newStudent.createdAt,
+            }
+          }, { status: 201 });
+        }
+
         const cls = await (Class as any).findById(classId);
         if (cls) {
+          // Verify the class belongs to the current teacher
+          const classTeacherId = String(cls.teacherId || cls.teacherId?._id || '');
+          const currentTeacherId = String(user._id);
+          const isCoTeacher = Array.isArray(cls.coTeachers) && cls.coTeachers.some((ct: any) => String(ct) === currentTeacherId || String(ct._id) === currentTeacherId);
+          
+          if (classTeacherId !== currentTeacherId && !isCoTeacher) {
+            console.warn('Teacher does not have access to this class:', classId);
+            return NextResponse.json({
+              success: true,
+              student: {
+                id: newStudent._id,
+                firstName: newStudent.firstName,
+                lastName: newStudent.lastName,
+                email: newStudent.email,
+                username: newStudent.username,
+                phone: newStudent.phone || '',
+                isActive: newStudent.isActive,
+                createdAt: newStudent.createdAt,
+              }
+            }, { status: 201 });
+          }
+
           // Avoid duplicates
           const alreadyIn = Array.isArray(cls.students) && cls.students.some((sid: any) => String(sid) === String(newStudent._id));
           if (!alreadyIn) {
@@ -131,6 +173,7 @@ export async function POST(request: NextRequest) {
         }
       } catch (e) {
         console.error('Class assignment error:', e);
+        // Continue without class assignment if there's an error
       }
     }
 

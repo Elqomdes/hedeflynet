@@ -31,10 +31,17 @@ export async function GET(
       );
     }
 
-    const assignmentMatch: any = { $or: [ { studentId } ] };
-    if (student.classId) {
-      assignmentMatch.$or.push({ classId: student.classId });
-    }
+    // Build assignment match query
+    // Individual assignments (type='individual') should only match if studentId matches
+    // Class assignments (type='class') should match if classId matches
+    const assignmentMatch: any = {
+      $or: [
+        // Individual assignments assigned to this student
+        { type: 'individual', studentId },
+        // Class assignments for this student's class
+        ...(student.classId ? [{ type: 'class', classId: student.classId }] : [])
+      ]
+    };
 
     // Get assignment statistics
     const totalAssignments = await Assignment.countDocuments(assignmentMatch);
@@ -181,20 +188,40 @@ export async function GET(
       ]
     });
 
-    // If the assignment is a class assignment, exclude ones that were created/published
-    // before the student account was created (i.e., before joining). This prevents
-    // showing pending tasks for newly added students with no assigned homework.
+    // Filter assignments to only include those that belong to this student.
+    // For class assignments, exclude ones that were created/published before the 
+    // student account was created (i.e., before joining). This prevents showing 
+    // pending tasks for newly added students with no assigned homework.
+    // IMPORTANT: Individual assignments (type='individual') must only be shown to the specific student they were assigned to.
+    const studentCreatedAt: Date | undefined = (student as any)?.createdAt as Date | undefined;
     const weeklyAssignments = weeklyAssignmentsAll.filter((a: any) => {
-      // Always include directly assigned (individual) assignments
-      if (a.studentId) return true;
-      // For class assignments, only include if assigned after student creation
-      if (a.classId) {
+      // Check if this is an individual assignment
+      const isIndividualAssignment = a.type === 'individual';
+      
+      // Check if this is a direct assignment to this specific student
+      const isDirectAssignment = a.studentId && String(a.studentId) === String(studentId);
+      
+      // Check if this is a class assignment (has classId and matches student's class)
+      const isClassAssignment = a.classId && student.classId && String(a.classId) === String(student.classId);
+      
+      // For individual assignments, ONLY include if it's assigned to this specific student
+      if (isIndividualAssignment) {
+        return isDirectAssignment;
+      }
+      
+      // For class assignments (type='class'), only include if:
+      // 1. The student is in the class (classId matches)
+      // 2. The assignment was created/published after the student joined
+      if (isClassAssignment) {
         const assignedAt: Date = (a.publishAt as Date) || (a.createdAt as Date);
-        const studentCreatedAt: Date | undefined = (student as any)?.createdAt as Date | undefined;
-        if (!assignedAt || !studentCreatedAt) return true;
+        // If dates are missing, exclude the assignment to be safe
+        if (!assignedAt || !studentCreatedAt) return false;
+        // Only include if assignment was published/created after student joined
         return assignedAt >= studentCreatedAt;
       }
-      return true;
+      
+      // Exclude assignments that don't match this student
+      return false;
     });
 
     // Build set of weekly assignment ids
@@ -268,10 +295,15 @@ export async function GET(
     }
 
     // Build assignment title counts for bar chart
-    const titleMatch: any = { $or: [ { studentId } ] };
-    if (student.classId) {
-      titleMatch.$or.push({ classId: student.classId });
-    }
+    // Use same logic as assignmentMatch to ensure individual assignments are only shown to assigned student
+    const titleMatch: any = {
+      $or: [
+        // Individual assignments assigned to this student
+        { type: 'individual', studentId },
+        // Class assignments for this student's class
+        ...(student.classId ? [{ type: 'class', classId: student.classId }] : [])
+      ]
+    };
 
     const titleGroups = await Assignment.aggregate([
       { $match: titleMatch },
