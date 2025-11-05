@@ -172,27 +172,33 @@ export async function GET(
     endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
     endOfWeek.setHours(23, 59, 59, 999);
 
-    // Determine weekly-related submissions for the student only.
-    // Include submissions created/submitted/graded within the current week so we don't count
-    // class-level assignments that were never actually assigned to this student.
+    // Get assignments for current week - include assignments due in this week, not just created
+    const weeklyAssignments = await Assignment.find({
+      ...assignmentMatch,
+      $or: [
+        { createdAt: { $gte: startOfWeek, $lte: endOfWeek } },
+        { dueDate: { $gte: startOfWeek, $lte: endOfWeek } }
+      ]
+    });
+
+    // Determine weekly-related submissions: include ones submitted or graded within the week
     const weeklySubmissionsDocs = await AssignmentSubmission.find({
       studentId,
       $or: [
-        { createdAt: { $gte: startOfWeek, $lte: endOfWeek } },
         { submittedAt: { $gte: startOfWeek, $lte: endOfWeek } },
         { gradedAt: { $gte: startOfWeek, $lte: endOfWeek } }
       ]
     });
 
-    // Use only submissions to derive weekly stats to avoid inflating counts with unassigned class tasks
+    // Build union of assignmentIds from weekly assignments and weekly submissions
     const weeklyAssignmentIds = new Set<string>(
-      (weeklySubmissionsDocs as any[])
-        .map(s => s.assignmentId)
-        .filter(Boolean)
-        .map((id: any) => String(id))
+      weeklyAssignments.map((a: any) => String((a as any)._id))
     );
+    (weeklySubmissionsDocs as any[]).forEach((s: any) => {
+      if (s.assignmentId) weeklyAssignmentIds.add(String(s.assignmentId));
+    });
 
-    // Count by unique assignmentId across statuses
+    // Count submitted (including late/graded/completed) - unique by assignmentId
     const submittedAssignmentIds = new Set<string>(
       (weeklySubmissionsDocs as any[])
         .filter(s => ['submitted', 'graded', 'completed', 'late'].includes(s.status))
@@ -200,6 +206,9 @@ export async function GET(
         .filter(Boolean)
         .map((id: any) => String(id))
     );
+    const weeklyAllSubmitted = submittedAssignmentIds.size;
+
+    // Count graded (unique by assignmentId)
     const gradedAssignmentIds = new Set<string>(
       (weeklySubmissionsDocs as any[])
         .filter(s => ['graded', 'completed'].includes(s.status))
@@ -207,24 +216,15 @@ export async function GET(
         .filter(Boolean)
         .map((id: any) => String(id))
     );
-    const pendingAssignmentIds = new Set<string>(
-      (weeklySubmissionsDocs as any[])
-        .filter(s => s.status === 'pending')
-        .map(s => s.assignmentId)
-        .filter(Boolean)
-        .map((id: any) => String(id))
-    );
-
-    const totalWeeklyAssignments = weeklyAssignmentIds.size;
-    const weeklyAllSubmitted = submittedAssignmentIds.size;
     const weeklyGradedSubmissions = gradedAssignmentIds.size;
-    const weeklyPending = pendingAssignmentIds.size;
 
+    // Calculate weekly statistics from union set
+    const totalWeeklyAssignments = weeklyAssignmentIds.size;
     const weeklyStats = {
       totalAssignments: totalWeeklyAssignments,
       submittedAssignments: weeklyAllSubmitted,
       gradedAssignments: weeklyGradedSubmissions,
-      pendingAssignments: weeklyPending,
+      pendingAssignments: Math.max(0, totalWeeklyAssignments - weeklyAllSubmitted),
       weekStart: startOfWeek.toLocaleDateString('tr-TR'),
       weekEnd: endOfWeek.toLocaleDateString('tr-TR')
     };
