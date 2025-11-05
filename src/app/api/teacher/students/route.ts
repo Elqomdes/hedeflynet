@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
@@ -38,10 +39,13 @@ export async function GET(request: NextRequest) {
 
     const teacherStudentIds = Array.from(studentIdSet);
 
-    // Get student details
+    // Get student details: include those in teacher's classes OR created by this teacher
     const students = await User.find({
-      _id: { $in: teacherStudentIds },
-      role: 'student'
+      role: 'student',
+      $or: [
+        { _id: { $in: teacherStudentIds } },
+        { createdBy: teacherId }
+      ]
     })
       .select('_id firstName lastName email phone username isActive createdAt classId')
       .lean();
@@ -106,6 +110,7 @@ export async function POST(request: NextRequest) {
       phone: phone || '',
       role: 'student',
       isActive: true,
+      createdBy: user._id,
     });
 
     await newStudent.save();
