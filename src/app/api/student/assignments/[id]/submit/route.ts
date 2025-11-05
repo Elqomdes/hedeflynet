@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Assignment, AssignmentSubmission } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
-<<<<<<< HEAD
 import { createParentNotificationsForStudent } from '@/lib/utils/createParentNotification';
-=======
->>>>>>> 73eabcc (chore: push pending changes)
 
 export const dynamic = 'force-dynamic';
 
@@ -100,8 +97,6 @@ export async function POST(
     });
 
     await submission.save();
-
-<<<<<<< HEAD
     // Create notification for parent
     await createParentNotificationsForStudent(String(studentId), {
       type: 'assignment_completed',
@@ -115,9 +110,6 @@ export async function POST(
         isLate
       }
     });
-
-=======
->>>>>>> 73eabcc (chore: push pending changes)
     return NextResponse.json(submission, { status: 201 });
   } catch (error) {
     console.error('Assignment submission error:', error);
