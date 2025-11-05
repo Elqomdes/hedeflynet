@@ -191,26 +191,20 @@ export async function GET(
       ]
     });
 
-    // Determine weekly-related submissions: include ones submitted or graded within the week
-    const weeklySubmissionsDocs = await AssignmentSubmission.find({
-      studentId,
-      $or: [
-        { submittedAt: { $gte: startOfWeek, $lte: endOfWeek } },
-        { gradedAt: { $gte: startOfWeek, $lte: endOfWeek } }
-      ]
-    });
-
-    // Build union of assignmentIds from weekly assignments and weekly submissions
+    // Build set of weekly assignment ids
     const weeklyAssignmentIds = new Set<string>(
       weeklyAssignments.map((a: any) => String((a as any)._id))
     );
-    weeklySubmissionsDocs.forEach((s: any) => {
-      if (s.assignmentId) weeklyAssignmentIds.add(String(s.assignmentId));
+
+    // Fetch this student's submissions for those assignments (regardless of when submitted)
+    const submissionsForWeeklyAssignments = await AssignmentSubmission.find({
+      studentId,
+      assignmentId: { $in: Array.from(weeklyAssignmentIds) }
     });
 
     // Count submitted (including late/graded/completed) - unique by assignmentId
     const submittedAssignmentIds = new Set<string>(
-      (weeklySubmissionsDocs as any[])
+      (submissionsForWeeklyAssignments as any[])
         .filter(s => ['submitted', 'graded', 'completed', 'late'].includes(s.status))
         .map(s => s.assignmentId)
         .filter(Boolean)
@@ -220,7 +214,7 @@ export async function GET(
 
     // Count graded (unique by assignmentId)
     const gradedAssignmentIds = new Set<string>(
-      (weeklySubmissionsDocs as any[])
+      (submissionsForWeeklyAssignments as any[])
         .filter(s => ['graded', 'completed'].includes(s.status))
         .map(s => s.assignmentId)
         .filter(Boolean)
@@ -228,7 +222,7 @@ export async function GET(
     );
     const weeklyGradedSubmissions = gradedAssignmentIds.size;
 
-    // Calculate weekly statistics from union set
+    // Calculate weekly statistics from weekly assignment set
     const totalWeeklyAssignments = weeklyAssignmentIds.size;
     const weeklyStats = {
       totalAssignments: totalWeeklyAssignments,
