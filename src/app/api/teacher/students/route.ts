@@ -128,25 +128,35 @@ export async function POST(request: NextRequest) {
         console.error('Class assignment error:', e);
       }
     } else {
-      // No classId provided: auto-assign to teacher's first available class if any
+      // No classId provided: ensure teacher has at least one class and assign the student to it
       try {
         const teacherId = user._id;
-        const anyClass = await (Class as any).findOne({
+        let anyClass = await (Class as any).findOne({
           $or: [
             { teacherId: teacherId },
             { coTeachers: teacherId }
           ]
         }).sort({ createdAt: 1 });
 
-        if (anyClass) {
-          const alreadyIn = Array.isArray(anyClass.students) && anyClass.students.some((sid: any) => String(sid) === String(newStudent._id));
-          if (!alreadyIn) {
-            anyClass.students.push(newStudent._id);
-            await anyClass.save();
-          }
-          newStudent.classId = anyClass._id;
-          await newStudent.save();
+        // Create a default class if none exists
+        if (!anyClass) {
+          anyClass = new (Class as any)({
+            name: 'Genel',
+            description: 'Otomatik oluşturulan sınıf',
+            teacherId: teacherId,
+            coTeachers: [],
+            students: []
+          });
+          await anyClass.save();
         }
+
+        const alreadyIn = Array.isArray(anyClass.students) && anyClass.students.some((sid: any) => String(sid) === String(newStudent._id));
+        if (!alreadyIn) {
+          anyClass.students.push(newStudent._id);
+          await anyClass.save();
+        }
+        newStudent.classId = anyClass._id;
+        await newStudent.save();
       } catch (e) {
         console.error('Auto class assignment error:', e);
       }
