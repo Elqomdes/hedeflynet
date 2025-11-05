@@ -23,7 +23,7 @@ export async function GET(
     const studentId = params.id;
 
     // Fetch student to determine class assignments as well
-    const student = await User.findById(studentId).select('_id classId').lean();
+    const student = await User.findById(studentId).select('_id classId createdAt').lean();
     if (!student) {
       return NextResponse.json(
         { error: 'Student not found' },
@@ -173,12 +173,28 @@ export async function GET(
     endOfWeek.setHours(23, 59, 59, 999);
 
     // Get assignments for current week - include assignments due in this week, not just created
-    const weeklyAssignments = await Assignment.find({
+    const weeklyAssignmentsAll = await Assignment.find({
       ...assignmentMatch,
       $or: [
         { createdAt: { $gte: startOfWeek, $lte: endOfWeek } },
         { dueDate: { $gte: startOfWeek, $lte: endOfWeek } }
       ]
+    });
+
+    // If the assignment is a class assignment, exclude ones that were created/published
+    // before the student account was created (i.e., before joining). This prevents
+    // showing pending tasks for newly added students with no assigned homework.
+    const weeklyAssignments = weeklyAssignmentsAll.filter((a: any) => {
+      // Always include directly assigned (individual) assignments
+      if (a.studentId) return true;
+      // For class assignments, only include if assigned after student creation
+      if (a.classId) {
+        const assignedAt: Date = (a.publishAt as Date) || (a.createdAt as Date);
+        const studentCreatedAt: Date | undefined = (student as any)?.createdAt as Date | undefined;
+        if (!assignedAt || !studentCreatedAt) return true;
+        return assignedAt >= studentCreatedAt;
+      }
+      return true;
     });
 
     // Build set of weekly assignment ids
