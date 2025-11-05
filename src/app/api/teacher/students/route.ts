@@ -127,6 +127,29 @@ export async function POST(request: NextRequest) {
       } catch (e) {
         console.error('Class assignment error:', e);
       }
+    } else {
+      // No classId provided: auto-assign to teacher's first available class if any
+      try {
+        const teacherId = user._id;
+        const anyClass = await (Class as any).findOne({
+          $or: [
+            { teacherId: teacherId },
+            { coTeachers: teacherId }
+          ]
+        }).sort({ createdAt: 1 });
+
+        if (anyClass) {
+          const alreadyIn = Array.isArray(anyClass.students) && anyClass.students.some((sid: any) => String(sid) === String(newStudent._id));
+          if (!alreadyIn) {
+            anyClass.students.push(newStudent._id);
+            await anyClass.save();
+          }
+          newStudent.classId = anyClass._id;
+          await newStudent.save();
+        }
+      } catch (e) {
+        console.error('Auto class assignment error:', e);
+      }
     }
 
     return NextResponse.json({
